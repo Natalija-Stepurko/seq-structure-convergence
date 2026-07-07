@@ -2,6 +2,15 @@
 
 Use uv exclusively for Python package management in this project.
 
+## Project location
+
+Work in **`/ssc`** — a top-level path, deliberately kept separate from the materials
+project at `/data/project`. `/ssc` is a **bind mount** of `/data/.ssc` (the backing
+store on the 8 TB `/data` NVMe — the only disk large enough for embedding data). The
+mount is persisted in `/etc/fstab` (`/data/.ssc /ssc none bind,nofail 0 0`), so it
+survives reboots. Always refer to this project as `/ssc`; never touch `/data/project`
+(materials) or `/data/.ssc` directly.
+
 ## ⚠️ Dedicated virtual environment (do NOT clobber the materials venv)
 
 This machine's `~/.bashrc` sets a **global** `UV_PROJECT_ENVIRONMENT=/scratch/.venv`,

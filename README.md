@@ -68,7 +68,7 @@ This instance is **CPU-only**. `uv` manages the environment, into a **dedicated 
 does not collide with the materials project (see [`CLAUDE.md`](CLAUDE.md)).
 
 ```bash
-cd /data/seq-structure-convergence
+cd /ssc
 export UV_PROJECT_ENVIRONMENT=/scratch/.venv-ssc   # dedicated venv — important
 uv sync                                            # creates /scratch/.venv-ssc (Python 3.12)
 uv run python scripts/01_fetch_proteins.py --help
