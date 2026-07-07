@@ -1,0 +1,26 @@
+[project]
+name = "seq-structure-convergence"
+version = "0.1.0"
+description = "Do sequence-trained and structure-trained protein foundation models converge to the same internal representation? A layer-resolved cross-modality study."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fair-esm>=2.0.0",
+    "transformers>=4.44",
+    "huggingface-hub>=0.24",
+    "torch>=2.2",
+    "biotite>=0.41",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "umap-learn>=0.5.6",
+    "hdbscan>=0.8.38",
+    "xgboost>=2.1",
+    "rich>=13.7",
+    "jupyter>=1.1",
+    "notebook>=7.2",
+]
+
+# NOTE: the structure arm (ESM-IF1 / ProteinMPNN) needs extra geometry deps
+# (torch-geometric, torch-scatter, torch-sparse, torch-cluster). Those are added
+# in stage 02b to keep the base install clean — see paper/PROJECT_PLAN.md.
