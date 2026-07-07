@@ -10,10 +10,15 @@ dependencies = [
     "huggingface-hub>=0.24",
     "torch>=2.2",
     "biotite>=0.41",
-    "numpy>=1.26",
+    "numpy>=2.1",
     "pandas>=2.2",
     "scikit-learn>=1.5",
-    "umap-learn>=0.5.6",
+    "umap-learn>=0.5.12",
+    # Pin the numba/llvmlite stack to Python-3.12-compatible versions
+    # (unpinned, uv backtracks to llvmlite 0.36 which is Python <3.10 only).
+    "numba>=0.61",
+    "llvmlite>=0.44",
+    "pynndescent>=0.6",
     "hdbscan>=0.8.38",
     "xgboost>=2.1",
     "rich>=13.7",
