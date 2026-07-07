@@ -23,8 +23,8 @@ evidence for a shared, modality-independent representation of proteins.
 > This repository is the biology counterpart to a materials-science study of foundation
 > interatomic potentials (ORB-v3 / UMA). It reuses that project's analysis protocol
 > (PCA/UMAP, k-NN purity, LVR, CKA/SVCCA, linear + XGBoost probes) but is an **entirely
-> separate project**. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the full design
-> and [`paper/literature.md`](paper/literature.md) for the literature positioning.
+> separate project**. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the full design,
+> including the literature positioning and novelty analysis.
 
 ---
 
@@ -55,8 +55,7 @@ seq-structure-convergence/
 
   scripts/                      # the pipeline (01 → 05) — see "Pipeline" below
   paper/
-    PROJECT_PLAN.md             # full experimental design (models, data, labels, stages)
-    literature.md               # literature review / positioning
+    PROJECT_PLAN.md             # full experimental design (models, data, labels, stages, novelty)
   notebooks/                    # exploratory notebooks
   results/                      # git-ignored; heavy outputs live off-repo (see "Where data is saved")
 ```

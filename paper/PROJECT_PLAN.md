@@ -1,6 +1,6 @@
 # Project plan — sequence↔structure representation convergence in protein foundation models
 
-*Focused design for this repository. Literature positioning lives in [`literature.md`](literature.md).*
+*Focused design for this repository. The detailed literature review and novelty analysis are kept as a private working note (not in the public repo); the key positioning is summarised in §1.*
 
 ## 1. The claim under test
 
@@ -95,7 +95,7 @@ same proteins, then comparing every ESM layer against every structure-model laye
 3. `03` on both; validate the depth split on **secondary structure (local) vs fold class (global)**.
 4. `04` first cross-model CKA/SVCCA number.
 5. Add ESM-IF1; scale toward the full set; `05` probes + learning curves; write up against the
-   anchors in `literature.md`.
+   anchors in §1 (and the private literature note).
 
 ## 8. Risks & caveats
 
