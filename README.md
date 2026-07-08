@@ -180,7 +180,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 | 02b ✅ | `02_extract_embeddings_struct.py` | **ProteinMPNN** encoder per-layer node embeddings (sequence-agnostic, structure-only) → `<id>.pt` (fp16). ESM-IF1 deferred (needs a torch pin for the PyG stack) |
 | 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP + k-NN purity + LVR (per-residue and pooled) |
 | 04 ✅ | `04_convergence.py` | **The core.** Residue-aligned **CKA / SVCCA / mutual-kNN between ESM-2 and ProteinMPNN, layer × layer**, with a permutation baseline → `grids.npz`, `convergence.png`, `summary.txt` |
-| 05 | `05_property_prediction.py` | Linear + XGBoost probes per layer × pooling × property; learning curves |
+| 05 ✅ | `05_property_prediction.py` | Linear + XGBoost probes per layer (chain-grouped splits): SSE / burial / RSA (residue) + CATH class (pooled); XGB−linear gap; CATH **data-efficiency learning curve** vs an AA-composition baseline → `metrics.csv`, `probe_curves.png`, `learning_curve.png` |
 
 Typical run (from the repo root, environment active):
 
