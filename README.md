@@ -122,19 +122,24 @@ project's HF-gated UMA weights):
   ```bash
   export TORCH_HOME=/scratch/.torch-hub
   ```
-- **ProteinMPNN** weights ship with its repository.
+- **ProteinMPNN** (the current structure arm) — model code is vendored under
+  `scripts/vendor/proteinmpnn/` (MIT, Dauparas 2022); fetch the ~7 MB vanilla weights once:
+  ```bash
+  mkdir -p /scratch/.torch-hub/proteinmpnn
+  curl -L -o /scratch/.torch-hub/proteinmpnn/v_48_020.pt \
+    https://raw.githubusercontent.com/dauparas/ProteinMPNN/main/vanilla_model_weights/v_48_020.pt
+  ```
 
-### 5. Structure-arm extra dependencies (added when stage 02b lands)
+### 5. Structure-arm dependencies
 
-The base install covers the sequence arm. **ESM-IF1's inverse-folding module** needs geometry
-packages that are intentionally *not* in the base environment (they are heavy and only needed for
-the structure arm):
+**ProteinMPNN needs nothing beyond the base install** (torch + numpy) — its code is vendored, so
+the base `uv sync` is sufficient for the structure arm.
 
-```bash
-uv add torch-geometric torch-scatter torch-sparse torch-cluster biotite
-```
-
-**ProteinMPNN** is dependency-light (torch + numpy only) and is the fallback structure arm.
+**ESM-IF1** (the intended *primary* structure arm) is **deferred**: it needs the `torch-geometric` +
+`torch-scatter/sparse/cluster` compiled stack, which has no wheels for the current bleeding-edge
+torch and won't build cleanly. Enabling it requires pinning torch to a PyG-supported version
+(~2.4–2.6) — a separate change tracked in `paper/PROJECT_PLAN.md`. ProteinMPNN is a fully valid
+structure arm in the meantime (and remains the robustness cross-check afterwards).
 
 ---
 
@@ -161,7 +166,7 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 ## Pipeline
 
 > **Status:** the environment and design are in place; the numbered scripts are being implemented.
-> **Stages 01 and 02a (ESM-2) are implemented**; 02b–06 are being built. This section documents the interface and is
+> **Stages 01, 02a (ESM-2) and 02b (ProteinMPNN) are implemented**; 03–06 are being built. This section documents the interface and is
 > kept in sync as each stage lands. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the
 > rationale behind each stage.
 
@@ -172,7 +177,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 |---|---|---|
 | 01 ✅ | `01_fetch_proteins.py` | Non-redundant protein chains from **CATH** (one per S35 cluster) + structure from the RCSB PDB; computes sequence, backbone N/CA/C/O coords, per-residue 3-state SSE + relative SASA, and per-chain CATH C/A/T/H — all via **biotite** (no external DSSP). Writes `proteins/<id>.npz` + `index.jsonl` |
 | 02a ✅ | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue embeddings (embedding + each block) → `<id>.pt` (fp16); optional predicted contact map. Weights via `torch.hub` (`TORCH_HOME`) |
-| 02b | `02_extract_embeddings_struct.py` | ESM-IF1 / ProteinMPNN all-layer per-residue extraction → `.pt` |
+| 02b ✅ | `02_extract_embeddings_struct.py` | **ProteinMPNN** encoder per-layer node embeddings (sequence-agnostic, structure-only) → `<id>.pt` (fp16). ESM-IF1 deferred (needs a torch pin for the PyG stack) |
 | 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP + k-NN purity + LVR (per-residue and pooled) |
 | 04 | `04_convergence.py` | **CKA / SVCCA / mutual-kNN between the two models, layer × layer**; embedding-health geometry; HDBSCAN |
 | 05 | `05_property_prediction.py` | Linear + XGBoost probes per layer × pooling × property; learning curves |
@@ -182,7 +187,7 @@ Typical run (from the repo root, environment active):
 ```bash
 uv run python scripts/01_fetch_proteins.py        --structures-dir /ssc/structures --limit 5000
 uv run python scripts/02_extract_embeddings_esm.py --structures-dir /ssc/structures --results-dir /ssc/results/esm
-uv run python scripts/02_extract_embeddings_struct.py --structures-dir /ssc/structures --results-dir /ssc/results/esmif1
+uv run python scripts/02_extract_embeddings_struct.py --structures-dir /ssc/structures --results-dir /ssc/results/proteinmpnn
 uv run python scripts/03_analyze_embeddings.py    --results-dir /ssc/results
 uv run python scripts/04_convergence.py           --results-dir /ssc/results
 uv run python scripts/05_property_prediction.py   --results-dir /ssc/results
