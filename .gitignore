@@ -42,3 +42,6 @@ paper/structures
 
 # Generated paper figures
 paper/figures/
+
+# Private literature/research working notes (kept out of the public repo)
+research/
