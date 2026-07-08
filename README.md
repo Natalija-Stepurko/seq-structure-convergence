@@ -166,7 +166,7 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 ## Pipeline
 
 > **Status:** the environment and design are in place; the numbered scripts are being implemented.
-> **Stages 01, 02a (ESM-2) and 02b (ProteinMPNN) are implemented**; 03–06 are being built. This section documents the interface and is
+> **Stages 01, 02a (ESM-2), 02b (ProteinMPNN) and 04 (convergence) are implemented**; 03/05/06 are being built. This section documents the interface and is
 > kept in sync as each stage lands. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the
 > rationale behind each stage.
 
@@ -179,7 +179,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 | 02a ✅ | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue embeddings (embedding + each block) → `<id>.pt` (fp16); optional predicted contact map. Weights via `torch.hub` (`TORCH_HOME`) |
 | 02b ✅ | `02_extract_embeddings_struct.py` | **ProteinMPNN** encoder per-layer node embeddings (sequence-agnostic, structure-only) → `<id>.pt` (fp16). ESM-IF1 deferred (needs a torch pin for the PyG stack) |
 | 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP + k-NN purity + LVR (per-residue and pooled) |
-| 04 | `04_convergence.py` | **CKA / SVCCA / mutual-kNN between the two models, layer × layer**; embedding-health geometry; HDBSCAN |
+| 04 ✅ | `04_convergence.py` | **The core.** Residue-aligned **CKA / SVCCA / mutual-kNN between ESM-2 and ProteinMPNN, layer × layer**, with a permutation baseline → `grids.npz`, `convergence.png`, `summary.txt` |
 | 05 | `05_property_prediction.py` | Linear + XGBoost probes per layer × pooling × property; learning curves |
 
 Typical run (from the repo root, environment active):
