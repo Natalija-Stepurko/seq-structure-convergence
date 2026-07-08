@@ -181,6 +181,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 | 03 ✅ | `03_analyze_embeddings.py` | Per-model, per-layer **k-NN purity** (local SSE/burial vs global CATH fold) + **LVR** of RSA → the depth law → `metrics.csv`, `depth_law.png` |
 | 04 ✅ | `04_convergence.py` | **The core.** Residue-aligned **CKA / SVCCA / mutual-kNN between ESM-2 and ProteinMPNN, layer × layer**, with a permutation baseline → `grids.npz`, `convergence.png`, `summary.txt` |
 | 05 ✅ | `05_property_prediction.py` | Linear + XGBoost probes per layer (chain-grouped splits): SSE / burial / RSA (residue) + CATH class (pooled); XGB−linear gap; CATH **data-efficiency learning curve** vs an AA-composition baseline → `metrics.csv`, `probe_curves.png`, `learning_curve.png` |
+| 06 ✅ | `06_significance.py` | Robustness of the convergence peak: repeated residue-resamples → peak-CKA vs permutation-baseline means, 95% CIs, modal peak layer-pair, empirical p-value → `summary.txt`, `significance.png` |
 
 Typical run (from the repo root, environment active):
 
@@ -190,7 +191,8 @@ uv run python scripts/02_extract_embeddings_esm.py --structures-dir /ssc/structu
 uv run python scripts/02_extract_embeddings_struct.py --structures-dir /ssc/structures --results-dir /ssc/results/proteinmpnn
 uv run python scripts/03_analyze_embeddings.py    --results-dir /ssc/results
 uv run python scripts/04_convergence.py           --results-dir /ssc/results
-uv run python scripts/05_property_prediction.py   --results-dir /ssc/results
+uv run python scripts/05_property_prediction.py   --results-dir /ssc/results/esm --model-name esm --structures-dir /ssc/structures
+uv run python scripts/06_significance.py           --esm-dir /ssc/results/esm --struct-dir /ssc/results/proteinmpnn --structures-dir /ssc/structures
 ```
 
 ### Testing on a small subset
