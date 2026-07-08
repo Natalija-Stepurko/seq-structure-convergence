@@ -23,8 +23,7 @@ evidence for a shared, modality-independent representation of proteins.
 > This repository is the biology counterpart to a materials-science study of foundation
 > interatomic potentials (ORB-v3 / UMA). It reuses that project's analysis protocol
 > (PCA/UMAP, k-NN purity, LVR, CKA/SVCCA, linear + XGBoost probes) but is an **entirely
-> separate project**. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the full design,
-> including the literature positioning and novelty analysis.
+> separate project**.
 
 ---
 
@@ -54,8 +53,6 @@ seq-structure-convergence/
   .python-version               # 3.12
 
   scripts/                      # the pipeline (01 → 05) — see "Pipeline" below
-  paper/
-    PROJECT_PLAN.md             # full experimental design (models, data, labels, stages, novelty)
   notebooks/                    # exploratory notebooks
   results/                      # git-ignored; heavy outputs live off-repo (see "Where data is saved")
 ```
@@ -138,7 +135,7 @@ the base `uv sync` is sufficient for the structure arm.
 **ESM-IF1** (the intended *primary* structure arm) is **deferred**: it needs the `torch-geometric` +
 `torch-scatter/sparse/cluster` compiled stack, which has no wheels for the current bleeding-edge
 torch and won't build cleanly. Enabling it requires pinning torch to a PyG-supported version
-(~2.4–2.6) — a separate change tracked in `paper/PROJECT_PLAN.md`. ProteinMPNN is a fully valid
+(~2.4–2.6) — a separate, deferred change. ProteinMPNN is a fully valid
 structure arm in the meantime (and remains the robustness cross-check afterwards).
 
 ---
@@ -167,8 +164,7 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 
 > **Status:** the environment and design are in place; the numbered scripts are being implemented.
 > **Stages 01, 02a, 02b, 03 and 04 are implemented**; 05/06 are being built. This section documents the interface and is
-> kept in sync as each stage lands. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the
-> rationale behind each stage.
+> kept in sync as each stage lands.
 
 Numbered, resumable scripts under `scripts/`, mirroring the materials pipeline. Every stage is
 idempotent/resume-safe — outputs are guarded by existence checks, so re-running fills gaps only.
