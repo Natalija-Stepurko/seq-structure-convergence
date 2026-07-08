@@ -36,7 +36,7 @@ import numpy as np
 import torch
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import accuracy_score, r2_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from xgboost import XGBClassifier, XGBRegressor
 
 AA = "ACDEFGHIKLMNPQRSTVWY"
@@ -143,6 +143,8 @@ def main() -> None:
     print(f"[{args.model_name}] collecting up to {args.max_chains:,} chains ...")
     D = _collect(ids, res_dir, prot_dir, cath_by_id, args.max_chains,
                  args.per_chain, args.seed)
+    # CATH classes are non-contiguous (e.g. {1,2,3,4,6}); XGBoost needs 0..K-1.
+    D["cath"] = LabelEncoder().fit_transform(D["cath"])
     n_layers = D["res_emb"].shape[0]
     C = D["n_chains"]
     print(f"  {C:,} chains, {D['res_emb'].shape[1]:,} residues, {n_layers} layers")
