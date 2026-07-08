@@ -36,8 +36,15 @@ sequence/structure divide**, layer-resolved, not within one modality.
 
 **Why this pair on CPU.** AlphaFold's Evoformer needs MSAs and a GPU — impractical here. ESM-IF1
 and ProteinMPNN are lightweight, structure-trained, and architecturally distinct from ESM-2,
-giving a *sharper* cross-modality contrast than AlphaFold at a fraction of the cost. ProteinMPNN
-is the fallback / robustness check for the structure arm.
+giving a *sharper* cross-modality contrast than AlphaFold at a fraction of the cost.
+
+**Implementation status (2026-07-08).** ProteinMPNN is implemented first and is the working
+structure arm: its **encoder** node embeddings are sequence-agnostic (built purely from backbone
+geometry), a clean structure-only representation. **ESM-IF1 is deferred** — it requires the
+`torch-geometric` + `torch-scatter/sparse/cluster` compiled stack, which has no wheels for the
+current torch (2.12) and will not build; enabling it needs torch pinned to a PyG-supported version
+(~2.4–2.6). Plan: land the full pipeline on ProteinMPNN, then add ESM-IF1 behind a torch pin as the
+primary arm, keeping ProteinMPNN as the robustness cross-check.
 
 > ESM-IF1's inverse-folding module needs extra geometry deps (`torch-geometric`, `torch-scatter`,
 > `torch-sparse`, `torch-cluster`, `biotite`). These are added in stage 02b so the base install
