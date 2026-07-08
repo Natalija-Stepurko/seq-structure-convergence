@@ -31,8 +31,6 @@ notebooks/api_keys.py
 # Per-environment data symlinks created for the notebooks
 notebooks/results
 notebooks/structures
-paper/results
-paper/structures
 
 # Jupyter auto-save checkpoints
 .ipynb_checkpoints/
@@ -40,8 +38,8 @@ paper/structures
 # Claude Code worktrees
 .claude/
 
-# Generated paper figures
-paper/figures/
+# Entire paper/ folder -- private literature/design working notes, never tracked
+paper/
 
 # Private literature/research working notes (kept out of the public repo)
 research/
