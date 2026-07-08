@@ -166,7 +166,7 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 ## Pipeline
 
 > **Status:** the environment and design are in place; the numbered scripts are being implemented.
-> **Stages 01, 02a (ESM-2), 02b (ProteinMPNN) and 04 (convergence) are implemented**; 03/05/06 are being built. This section documents the interface and is
+> **Stages 01, 02a, 02b, 03 and 04 are implemented**; 05/06 are being built. This section documents the interface and is
 > kept in sync as each stage lands. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the
 > rationale behind each stage.
 
@@ -178,7 +178,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 | 01 ✅ | `01_fetch_proteins.py` | Non-redundant protein chains from **CATH** (one per S35 cluster) + structure from the RCSB PDB; computes sequence, backbone N/CA/C/O coords, per-residue 3-state SSE + relative SASA, and per-chain CATH C/A/T/H — all via **biotite** (no external DSSP). Writes `proteins/<id>.npz` + `index.jsonl` |
 | 02a ✅ | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue embeddings (embedding + each block) → `<id>.pt` (fp16); optional predicted contact map. Weights via `torch.hub` (`TORCH_HOME`) |
 | 02b ✅ | `02_extract_embeddings_struct.py` | **ProteinMPNN** encoder per-layer node embeddings (sequence-agnostic, structure-only) → `<id>.pt` (fp16). ESM-IF1 deferred (needs a torch pin for the PyG stack) |
-| 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP + k-NN purity + LVR (per-residue and pooled) |
+| 03 ✅ | `03_analyze_embeddings.py` | Per-model, per-layer **k-NN purity** (local SSE/burial vs global CATH fold) + **LVR** of RSA → the depth law → `metrics.csv`, `depth_law.png` |
 | 04 ✅ | `04_convergence.py` | **The core.** Residue-aligned **CKA / SVCCA / mutual-kNN between ESM-2 and ProteinMPNN, layer × layer**, with a permutation baseline → `grids.npz`, `convergence.png`, `summary.txt` |
 | 05 | `05_property_prediction.py` | Linear + XGBoost probes per layer × pooling × property; learning curves |
 
