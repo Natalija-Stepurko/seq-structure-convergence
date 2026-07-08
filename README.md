@@ -156,15 +156,16 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 ## Pipeline
 
 > **Status:** the environment and design are in place; the numbered scripts are being implemented.
-> This section documents the intended interface; it is kept in sync as each stage lands. See
-> [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the rationale behind each stage.
+> **Stage 01 is implemented**; 02–06 are being built. This section documents the interface and is
+> kept in sync as each stage lands. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the
+> rationale behind each stage.
 
 Numbered, resumable scripts under `scripts/`, mirroring the materials pipeline. Every stage is
 idempotent/resume-safe — outputs are guarded by existence checks, so re-running fills gaps only.
 
 | Stage | Script | Role |
 |---|---|---|
-| 01 | `01_fetch_proteins.py` | Pull a non-redundant protein set with known structure (CATH / PDB cull / AlphaFold DB) + per-residue and per-chain labels → `index.jsonl` manifest |
+| 01 ✅ | `01_fetch_proteins.py` | Non-redundant protein chains from **CATH** (one per S35 cluster) + structure from the RCSB PDB; computes sequence, backbone N/CA/C/O coords, per-residue 3-state SSE + relative SASA, and per-chain CATH C/A/T/H — all via **biotite** (no external DSSP). Writes `proteins/<id>.npz` + `index.jsonl` |
 | 02a | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue + attention extraction → `.pt` |
 | 02b | `02_extract_embeddings_struct.py` | ESM-IF1 / ProteinMPNN all-layer per-residue extraction → `.pt` |
 | 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP + k-NN purity + LVR (per-residue and pooled) |
@@ -174,7 +175,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 Typical run (from the repo root, environment active):
 
 ```bash
-uv run python scripts/01_fetch_proteins.py        --structures-dir /ssc/structures
+uv run python scripts/01_fetch_proteins.py        --structures-dir /ssc/structures --limit 5000
 uv run python scripts/02_extract_embeddings_esm.py --structures-dir /ssc/structures --results-dir /ssc/results/esm
 uv run python scripts/02_extract_embeddings_struct.py --structures-dir /ssc/structures --results-dir /ssc/results/esmif1
 uv run python scripts/03_analyze_embeddings.py    --results-dir /ssc/results
@@ -184,9 +185,13 @@ uv run python scripts/05_property_prediction.py   --results-dir /ssc/results
 
 ### Testing on a small subset
 
-Start with a ~5 k-protein subset (e.g. CATH-S40) and small models (`esm2_t12_35M`, ProteinMPNN)
-to validate the full pipeline before scaling — mirroring the materials project's test-subset
-workflow.
+Start with a small subset and small models (`esm2_t12_35M`, ProteinMPNN) to validate the full
+pipeline before scaling — mirroring the materials project's test-subset workflow. Stage 01 takes a
+`--limit`, e.g. a 6-chain smoke test:
+
+```bash
+uv run python scripts/01_fetch_proteins.py --structures-dir structures_test --limit 6
+```
 
 ---
 
