@@ -24,6 +24,7 @@ dependencies = [
     "rich>=13.7",
     "jupyter>=1.1",
     "notebook>=7.2",
+    "matplotlib>=3.11.0",
 ]
 
 # NOTE: the structure arm (ESM-IF1 / ProteinMPNN) needs extra geometry deps
