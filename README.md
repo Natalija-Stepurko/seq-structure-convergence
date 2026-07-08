@@ -106,7 +106,8 @@ Run everything through the environment with `uv run …` (e.g. `uv run python sc
 > ```bash
 > export UV_PROJECT_ENVIRONMENT=/big-disk/.venv-ssc   # venv off the root disk
 > export UV_CACHE_DIR=/big-disk/.uv-cache             # uv download cache
-> export HF_HOME=/big-disk/.hf-cache                  # model weights
+> export HF_HOME=/big-disk/.hf-cache                  # HuggingFace weights (transformers)
+> export TORCH_HOME=/big-disk/.torch-hub              # torch.hub weights (fair-esm: ESM-2/ESM-IF1)
 > ```
 
 ### 4. Model weights
@@ -115,8 +116,12 @@ Both models are **public — no token or license acceptance required** (unlike t
 project's HF-gated UMA weights):
 
 - **ESM-2** (`esm2_t33_650M_UR50D`, and `esm2_t12_35M_UR50D` for fast iteration) and **ESM-IF1**
-  (`esm_if1_gvp4_t16_142M_UR50`) download automatically on first use via `fair-esm` /
-  `torch.hub` into `HF_HOME` (or the default torch hub cache).
+  (`esm_if1_gvp4_t16_142M_UR50`) download automatically on first use via `fair-esm`, which uses
+  **`torch.hub`** — so set **`TORCH_HOME`** to a large disk (not the default `~/.cache/torch` on a
+  small root partition; the 650M weights are ~2.5 GB):
+  ```bash
+  export TORCH_HOME=/scratch/.torch-hub
+  ```
 - **ProteinMPNN** weights ship with its repository.
 
 ### 5. Structure-arm extra dependencies (added when stage 02b lands)
@@ -156,7 +161,7 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 ## Pipeline
 
 > **Status:** the environment and design are in place; the numbered scripts are being implemented.
-> **Stage 01 is implemented**; 02–06 are being built. This section documents the interface and is
+> **Stages 01 and 02a (ESM-2) are implemented**; 02b–06 are being built. This section documents the interface and is
 > kept in sync as each stage lands. See [`paper/PROJECT_PLAN.md`](paper/PROJECT_PLAN.md) for the
 > rationale behind each stage.
 
@@ -166,7 +171,7 @@ idempotent/resume-safe — outputs are guarded by existence checks, so re-runnin
 | Stage | Script | Role |
 |---|---|---|
 | 01 ✅ | `01_fetch_proteins.py` | Non-redundant protein chains from **CATH** (one per S35 cluster) + structure from the RCSB PDB; computes sequence, backbone N/CA/C/O coords, per-residue 3-state SSE + relative SASA, and per-chain CATH C/A/T/H — all via **biotite** (no external DSSP). Writes `proteins/<id>.npz` + `index.jsonl` |
-| 02a | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue + attention extraction → `.pt` |
+| 02a ✅ | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue embeddings (embedding + each block) → `<id>.pt` (fp16); optional predicted contact map. Weights via `torch.hub` (`TORCH_HOME`) |
 | 02b | `02_extract_embeddings_struct.py` | ESM-IF1 / ProteinMPNN all-layer per-residue extraction → `.pt` |
 | 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP + k-NN purity + LVR (per-residue and pooled) |
 | 04 | `04_convergence.py` | **CKA / SVCCA / mutual-kNN between the two models, layer × layer**; embedding-health geometry; HDBSCAN |
@@ -222,7 +227,8 @@ on (an Azure CPU VM) is configured as:
   ```bash
   export UV_PROJECT_ENVIRONMENT=/scratch/.venv-ssc   # dedicated venv (do NOT share the materials /scratch/.venv)
   export UV_CACHE_DIR=/scratch/.uv-cache
-  export HF_HOME=/scratch/.hf-cache
+  export HF_HOME=/scratch/.hf-cache                   # HuggingFace (transformers) weights
+  export TORCH_HOME=/scratch/.torch-hub               # torch.hub (fair-esm) weights — ESM-2 / ESM-IF1
   export TORCHDYNAMO_DISABLE=1                        # avoids TorchDynamo compile errors on this CPU setup
   ```
   See [`CLAUDE.md`](CLAUDE.md) for the venv-isolation rationale.

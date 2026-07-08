@@ -23,8 +23,11 @@ overriding it would install this project's dependencies into that venv.
 export UV_PROJECT_ENVIRONMENT=/scratch/.venv-ssc   # this project's own venv
 ```
 
-`UV_CACHE_DIR` (`/scratch/.uv-cache`) and `HF_HOME` (`/scratch/.hf-cache`) can stay
-shared — they are keyed by package/model name and will not collide.
+`UV_CACHE_DIR` (`/scratch/.uv-cache`), `HF_HOME` (`/scratch/.hf-cache`) and
+`TORCH_HOME` (`/scratch/.torch-hub`, where fair-esm/ESM weights land) can stay
+shared — they are keyed by package/model name and will not collide. **Set
+`TORCH_HOME` before extracting embeddings** or the ~2.5 GB ESM-2 650M weights land
+on the small root disk.
 
 ## Commands
 - Install: `uv add <package>`
