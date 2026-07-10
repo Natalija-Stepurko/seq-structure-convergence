@@ -49,6 +49,51 @@ def svcca(Xa: np.ndarray, Xb: np.ndarray, var: float = 0.99,
     return float(np.clip(s, 0, 1).mean())
 
 
+def knn_purity(X: np.ndarray, labels: np.ndarray, k: int = 15,
+               max_rows: int = 20000, seed: int = 42) -> float:
+    """Chance-corrected k-NN label purity: mean fraction of same-label neighbours,
+    rescaled so 0 = chance (sum of squared class frequencies) and 1 = perfect."""
+    from sklearn.neighbors import NearestNeighbors
+
+    rng = np.random.default_rng(seed)
+    labels = np.asarray(labels)
+    n = X.shape[0]
+    if n > max_rows and max_rows > 0:
+        idx = rng.choice(n, max_rows, replace=False)
+        X, labels = X[idx], labels[idx]
+        n = max_rows
+    k = min(k, n - 1)
+    nn = NearestNeighbors(n_neighbors=k + 1).fit(X)
+    neigh = nn.kneighbors(return_distance=False)[:, 1:]
+    same = (labels[neigh] == labels[:, None]).mean()
+    _, counts = np.unique(labels, return_counts=True)
+    chance = float(((counts / counts.sum()) ** 2).sum())
+    return float((same - chance) / (1 - chance)) if chance < 1 else float("nan")
+
+
+def lvr(X: np.ndarray, y: np.ndarray, k: int = 15,
+        max_rows: int = 20000, seed: int = 42) -> float:
+    """Local variance ratio for a continuous target: mean within-neighbourhood variance
+    of y divided by its global variance (lower = better local organisation)."""
+    from sklearn.neighbors import NearestNeighbors
+
+    rng = np.random.default_rng(seed)
+    y = np.asarray(y, dtype=np.float64)
+    ok = np.isfinite(y)
+    X, y = X[ok], y[ok]
+    n = X.shape[0]
+    if n > max_rows and max_rows > 0:
+        idx = rng.choice(n, max_rows, replace=False)
+        X, y = X[idx], y[idx]
+        n = max_rows
+    k = min(k, n - 1)
+    nn = NearestNeighbors(n_neighbors=k + 1).fit(X)
+    neigh = nn.kneighbors(return_distance=False)[:, 1:]
+    local_var = y[neigh].var(axis=1).mean()
+    global_var = y.var()
+    return float(local_var / global_var) if global_var > 0 else float("nan")
+
+
 def mutual_knn(X: np.ndarray, Y: np.ndarray, k: int = 10,
                max_rows: int = 4000, seed: int = 42) -> float:
     """Mutual k-NN alignment (Huh et al. 2024): mean fraction of shared neighbours
