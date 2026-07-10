@@ -53,6 +53,36 @@ LOC_BUCKETS = [  # (substring to match in the location text, bucket label) — f
 ]
 KINGDOMS = ("Bacteria", "Archaea", "Eukaryota", "Viruses")
 
+# Organism-agnostic functional "protein classes" from UniProt keywords (unlike the
+# human-gene-centric Human Protein Atlas classes). Binary one-vs-rest flags:
+KW_FLAGS = {
+    "is_transport": ["Transport"],
+    "is_dna_binding": ["DNA-binding"],
+    "is_rna_binding": ["RNA-binding"],
+    "is_kinase": ["Kinase"],
+    "is_ribosomal": ["Ribosomal protein", "Ribonucleoprotein"],
+    "is_metal_binding": ["Metal-binding"],
+    "is_membrane_protein": ["Transmembrane"],
+    "is_structural": ["Cytoskeleton", "Structural protein", "Muscle protein",
+                      "Intermediate filament", "Keratin", "Actin-binding"],
+    "is_immune": ["Immunity", "Innate immunity", "Adaptive immunity", "Immunoglobulin domain",
+                  "Antimicrobial", "Complement pathway", "MHC", "Inflammatory response"],
+}
+# Single dominant class (priority order; enzyme EC as fallback):
+PROTEIN_CLASS_PRIORITY = [
+    ("gpcr", ["G-protein coupled receptor"]),
+    ("ion_channel", ["Ion channel"]),
+    ("receptor", ["Receptor"]),
+    ("immune", KW_FLAGS["is_immune"]),
+    ("structural", KW_FLAGS["is_structural"]),
+    ("ribosomal", KW_FLAGS["is_ribosomal"]),
+    ("chaperone", ["Chaperone"]),
+    ("kinase", ["Kinase"]),
+    ("dna_binding", ["DNA-binding"]),
+    ("rna_binding", ["RNA-binding"]),
+    ("transport", ["Transport"]),
+]
+
 
 def _download_sifts(cache: Path) -> Path:
     if cache.exists() and cache.stat().st_size > 0:
@@ -112,12 +142,17 @@ def _parse_uniprot_tsv(tsv: str) -> dict:
         mod = c[idx.get("Modified residue", -1)] if "Modified residue" in idx else ""
         carb = c[idx.get("Glycosylation", -1)] if "Glycosylation" in idx else ""
         n_ptm = mod.count("MOD_RES") + carb.count("CARBOHYD")
-        out[acc] = {
+        rec = {
             "uniprot": acc, "ec_class": ec_class, "enzyme": int(ec_class > 0),
             "localisation": loc, "kingdom": kingdom, "pfam": pfam,
             "is_phospho": int("Phosphoprotein" in kw), "is_glyco": int("Glycoprotein" in kw),
             "n_ptm": n_ptm,
         }
+        for fname, subs in KW_FLAGS.items():
+            rec[fname] = int(any(s in kw for s in subs))
+        pc = next((lab for lab, subs in PROTEIN_CLASS_PRIORITY if any(s in kw for s in subs)), None)
+        rec["protein_class"] = pc or (f"enzyme_ec{ec_class}" if ec_class > 0 else "other")
+        out[acc] = rec
     return out
 
 
