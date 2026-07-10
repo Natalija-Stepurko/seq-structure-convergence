@@ -100,9 +100,10 @@ def _load_labels(structures_dir: Path):
     return manifest, annot
 
 
-def _collect(ids, res_dir, prot_dir, manifest, annot, max_chains, per_chain, seed):
+def _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, max_chains, per_chain, seed):
     rng = np.random.default_rng(seed)
     res_emb, ss3, burial, rsa, grp = [], [], [], [], []
+    bfactor, binding, active, ptm = [], [], [], []
     pooled, comp = [], []
     chain_lab = {name: [] for name, _, _ in CHAIN_TARGETS}
     g = 0
@@ -124,12 +125,33 @@ def _collect(ids, res_dir, prot_dir, manifest, annot, max_chains, per_chain, see
         for name, src, key in CHAIN_TARGETS:
             d = manifest[cid] if src == "manifest" else annot.get(cid, {})
             chain_lab[name].append(d.get(key, None))
-        idx = rng.choice(L, per_chain, replace=False) if L > per_chain else np.arange(L)
+        # per-residue intrinsic proxies (01c); missing file -> unlabelled
+        rt = restgt_dir / f"{cid}.npz"
+        t = np.load(rt) if rt.exists() else None
+        # sample per_chain residues, but force-include the sparse site-positive residues
+        force = np.array([], int)
+        if t is not None:
+            force = np.unique(np.concatenate([np.where(t[k] == 1)[0]
+                              for k in ("binding_site", "active_site", "ptm_site")]).astype(int))
+        pool = np.setdiff1d(np.arange(L), force)
+        n_rand = max(0, per_chain - len(force))
+        rand = rng.choice(pool, min(n_rand, len(pool)), replace=False)
+        idx = np.concatenate([force, rand]).astype(int)
         res_emb.append(E[:, idx, :])
         ss3.append(np.array([SS3_IDX.get(s, 2) for s in npz["ss3"][idx]]))
         r = npz["rsa"][idx].astype(np.float64)
         burial.append(np.where(np.isfinite(r), (r < BURIAL_RSA).astype(int), -1))
-        rsa.append(r); grp.append(np.full(len(idx), g)); g += 1
+        rsa.append(r)
+        if t is not None:
+            bfactor.append(t["bfactor"][idx].astype(np.float64))
+            binding.append(t["binding_site"][idx].astype(int))
+            active.append(t["active_site"][idx].astype(int))
+            ptm.append(t["ptm_site"][idx].astype(int))
+        else:
+            bfactor.append(np.full(len(idx), np.nan))
+            binding.append(np.full(len(idx), -1)); active.append(np.full(len(idx), -1))
+            ptm.append(np.full(len(idx), -1))
+        grp.append(np.full(len(idx), g)); g += 1
         if g >= max_chains:
             break
     if g < 12:
@@ -138,20 +160,27 @@ def _collect(ids, res_dir, prot_dir, manifest, annot, max_chains, per_chain, see
         "res_emb": np.concatenate(res_emb, axis=1),
         "ss3": np.concatenate(ss3), "burial": np.concatenate(burial),
         "rsa": np.concatenate(rsa), "grp": np.concatenate(grp),
+        "bfactor": np.concatenate(bfactor), "binding_site": np.concatenate(binding),
+        "active_site": np.concatenate(active), "ptm_site": np.concatenate(ptm),
         "pooled": np.stack(pooled, axis=1),
         "chain_lab": {k: np.array(v, dtype=object) for k, v in chain_lab.items()},
         "comp": np.array(comp), "n_chains": g,
     }
 
 
-def _clf(Xtr, ytr, Xte, yte, linear=True):
+def _clf(Xtr, ytr, Xte, yte, linear=True, balanced=False):
     if linear:
         sc = StandardScaler().fit(Xtr)
-        m = LogisticRegression(max_iter=300).fit(sc.transform(Xtr), ytr)
+        m = LogisticRegression(max_iter=300,
+                               class_weight="balanced" if balanced else None
+                               ).fit(sc.transform(Xtr), ytr)
         pred = m.predict(sc.transform(Xte))
     else:
+        spw = 1.0
+        if balanced and set(np.unique(ytr)) <= {0, 1}:
+            pos = int(np.sum(ytr)); spw = max(1.0, (len(ytr) - pos) / max(1, pos))
         m = XGBClassifier(n_estimators=80, max_depth=4, tree_method="hist",
-                          n_jobs=4, verbosity=0).fit(Xtr, ytr)
+                          n_jobs=4, verbosity=0, scale_pos_weight=spw).fit(Xtr, ytr)
         pred = m.predict(Xte)
     return accuracy_score(yte, pred), f1_score(yte, pred, average="macro")
 
@@ -180,13 +209,14 @@ def main() -> None:
 
     res_dir = Path(args.results_dir)
     prot_dir = Path(args.structures_dir) / "proteins"
+    restgt_dir = Path(args.structures_dir) / "residue_targets"
     out_dir = Path(args.out_dir) / args.model_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     manifest, annot = _load_labels(Path(args.structures_dir))
     ids = list(manifest.keys())
     print(f"[{args.model_name}] {len(annot):,} chains have UniProt annotations; collecting ...")
-    D = _collect(ids, res_dir, prot_dir, manifest, annot, args.max_chains,
+    D = _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, args.max_chains,
                  args.per_chain, args.seed)
     n_layers = D["res_emb"].shape[0]; C = D["n_chains"]
     print(f"  {C:,} chains, {D['res_emb'].shape[1]:,} residues, {n_layers} layers")
@@ -200,26 +230,43 @@ def main() -> None:
     if args.model_name.startswith("proteinmpnn"):
         labels = [f"enc{i+1}" for i in range(n_layers)]
 
-    # ---- residue-level probes ----
+    # ---- residue-level probes (all intrinsic per-residue targets on the common set) ----
+    # (name, kind, mask): kind in {clf (multiclass, acc), clfbin (imbalanced binary, acc+f1),
+    #                              reg (R^2)}; mask picks labelled residues.
+    res_targets = [
+        ("ss3", "clf", np.ones(len(D["grp"]), bool)),
+        ("burial", "clf", D["burial"] >= 0),
+        ("rsa", "reg", np.isfinite(D["rsa"])),
+        ("bfactor", "reg", np.isfinite(D["bfactor"])),
+        ("binding_site", "clfbin", D["binding_site"] >= 0),
+        ("active_site", "clfbin", D["active_site"] >= 0),
+        ("ptm_site", "clfbin", D["ptm_site"] >= 0),
+    ]
     rows = []
     for i in range(n_layers):
-        Xr = D["res_emb"][i]; b = D["burial"] >= 0
+        Xr = D["res_emb"][i]
         row = {"layer": labels[i]}
-        (row["ss3_lin_acc"], _) = _clf(Xr[~res_test], D["ss3"][~res_test],
-                                       Xr[res_test], D["ss3"][res_test], linear=True)
-        (row["ss3_xgb_acc"], _) = _clf(Xr[~res_test], D["ss3"][~res_test],
-                                       Xr[res_test], D["ss3"][res_test], linear=False)
-        trb = b & ~res_test; teb = b & res_test
-        (row["burial_lin_acc"], _) = _clf(Xr[trb], D["burial"][trb], Xr[teb], D["burial"][teb], True)
-        (row["burial_xgb_acc"], _) = _clf(Xr[trb], D["burial"][trb], Xr[teb], D["burial"][teb], False)
-        fr = np.isfinite(D["rsa"])
-        row["rsa_lin_r2"] = _reg(Xr[fr & ~res_test], D["rsa"][fr & ~res_test],
-                                 Xr[fr & res_test], D["rsa"][fr & res_test], True)
-        row["rsa_xgb_r2"] = _reg(Xr[fr & ~res_test], D["rsa"][fr & ~res_test],
-                                 Xr[fr & res_test], D["rsa"][fr & res_test], False)
-        rows.append({k: (round(v, 4) if isinstance(v, float) else v) for k, v in row.items()})
+        for name, kind, mask in res_targets:
+            tr = mask & ~res_test; te = mask & res_test
+            if te.sum() < 10 or (kind != "reg" and len(np.unique(D[name][tr])) < 2):
+                continue
+            y = D[name]
+            if kind == "reg":
+                row[f"{name}_lin_r2"] = round(_reg(Xr[tr], y[tr], Xr[te], y[te], True), 4)
+                row[f"{name}_xgb_r2"] = round(_reg(Xr[tr], y[tr], Xr[te], y[te], False), 4)
+            else:
+                bal = kind == "clfbin"
+                la, lf = _clf(Xr[tr], y[tr], Xr[te], y[te], linear=True, balanced=bal)
+                xa, xf = _clf(Xr[tr], y[tr], Xr[te], y[te], linear=False, balanced=bal)
+                row[f"{name}_lin_acc"] = round(la, 4); row[f"{name}_xgb_acc"] = round(xa, 4)
+                if bal:  # sparse sites: F1 is the honest metric
+                    row[f"{name}_lin_f1"] = round(lf, 4); row[f"{name}_xgb_f1"] = round(xf, 4)
+        rows.append(row)
+    # union of keys (some targets may be absent on early layers)
+    cols = ["layer"] + [k for k in rows[-1] if k != "layer"]
     with (out_dir / "metrics.csv").open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+        w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
+        w.writeheader(); w.writerows(rows)
 
     # ---- chain-level probes (structural + annotations) ----
     chain_rows = []
@@ -333,18 +380,24 @@ def _learning_curve(D, ch_test, chain_rows, labels, model_name, seed, out_png):
 
 
 def _plot_residue(rows, labels, model_name, out_png):
+    """One XGB curve per residue target vs depth (sites shown by macro-F1, others by acc/R²)."""
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
     x = range(len(labels))
-    fig, ax = plt.subplots(figsize=(11, 5.5))
-    for base in ["ss3", "burial", "rsa"]:
-        suf = "acc" if base != "rsa" else "r2"
-        ax.plot(x, [r[f"{base}_xgb_{suf}"] for r in rows], "o-", label=f"{base} (XGB)")
-        ax.plot(x, [r[f"{base}_lin_{suf}"] for r in rows], "--", alpha=0.5,
-                color=ax.lines[-1].get_color(), label=f"{base} (linear)")
+    # pick, per base target, the metric column that exists (prefer f1 for sites, then acc, then r2)
+    bases = ["ss3", "burial", "rsa", "bfactor", "binding_site", "active_site", "ptm_site"]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for base in bases:
+        for suf in ("f1", "acc", "r2"):
+            col = f"{base}_xgb_{suf}"
+            if any(col in r for r in rows):
+                ys = [r.get(col, np.nan) for r in rows]
+                ax.plot(x, ys, "o-", label=f"{base} ({suf})")
+                break
     ax.set_xticks(list(x)); ax.set_xticklabels(labels, rotation=45, ha="right")
-    ax.set_xlabel("layer"); ax.set_ylabel("accuracy / R²")
-    ax.set_title(f"{model_name}: residue-level probes vs depth"); ax.legend(fontsize=8, ncol=3)
-    ax.grid(alpha=0.3); fig.tight_layout(); fig.savefig(out_png, dpi=140); plt.close(fig)
+    ax.set_xlabel("layer"); ax.set_ylabel("XGB score (acc / macro-F1 / R²)")
+    ax.set_title(f"{model_name}: residue-level intrinsic properties vs depth")
+    ax.legend(fontsize=8, ncol=3); ax.grid(alpha=0.3)
+    fig.tight_layout(); fig.savefig(out_png, dpi=140); plt.close(fig)
 
 
 def _plot_chain_best(chain_rows, model_name, out_png):
