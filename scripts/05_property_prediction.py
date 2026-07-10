@@ -78,6 +78,7 @@ CHAIN_TARGETS = [
     ("is_glyco", "annot", "is_glyco"),
 ]
 MIN_CLASS_COUNT = 40   # drop chains in classes rarer than this before probing a target
+MAX_CLASSES = 12       # cap high-cardinality targets to top classes (bounds XGB multiclass cost)
 # label values that mean "no annotation" and must be excluded from a target's probe
 EXCLUDE_VALUES = {"localisation": {"unknown", "other"}, "kingdom": {"other"}}
 
@@ -149,7 +150,7 @@ def _clf(Xtr, ytr, Xte, yte, linear=True):
         m = LogisticRegression(max_iter=300).fit(sc.transform(Xtr), ytr)
         pred = m.predict(sc.transform(Xte))
     else:
-        m = XGBClassifier(n_estimators=120, max_depth=4, tree_method="hist",
+        m = XGBClassifier(n_estimators=80, max_depth=4, tree_method="hist",
                           n_jobs=4, verbosity=0).fit(Xtr, ytr)
         pred = m.predict(Xte)
     return accuracy_score(yte, pred), f1_score(yte, pred, average="macro")
@@ -160,7 +161,7 @@ def _reg(Xtr, ytr, Xte, yte, linear=True):
         sc = StandardScaler().fit(Xtr)
         m = Ridge(alpha=10.0).fit(sc.transform(Xtr), ytr)
         return r2_score(yte, m.predict(sc.transform(Xte)))
-    m = XGBRegressor(n_estimators=120, max_depth=4, tree_method="hist",
+    m = XGBRegressor(n_estimators=80, max_depth=4, tree_method="hist",
                      n_jobs=4, verbosity=0).fit(Xtr, ytr)
     return r2_score(yte, m.predict(Xte))
 
@@ -230,7 +231,10 @@ def main() -> None:
             print(f"  [skip {name}] only {have.sum()} labelled chains"); continue
         yv = y_raw[have]
         vals, counts = np.unique(yv.astype(str), return_counts=True)
-        keep_classes = set(vals[counts >= MIN_CLASS_COUNT])
+        ok = counts >= MIN_CLASS_COUNT
+        vals, counts = vals[ok], counts[ok]
+        # keep only the top-MAX_CLASSES most frequent classes (bounds multiclass XGB cost)
+        keep_classes = set(vals[np.argsort(-counts)][:MAX_CLASSES])
         keep = have & np.array([str(v) in keep_classes for v in y_raw])
         if len(keep_classes) < 2 or keep.sum() < 60:
             print(f"  [skip {name}] <2 classes with >= {MIN_CLASS_COUNT} support"); continue
