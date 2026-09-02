@@ -1,0 +1,48 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.venv-ssc
+
+# Saved embedding tensors, downloaded structures, and results
+results/
+structures/
+data/
+
+# Local test directories (safe to delete at any time)
+results_test/
+structures_test/
+
+# Model weight caches (should live under HF_HOME on /scratch, never in-repo)
+*.pt
+*.ckpt
+
+# API keys / tokens -- never commit
+api_keys.py
+notebooks/api_keys.py
+*.token
+
+# Per-environment data symlinks created for the notebooks
+notebooks/results
+notebooks/structures
+
+# Jupyter auto-save checkpoints
+.ipynb_checkpoints/
+
+# Claude Code worktrees
+.claude/
+
+# Entire paper/ folder -- private literature/design working notes, never tracked
+paper/
+
+# Note: research/ is intentionally PUBLIC -- it holds the literature reviews.
+# paper/ above stays private (manuscript in progress).
+
+# Local agent config -- machine-specific, references co-located projects
+CLAUDE.md
