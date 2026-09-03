@@ -1,29 +1,27 @@
-"""
-04_convergence.py — cross-model representational convergence (the study's core).
+r"""
+04_convergence.py -- Between-model similarity and every control that makes it interpretable.
 
-Measures whether the sequence model (ESM-2) and the structure model (ProteinMPNN)
-organise protein space the same way, layer by layer, on the *same residues*. For every
-(ESM-2 layer i, structure layer j) pair it computes three representational-similarity
-metrics and a permutation baseline:
+Subcommands (each keeps the exact flags it had as a standalone script):
 
-    - linear CKA          (feature-space)
-    - SVCCA               (subspace canonical correlation)
-    - mutual k-NN         (Platonic-hypothesis neighbour agreement; Huh et al. 2024)
+    grids            layer x layer CKA/SVCCA/mutual-kNN + permutation null
+    supervised       Cohen's kappa between the models' probe predictions
+    significance     resampled CIs and empirical p-value for the peak
+    svcca-controls   SVCCA permutation null and dimension matching
+    functional       per-property convergence grids for annotation labels
 
-The two models are trained on opposite signals (masked-LM sequence vs. structure->sequence)
-and have different architectures, so above-baseline similarity is evidence of a shared,
-modality-independent representation. Residues are aligned by construction: both .pt files
-for a chain share the same residue order (from the stage-01 npz).
+The subcommand token is removed from argv before the original parser runs, so every command
+line that worked before still works, with the subcommand inserted after the script name:
 
-Outputs (under --out-dir, default results/convergence):
-    grids.npz            cka/svcca/mutual_knn [n_esm, n_struct] + permuted-CKA baseline
-    convergence.png      the three heatmaps + peak-alignment summary
-    summary.txt          peak (layer_esm, layer_struct) per metric, baseline
+    uv run python scripts/04_convergence.py grids --help
 
-Usage:
-    uv run python scripts/04_convergence.py \\
-        --esm-dir /ssc/results/esm --struct-dir /ssc/results/proteinmpnn \\
-        --structures-dir /ssc/structures --out-dir /ssc/results/convergence
+Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+
+Merged from:
+    grids            was 04_convergence.py
+    supervised       was 04b_supervised_convergence.py
+    significance     was 06_significance.py
+    svcca-controls   was 10_svcca_controls.py
+    functional       was 14_functional_grids.py
 """
 
 import argparse
@@ -31,19 +29,34 @@ import json
 import sys
 import time
 from pathlib import Path
-
 import numpy as np
 import torch
+import qc_common as qc
+from sklearn.metrics import accuracy_score, cohen_kappa_score
+from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
+from collections import Counter
+import csv
+from sklearn.decomposition import PCA
+import argparse, json, warnings
+import numpy as np, torch
+from sklearn.linear_model import Ridge
+from sklearn.metrics import r2_score
+
+
+
+
+
+# ======================================================================================
+# grids  --  from 04_convergence.py
+# ======================================================================================
 
 sys.path.insert(0, str(Path(__file__).parent))
-import qc_common as qc
-
 
 def _load_layers(pt_path: Path) -> np.ndarray:
     """Return [n_reps, L, D] float32."""
     d = torch.load(pt_path, weights_only=False)
     return d["layers"].to(torch.float32).numpy()
-
 
 def _collect_aligned(ids, esm_dir, struct_dir, prot_dir, max_residues, seed):
     """Build residue-aligned per-layer matrices for both models over a residue budget."""
@@ -77,7 +90,6 @@ def _collect_aligned(ids, esm_dir, struct_dir, prot_dir, max_residues, seed):
     print(f"  aligned residues: N={esm_all.shape[1]:,} from {used:,} chains")
     return esm_all, st_all
 
-
 def _grids(esm_all, st_all, seed):
     nE, nS = esm_all.shape[0], st_all.shape[0]
     # center once per layer for CKA
@@ -96,8 +108,7 @@ def _grids(esm_all, st_all, seed):
             cka_perm[i, j] = qc.linear_cka(esm_c[i], st_c[j][perm])
     return {"cka": cka, "svcca": svc, "mutual_knn": mkn, "cka_permuted": cka_perm}
 
-
-def _plot(grids, esm_labels, st_labels, out_png):
+def _plot_grids(grids, esm_labels, st_labels, out_png):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -124,8 +135,7 @@ def _plot(grids, esm_labels, st_labels, out_png):
     fig.savefig(out_png, dpi=140)
     plt.close(fig)
 
-
-def main() -> None:
+def _main_grids() -> None:
     ap = argparse.ArgumentParser(description="Cross-model convergence grids")
     ap.add_argument("--esm-dir", default="results/esm")
     ap.add_argument("--struct-dir", default="results/proteinmpnn")
@@ -137,6 +147,7 @@ def main() -> None:
 
     esm_dir, struct_dir = Path(args.esm_dir), Path(args.struct_dir)
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     prot_dir = Path(args.structures_dir) / "proteins"
 
     manifest = Path(args.structures_dir) / "index.jsonl"
@@ -149,13 +160,19 @@ def main() -> None:
     esm_all, st_all = _collect_aligned(ids, esm_dir, struct_dir, prot_dir,
                                        args.max_residues, args.seed)
     grids = _grids(esm_all, st_all, args.seed)
+    # Re-record now that the realised sample is known: `--max-residues` is a *budget*, and the
+    # number actually aligned can fall short of it. Comparing convergence values computed on
+    # different realised samples is not valid, so the realised figure is what must be pinned.
+    qc.record_params(out_dir, args, extra={"n_residues_used": int(esm_all.shape[1]),
+                                           "n_esm_layers": int(esm_all.shape[0]),
+                                           "n_struct_layers": int(st_all.shape[0])})
 
     nE, nS = esm_all.shape[0], st_all.shape[0]
     esm_labels = ["emb"] + [f"b{i}" for i in range(1, nE)]
     st_labels = [f"enc{j+1}" for j in range(nS)]
 
     np.savez(out_dir / "grids.npz", esm_labels=esm_labels, st_labels=st_labels, **grids)
-    _plot(grids, esm_labels, st_labels, out_dir / "convergence.png")
+    _plot_grids(grids, esm_labels, st_labels, out_dir / "convergence.png")
 
     # summary
     lines = [f"Sequence↔structure convergence  (N residues budget {args.max_residues:,})",
@@ -168,6 +185,517 @@ def main() -> None:
     (out_dir / "summary.txt").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
     print(f"\nDone in {(time.time()-t0)/60:.1f} min -> {out_dir}")
+
+# ======================================================================================
+# supervised  --  from 04b_supervised_convergence.py
+# ======================================================================================
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+SS3_IDX = {"a": 0, "b": 1, "c": 2}
+
+MAX_CLASSES = 12
+
+TARGETS = [
+    ("binding_site", "residue", "restgt", "binding_site"),
+    ("ss3", "residue", "npz", "ss3"),
+    ("enzyme", "chain", "annot", "enzyme"),
+    ("cath_class", "chain", "manifest", "cath_class"),
+]
+
+def _layers(pt):
+    return torch.load(pt, weights_only=False)["layers"].to(torch.float32).numpy()
+
+def _collect(ids, esm_dir, struct_dir, sdir, max_chains, per_chain, seed):
+    rng = np.random.default_rng(seed)
+    prot, rest = sdir / "proteins", sdir / "residue_targets"
+    manifest = {json.loads(l)["id"]: json.loads(l) for l in (sdir / "index.jsonl").open() if l.strip()}
+    annot = {}
+    if (sdir / "annotations.jsonl").exists():
+        annot = {json.loads(l)["id"]: json.loads(l) for l in (sdir / "annotations.jsonl").open() if l.strip()}
+    E_res, S_res, E_pool, S_pool, grp = [], [], [], [], []
+    res_lab = {"binding_site": [], "ss3": []}
+    ch_lab = {"enzyme": [], "cath_class": []}
+    g = 0
+    for cid in ids:
+        pe, ps = esm_dir / f"{cid}.pt", struct_dir / f"{cid}.pt"
+        if not (pe.exists() and ps.exists()) or cid not in manifest:
+            continue
+        npz = np.load(prot / f"{cid}.npz", allow_pickle=True)
+        L = int(npz["ss3"].shape[0])
+        Ee, Es = _layers(pe), _layers(ps)
+        if Ee.shape[1] != L or Es.shape[1] != L:
+            continue
+        rt = np.load(rest / f"{cid}.npz") if (rest / f"{cid}.npz").exists() else None
+        # residue sample; force-include binding sites
+        force = np.where(rt["binding_site"] == 1)[0] if rt is not None else np.array([], int)
+        pool = np.setdiff1d(np.arange(L), force)
+        rand = rng.choice(pool, min(max(0, per_chain - len(force)), len(pool)), replace=False)
+        idx = np.concatenate([force, rand]).astype(int)
+        E_res.append(Ee[:, idx, :]); S_res.append(Es[:, idx, :])
+        res_lab["ss3"].append(np.array([SS3_IDX.get(s, 2) for s in npz["ss3"][idx]]))
+        res_lab["binding_site"].append(rt["binding_site"][idx].astype(int) if rt is not None
+                                       else np.full(len(idx), -1))
+        E_pool.append(Ee.mean(1)); S_pool.append(Es.mean(1))
+        ch_lab["enzyme"].append(annot.get(cid, {}).get("enzyme"))
+        ch_lab["cath_class"].append(manifest[cid].get("cath_class"))
+        grp.append(np.full(len(idx), g)); g += 1
+        if g >= max_chains:
+            break
+    if g < 20:
+        sys.exit("ERROR: too few chains with both models' embeddings.")
+    return {
+        "E_res": np.concatenate(E_res, 1), "S_res": np.concatenate(S_res, 1),
+        "E_pool": np.stack(E_pool, 1), "S_pool": np.stack(S_pool, 1),
+        "grp": np.concatenate(grp), "n_chains": g,
+        "res": {k: np.concatenate(v) for k, v in res_lab.items()},
+        "chain": {k: np.array(v, dtype=object) for k, v in ch_lab.items()},
+    }
+
+def _fit_predict(Xtr, ytr, Xte, balanced):
+    spw = 1.0
+    if balanced and set(np.unique(ytr)) <= {0, 1}:
+        pos = int(np.sum(ytr)); spw = max(1.0, (len(ytr) - pos) / max(1, pos))
+    m = XGBClassifier(n_estimators=80, max_depth=4, tree_method="hist", n_jobs=4,
+                      verbosity=0, scale_pos_weight=spw).fit(Xtr, ytr)
+    return m.predict(Xte)
+
+def _grid_for_target(Eemb, Semb, y, tr, te, balanced):
+    """Return kappa grid [n_esm, n_struct], plus each model's own accuracy per layer."""
+    ne, ns = Eemb.shape[0], Semb.shape[0]
+    pe = [_fit_predict(Eemb[i][tr], y[tr], Eemb[i][te], balanced) for i in range(ne)]
+    psr = [_fit_predict(Semb[j][tr], y[tr], Semb[j][te], balanced) for j in range(ns)]
+    acc_e = [accuracy_score(y[te], p) for p in pe]
+    acc_s = [accuracy_score(y[te], p) for p in psr]
+    K = np.array([[cohen_kappa_score(pe[i], psr[j]) for j in range(ns)] for i in range(ne)])
+    return K, acc_e, acc_s
+
+def _main_supervised() -> None:
+    ap = argparse.ArgumentParser(description="XGB model-to-model convergence")
+    ap.add_argument("--esm-dir", default="results/esm")
+    ap.add_argument("--struct-dir", default="results/proteinmpnn")
+    ap.add_argument("--structures-dir", default="structures")
+    ap.add_argument("--out-dir", default="results/convergence")
+    ap.add_argument("--max-chains", type=int, default=3000)
+    ap.add_argument("--per-chain", type=int, default=8)
+    ap.add_argument("--test-frac", type=float, default=0.25)
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    sdir = Path(args.structures_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    print(f"Collecting aligned ESM+struct embeddings over <= {args.max_chains} chains ...")
+    D = _collect(ids, Path(args.esm_dir), Path(args.struct_dir), sdir,
+                 args.max_chains, args.per_chain, args.seed)
+    C = D["n_chains"]
+    rng = np.random.default_rng(args.seed)
+    test_c = set(rng.choice(C, max(1, int(C * args.test_frac)), replace=False).tolist())
+    res_te = np.isin(D["grp"], list(test_c)); ch_te = np.array([c in test_c for c in range(C)])
+    ne, ns = D["E_res"].shape[0], D["S_res"].shape[0]
+    e_lab = ["emb"] + [f"L{i}" for i in range(1, ne)]
+    s_lab = [f"enc{j+1}" for j in range(ns)]
+
+    grids = {}
+    panels = []
+    for name, gran, src, key in TARGETS:
+        if gran == "residue":
+            y_all = D["res"][key]; Eemb, Semb = D["E_res"], D["S_res"]
+            mask = y_all >= 0 if key == "binding_site" else np.ones(len(y_all), bool)
+            tr = mask & ~res_te; te = mask & res_te
+            y = y_all
+        else:
+            y_raw = D["chain"][key]; Eemb, Semb = D["E_pool"], D["S_pool"]
+            have = np.array([v is not None for v in y_raw])
+            vals, cnt = np.unique(y_raw[have].astype(str), return_counts=True)
+            keep = set(vals[np.argsort(-cnt)][:MAX_CLASSES])
+            m = have & np.array([str(v) in keep for v in y_raw])
+            y = np.full(len(y_raw), -1)
+            y[m] = LabelEncoder().fit_transform(y_raw[m].astype(str))
+            tr = m & ~ch_te; te = m & ch_te
+        if te.sum() < 10 or len(np.unique(y[tr])) < 2:
+            print(f"  [skip {name}]"); continue
+        balanced = key in ("binding_site", "enzyme")
+        K, ae, as_ = _grid_for_target(Eemb, Semb, y, tr, te, balanced)
+        grids[name] = K
+        panels.append((name, K, ae, as_))
+        print(f"  {name}: peak κ={np.nanmax(K):.3f} at "
+              f"ESM {e_lab[np.unravel_index(np.nanargmax(K), K.shape)[0]]} × "
+              f"struct {s_lab[np.unravel_index(np.nanargmax(K), K.shape)[1]]}")
+
+
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
+    out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    np.savez(out_dir / "kappa_grids.npz", e_lab=e_lab, s_lab=s_lab, **grids)
+    _plot_supervised(panels, e_lab, s_lab, out_dir / "supervised_convergence.png")
+    print(f"-> {out_dir}/supervised_convergence.png")
+
+def _plot_supervised(panels, e_lab, s_lab, out_png):
+    import matplotlib; matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    n = len(panels)
+    fig, axes = plt.subplots(1, n, figsize=(3.2 * n + 1, 4.6), squeeze=False)
+    for ax, (name, K, ae, as_) in zip(axes[0], panels):
+        im = ax.imshow(K, vmin=0, vmax=max(0.2, float(np.nanmax(K))), cmap="magma", aspect="auto")
+        ax.set_xticks(range(len(s_lab)))
+        ax.set_xticklabels([f"{l}\n{a:.2f}" for l, a in zip(s_lab, as_)], fontsize=7)
+        ax.set_yticks(range(len(e_lab)))
+        ax.set_yticklabels([f"{l} {a:.2f}" for l, a in zip(e_lab, ae)], fontsize=6)
+        ax.set_xlabel("ProteinMPNN layer\n(struct; own acc)");
+        if ax is axes[0][0]:
+            ax.set_ylabel("ESM-2 layer (own acc)")
+        ax.set_title(f"{name}\ncross-model agreement (κ)", fontsize=9)
+        for a in range(K.shape[0]):
+            for b in range(K.shape[1]):
+                ax.text(b, a, f"{K[a,b]:.2f}", ha="center", va="center",
+                        color="white" if K[a, b] < 0.5 * np.nanmax(K) else "black", fontsize=6)
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    fig.suptitle("XGB model-to-model convergence — where ESM-2 & ProteinMPNN make the same prediction",
+                 fontsize=11)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.savefig(out_png, dpi=140); plt.close(fig)
+
+# ======================================================================================
+# significance  --  from 06_significance.py
+# ======================================================================================
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+def _one_repeat(ids, esm_dir, struct_dir, max_residues, rng):
+    esm_parts, st_parts, total = [], [], 0
+    order = list(ids); rng.shuffle(order)
+    for cid in order:
+        pe, ps = esm_dir / f"{cid}.pt", struct_dir / f"{cid}.pt"
+        if not (pe.exists() and ps.exists()):
+            continue
+        E, S = _layers(pe), _layers(ps)
+        if E.shape[1] != S.shape[1]:
+            continue
+        L = E.shape[1]
+        cap = max(1, min(L, max_residues // 50))
+        idx = rng.choice(L, cap, replace=False) if L > cap else np.arange(L)
+        esm_parts.append(E[:, idx, :]); st_parts.append(S[:, idx, :])
+        total += len(idx)
+        if total >= max_residues:
+            break
+    esm_all = np.concatenate(esm_parts, axis=1)
+    st_all = np.concatenate(st_parts, axis=1)
+    esm_c = [qc.column_center(esm_all[i]) for i in range(esm_all.shape[0])]
+    st_c = [qc.column_center(st_all[j]) for j in range(st_all.shape[0])]
+    perm = rng.permutation(esm_all.shape[1])
+    nE, nS = len(esm_c), len(st_c)
+    cka = np.empty((nE, nS)); ckap = np.empty((nE, nS))
+    for i in range(nE):
+        for j in range(nS):
+            cka[i, j] = qc.linear_cka(esm_c[i], st_c[j])
+            ckap[i, j] = qc.linear_cka(esm_c[i], st_c[j][perm])
+    ij = np.unravel_index(np.nanargmax(cka), cka.shape)
+    return float(np.nanmax(cka)), (int(ij[0]), int(ij[1])), float(np.nanmax(ckap))
+
+def _ci(x):
+    x = np.asarray(x)
+    return float(x.mean()), float(np.percentile(x, 2.5)), float(np.percentile(x, 97.5))
+
+def _main_significance() -> None:
+    ap = argparse.ArgumentParser(description="Convergence significance")
+    ap.add_argument("--esm-dir", default="results/esm")
+    ap.add_argument("--struct-dir", default="results/proteinmpnn")
+    ap.add_argument("--structures-dir", default="structures")
+    ap.add_argument("--out-dir", default="results/convergence/significance")
+    ap.add_argument("--repeats", type=int, default=25)
+    ap.add_argument("--max-residues", type=int, default=15000)
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
+    out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    ids = [json.loads(l)["id"] for l in (Path(args.structures_dir) / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+
+    peaks, peaks_perm, locs = [], [], []
+    for r in range(args.repeats):
+        rng = np.random.default_rng(args.seed + r)
+        pk, ij, pkp = _one_repeat(ids, Path(args.esm_dir), Path(args.struct_dir),
+                                  args.max_residues, rng)
+        peaks.append(pk); peaks_perm.append(pkp); locs.append(ij)
+        print(f"  repeat {r+1}/{args.repeats}: peak CKA={pk:.3f} at {ij}  perm={pkp:.3f}")
+
+    pm, plo, phi = _ci(peaks)
+    qm, qlo, qhi = _ci(peaks_perm)
+    modal, modal_n = Counter(locs).most_common(1)[0]
+    pval = float(np.mean(np.asarray(peaks) <= np.asarray(peaks_perm)))
+
+    lines = [
+        f"Convergence significance over {args.repeats} residue resamples "
+        f"(budget {args.max_residues:,})",
+        f"  peak CKA:        mean {pm:.3f}  95% CI [{plo:.3f}, {phi:.3f}]",
+        f"  permuted CKA:    mean {qm:.3f}  95% CI [{qlo:.3f}, {qhi:.3f}]",
+        f"  separation:      {pm - qm:.3f}",
+        f"  modal peak pair: ESM layer {modal[0]} × struct layer {modal[1]}  "
+        f"({modal_n}/{args.repeats} repeats)",
+        f"  empirical p (peak <= permuted): {pval:.3g}",
+    ]
+    (out_dir / "summary.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+    import matplotlib; matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.bar([0, 1], [pm, qm], yerr=[[pm - plo, qm - qlo], [phi - pm, qhi - qm]],
+           color=["tab:blue", "tab:gray"], capsize=6)
+    ax.set_xticks([0, 1]); ax.set_xticklabels(["real peak CKA", "permutation baseline"])
+    ax.set_ylabel("peak cross-model CKA")
+    ax.set_title(f"Convergence robustness ({args.repeats} resamples; p={pval:.2g})")
+    fig.tight_layout(); fig.savefig(out_dir / "significance.png", dpi=140); plt.close(fig)
+    print(f"-> {out_dir}")
+
+# ======================================================================================
+# svcca-controls  --  from 10_svcca_controls.py
+# ======================================================================================
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+def _collect_pair(ids, seq_dir, struct_dir, max_residues, per_chain, rng):
+    S, T, total = [], [], 0
+    for cid in ids:
+        ps, pt = seq_dir / f"{cid}.pt", struct_dir / f"{cid}.pt"
+        if not (ps.exists() and pt.exists()):
+            continue
+        A, B = _layers(ps), _layers(pt)
+        if A.shape[1] != B.shape[1]:
+            continue
+        L = A.shape[1]
+        idx = rng.choice(L, min(per_chain, L), replace=False)
+        S.append(A[:, idx, :]); T.append(B[:, idx, :]); total += len(idx)
+        if total >= max_residues:
+            break
+    if not S:
+        sys.exit("ERROR: no aligned chains for this pair.")
+    return np.concatenate(S, axis=1), np.concatenate(T, axis=1)
+
+def _peak_layers(Sa, Tb, seed):
+    """Find the (seq layer, struct layer) pair with max raw SVCCA."""
+    best = (-1, 0, 0)
+    for i in range(Sa.shape[0]):
+        for j in range(Tb.shape[0]):
+            v = qc.svcca(Sa[i], Tb[j], seed=seed)
+            if v > best[0]:
+                best = (v, i, j)
+    return best
+
+def _main_svccacontrols() -> None:
+    ap = argparse.ArgumentParser(description="SVCCA permutation + dimension-matched controls")
+    ap.add_argument("--structures-dir", default="structures")
+    ap.add_argument("--pairs", nargs="+", required=True, help="name=seq_embeddings_dir ...")
+    ap.add_argument("--struct-dir", required=True)
+    ap.add_argument("--struct-name", default="mpnn")
+    ap.add_argument("--out-dir", default="results/convergence_controls")
+    ap.add_argument("--max-residues", type=int, default=20000)
+    ap.add_argument("--per-chain", type=int, default=6)
+    ap.add_argument("--dims", nargs="+", type=int, default=[64, 128, 256])
+    ap.add_argument("--boot", type=int, default=8, help="residue resamples for CIs")
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    sdir = Path(args.structures_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    pairs = dict(p.split("=", 1) for p in args.pairs)
+
+    rows, lines = [], ["SVCCA controls — permutation null and dimension matching", ""]
+    for name, seq_dir in pairs.items():
+        rng = np.random.default_rng(args.seed)
+        Sa, Tb = _collect_pair(ids, Path(seq_dir), Path(args.struct_dir),
+                               args.max_residues, args.per_chain, rng)
+        raw, li, lj = _peak_layers(Sa, Tb, args.seed)
+        A, B = Sa[li], Tb[lj]
+        N = A.shape[1] if A.ndim > 1 else 0
+        print(f"[{name} × {args.struct_name}] peak raw SVCCA={raw:.3f} at seq layer {li}, "
+              f"struct layer {lj}; N={A.shape[0]:,} residues, dims {A.shape[1]}/{B.shape[1]}")
+        lines.append(f"[{name} × {args.struct_name}]  peak layers: seq {li}, struct {lj}; "
+                     f"dims {A.shape[1]}/{B.shape[1]}")
+
+        # C1: permutation null at native dimensionality
+        # SVCCA internally subsamples rows; varying its seed gives the spread of the estimate
+        perms = [qc.svcca(A, B[rng.permutation(B.shape[0])], seed=args.seed + b)
+                 for b in range(args.boot)]
+        raws = [qc.svcca(A, B, seed=args.seed + b) for b in range(args.boot)]
+        lines.append(f"  raw SVCCA          {np.mean(raws):.3f}  (permuted null {np.mean(perms):.3f} "
+                     f"[{np.min(perms):.3f}, {np.max(perms):.3f}])   gap {np.mean(raws)-np.mean(perms):+.3f}")
+        rows.append({"pair": name, "k": "native", "svcca": round(float(np.mean(raws)), 4),
+                     "svcca_perm": round(float(np.mean(perms)), 4),
+                     "gap": round(float(np.mean(raws) - np.mean(perms)), 4),
+                     "dim_seq": A.shape[1], "dim_struct": B.shape[1]})
+
+        # C2: dimension-matched — PCA both to the same k, then SVCCA (+ permutation null)
+        for k in args.dims:
+            kk = min(k, A.shape[1], B.shape[1], A.shape[0] - 1)
+            Ak = PCA(n_components=kk, random_state=args.seed).fit_transform(A)
+            Bk = PCA(n_components=kk, random_state=args.seed).fit_transform(B)
+            v = [qc.svcca(Ak, Bk, seed=args.seed + b) for b in range(args.boot)]
+            vp = [qc.svcca(Ak, Bk[rng.permutation(Bk.shape[0])], seed=args.seed + b)
+                  for b in range(args.boot)]
+            lines.append(f"  dim-matched k={kk:<4d}  {np.mean(v):.3f}  "
+                         f"(permuted {np.mean(vp):.3f})   gap {np.mean(v)-np.mean(vp):+.3f}")
+            rows.append({"pair": name, "k": kk, "svcca": round(float(np.mean(v)), 4),
+                         "svcca_perm": round(float(np.mean(vp)), 4),
+                         "gap": round(float(np.mean(v) - np.mean(vp)), 4),
+                         "dim_seq": A.shape[1], "dim_struct": B.shape[1]})
+            print(f"    k={kk}: svcca={np.mean(v):.3f} perm={np.mean(vp):.3f}")
+        lines.append("")
+
+
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
+    out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    with (out / "svcca_controls.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+    (out / "summary.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+    import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+    ks = [r["k"] for r in rows if r["pair"] == list(pairs)[0]]
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for name in pairs:
+        sub = [r for r in rows if r["pair"] == name]
+        x = range(len(sub))
+        ax.plot(x, [r["svcca"] for r in sub], "o-", label=f"{name} SVCCA")
+        ax.plot(x, [r["svcca_perm"] for r in sub], "s--", alpha=0.6, label=f"{name} permuted")
+    ax.set_xticks(range(len(ks))); ax.set_xticklabels([str(k) for k in ks])
+    ax.set_xlabel("PCA dimension (matched)"); ax.set_ylabel("SVCCA")
+    ax.set_title("SVCCA controls: permutation null and dimension matching")
+    ax.legend(fontsize=8); ax.grid(alpha=0.3)
+    fig.tight_layout(); fig.savefig(out / "svcca_controls.png", dpi=140); plt.close(fig)
+    print(f"-> {out}")
+
+# ======================================================================================
+# functional  --  from 14_functional_grids.py
+# ======================================================================================
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+warnings.filterwarnings("ignore")
+
+def _load(p): return torch.load(p, weights_only=False)["layers"].to(torch.float32).numpy()
+
+def _main_functional():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--esm-dir", default="/ssc/results/esm")
+    ap.add_argument("--struct-dir", default="/ssc/results/proteinmpnn")
+    ap.add_argument("--rand-struct-dir", default="/ssc/results/rand_mpnn")
+    ap.add_argument("--esm-model", default="esm2_t12_35M_UR50D")
+    ap.add_argument("--out-dir", default="/ssc/results/functional_grids")
+    ap.add_argument("--n-chains", type=int, default=150)
+    ap.add_argument("--per-chain", type=int, default=12)
+    ap.add_argument("--test-frac", type=float, default=0.3)
+    ap.add_argument("--alpha", type=float, default=10.0)
+    ap.add_argument("--seed", type=int, default=42)
+    a = ap.parse_args()
+
+    sdir = Path(a.structures_dir); prot = sdir / "proteins"
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    D = {"esm": Path(a.esm_dir), "str": Path(a.struct_dir), "rand": Path(a.rand_struct_dir)}
+    use = [c for c in ids if all((d / f"{c}.pt").exists() for d in D.values())][: a.n_chains]
+    rng = np.random.default_rng(a.seed)
+
+    # residue-aligned sample for the predictivity grids
+    E, S, R = [], [], []
+    for c in use:
+        L = int(np.load(prot / f"{c}.npz", allow_pickle=True)["ss3"].shape[0])
+        e, s, r = _load(D["esm"]/f"{c}.pt"), _load(D["str"]/f"{c}.pt"), _load(D["rand"]/f"{c}.pt")
+        if e.shape[1] != L or s.shape[1] != L: continue
+        i = rng.choice(L, min(a.per_chain, L), replace=False)
+        E.append(e[:, i, :]); S.append(s[:, i, :]); R.append(r[:, i, :])
+    E, S, R = np.concatenate(E,1), np.concatenate(S,1), np.concatenate(R,1)
+    n = E.shape[1]; te = np.zeros(n, bool); te[rng.choice(n, int(n*a.test_frac), replace=False)] = True
+    tr = ~te
+    print(f"{n:,} residues; ESM {E.shape[0]} layers, MPNN {S.shape[0]} layers")
+
+    ne, ns = E.shape[0], S.shape[0]
+    G_es = np.zeros((ne, ns)); G_se = np.zeros((ne, ns))
+    for i in range(ne):
+        for j in range(ns):
+            m = Ridge(alpha=a.alpha).fit(E[i][tr], S[j][tr])
+            G_es[i, j] = r2_score(S[j][te], m.predict(E[i][te]), multioutput="variance_weighted")
+            m2 = Ridge(alpha=a.alpha).fit(S[j][tr], E[i][tr])
+            G_se[i, j] = r2_score(E[i][te], m2.predict(S[i*0+j][te]*0 + S[j][te]),
+                                  multioutput="variance_weighted")
+        print(f"  esm L{i}: max R2 -> mpnn {G_es[i].max():.3f} | from mpnn {G_se[i].max():.3f}")
+
+    # stitching sweep: each MPNN layer -> ESM final-layer slot -> ESM lm_head
+    import esm as esmlib
+    mdl, alph = getattr(esmlib.pretrained, a.esm_model)(); mdl.eval()
+    tr_c = [c for k, c in enumerate(use) if k % 10 != 0]
+    te_c = [c for k, c in enumerate(use) if k % 10 == 0]
+    def st(cids, key, layer):
+        return np.concatenate([_load(D[key]/f"{c}.pt")[layer] for c in cids], 0)
+    stitch = {}
+    for key, lab in [("str", "ProteinMPNN"), ("rand", "untrained MPNN")]:
+        accs = []
+        for j in range(ns):
+            W = Ridge(alpha=a.alpha).fit(st(tr_c, key, j), st(tr_c, "esm", -1))
+            cor = tot = 0
+            for c in te_c:
+                seq = str(np.load(prot/f"{c}.npz", allow_pickle=True)["seq"])[:1022]
+                x = torch.from_numpy(W.predict(_load(D[key]/f"{c}.pt")[j][:len(seq)]).astype(np.float32))
+                with torch.no_grad(): lg = mdl.lm_head(x[None])[0]
+                tgt = torch.tensor([alph.get_idx(ch) for ch in seq])
+                cor += int((lg.argmax(-1) == tgt).sum()); tot += len(seq)
+            accs.append(cor/tot); print(f"  stitch {lab} enc{j+1} -> ESM lm_head: {cor/tot:.3f}")
+        stitch[lab] = accs
+
+
+    qc.record_params(out, a)   # provenance: exactly what produced these outputs
+    out = Path(a.out_dir); out.mkdir(parents=True, exist_ok=True)
+    np.savez(out/"predictivity_grids.npz", esm_to_mpnn=G_es, mpnn_to_esm=G_se,
+             stitch_real=stitch["ProteinMPNN"], stitch_rand=stitch["untrained MPNN"])
+    import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+    el = ["emb"]+[f"L{i}" for i in range(1, ne)]; sl = [f"enc{j+1}" for j in range(ns)]
+    fig, ax = plt.subplots(1, 3, figsize=(15, 4.6),
+                           gridspec_kw={"width_ratios":[1,1,0.8]})
+    for k,(G,t) in enumerate([(G_es,"linear predictivity: ESM → MPNN"),
+                              (G_se,"linear predictivity: MPNN → ESM")]):
+        im = ax[k].imshow(G, aspect="auto", cmap="viridis", vmin=0)
+        ax[k].set_xticks(range(ns)); ax[k].set_xticklabels(sl)
+        ax[k].set_yticks(range(ne)); ax[k].set_yticklabels(el, fontsize=7)
+        ax[k].set_title(t+"\n(held-out R²)", fontsize=10)
+        for p in range(ne):
+            for q in range(ns):
+                ax[k].text(q,p,f"{G[p,q]:.2f}",ha="center",va="center",fontsize=6,
+                           color="white" if G[p,q]<0.5*G.max() else "black")
+        fig.colorbar(im, ax=ax[k], fraction=0.046)
+    x = range(ns)
+    ax[2].bar([i-0.2 for i in x], stitch["ProteinMPNN"], 0.4, label="ProteinMPNN")
+    ax[2].bar([i+0.2 for i in x], stitch["untrained MPNN"], 0.4, label="untrained")
+    ax[2].set_xticks(list(x)); ax[2].set_xticklabels(sl)
+    ax[2].set_ylabel("residue readout"); ax[2].legend(fontsize=8)
+    ax[2].set_title("stitch → ESM's own lm_head", fontsize=10); ax[2].grid(alpha=.3, axis="y")
+    fig.tight_layout(); fig.savefig(out/"functional_grids.png", dpi=140); plt.close(fig)
+    print(f"-> {out}")
+
+
+# ==========================================================================================
+# dispatch
+# ==========================================================================================
+
+_SUBCOMMANDS = {
+    "grids": _main_grids,
+    "supervised": _main_supervised,
+    "significance": _main_significance,
+    "svcca-controls": _main_svccacontrols,
+    "functional": _main_functional,
+}
+
+
+def main() -> None:
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help") or sys.argv[1] not in _SUBCOMMANDS:
+        print(__doc__)
+        print("subcommands: " + ", ".join(_SUBCOMMANDS))
+        raise SystemExit(0 if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help") else 2)
+    cmd = sys.argv.pop(1)                 # the original main() then sees its original argv
+    _SUBCOMMANDS[cmd]()
 
 
 if __name__ == "__main__":

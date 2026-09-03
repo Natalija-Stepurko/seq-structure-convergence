@@ -113,7 +113,7 @@ cd seq-structure-convergence
 uv sync          # reads pyproject.toml + uv.lock, creates .venv (Python 3.12)
 ```
 
-Run everything through the environment with `uv run …` (e.g. `uv run python scripts/01_fetch_proteins.py`).
+Run everything through the environment with `uv run …` (e.g. `uv run python scripts/01_dataset.py fetch`).
 
 > **Small root disk?** If your home/root partition is small, point uv's environment and caches at a
 > larger disk *before* `uv sync` (this is what our instance does — see
@@ -182,48 +182,61 @@ weights) → scratch/ephemeral disk. Redirect anything with the corresponding fl
 > **Status:** all stages are implemented and the study has been run end to end on 4,898 chains.
 > A manuscript is in preparation.
 
-Numbered, resumable scripts under `scripts/`. Every stage is idempotent/resume-safe — outputs are
-guarded by existence checks, so re-running fills gaps only. Stages 01–06 are the core pipeline;
-07–16 are the controls and the functional tests.
+Six numbered entry points under `scripts/`, each grouping the stages that answer one kind of
+question, selected by subcommand. Every stage is idempotent/resume-safe — outputs are guarded by
+existence checks, so re-running fills gaps only — and every stage writes a **`params.json`** beside
+its outputs recording the resolved arguments, the exact command, the git commit and library
+versions, so a result can always be traced to what produced it.
 
-| Stage | Script | Role |
+| Entry point | Subcommand | What it does |
 |---|---|---|
-| 01 | `01_fetch_proteins.py` | Non-redundant protein chains from **CATH** (one per S35 cluster) + structure from the RCSB PDB; computes sequence, backbone N/CA/C/O coords, per-residue 3-state SSE + relative SASA, and per-chain CATH C/A/T/H — all via **biotite** (no external DSSP). Writes `proteins/<id>.npz` + `index.jsonl` |
-| 01b | `01b_fetch_annotations.py` | UniProt chain labels via the **SIFTS** flatfile: EC/function, subcellular localisation, taxonomy, Pfam family, PTM flags and functional protein classes → `annotations.jsonl` |
-| 01c | `01c_residue_targets.py` | Per-residue targets from UniProt sequence features (binding / active / PTM sites) aligned to each chain, plus per-chain-normalised B-factor |
-| 02a | `02_extract_embeddings_esm.py` | ESM-2 all-layer per-residue embeddings (embedding + each block) → `<id>.pt` (fp16); optional predicted contact map. Weights via `torch.hub` (`TORCH_HOME`) |
-| 02b | `02_extract_embeddings_struct.py` | **ProteinMPNN** encoder per-layer node embeddings (sequence-agnostic, structure-only) → `<id>.pt` (fp16) |
-| 02c | `02c_extract_esmif1.py` | **ESM-IF1** (GVP-transformer) per-residue embeddings — the second structure architecture |
-| 02d | `02d_extract_random_init.py` | Randomly-initialised counterparts of both arms — the untrained floor |
-| 02e | `02e_extract_carp.py` | **CARP-38M** (dilated CNN) — the second sequence architecture |
-| 03 | `03_analyze_embeddings.py` | Per-model, per-layer **k-NN purity** (local SSE/burial vs global CATH fold) + **LVR** of RSA → the depth law → `metrics.csv`, `depth_law.png` |
-| 04 | `04_convergence.py` | **The core.** Residue-aligned **CKA / SVCCA / mutual-kNN between ESM-2 and ProteinMPNN, layer × layer**, with a permutation baseline → `grids.npz`, `convergence.png`, `summary.txt` |
-| 04b | `04b_supervised_convergence.py` | Do the two models *agree on predictions*? Cohen's κ between their probe outputs, layer × layer, per property |
-| 05 | `05_property_prediction.py` | Linear + XGBoost probes per layer (chain-grouped splits): SSE / burial / RSA (residue) + CATH class (pooled); XGB−linear gap; CATH **data-efficiency learning curve** vs an AA-composition baseline → `metrics.csv`, `probe_curves.png`, `learning_curve.png` |
-| 05b | `05b_composition_baseline.py` | Amino-acid-composition baseline with CIs — separates genuinely emergent content from what residue counts alone predict |
-| 06 | `06_significance.py` | Robustness of the convergence peak: repeated residue-resamples → peak-CKA vs permutation-baseline means, 95% CIs, modal peak layer-pair, empirical p-value → `summary.txt`, `significance.png` |
-| 07 | `07_geometry_overlap.py` | Overlap between each model's unsupervised geometry and the property labels |
-| 08 | `08_embedding_health.py` | Per-layer effective rank, anisotropy, collapse and conditioning — the diagnostics that explain the metric dissociation |
-| 09 | `09_hdbscan_clustering.py` | Density clustering against every categorical label (cluster–label ARI): does any biological property form clean clusters? |
-| 10 | `10_svcca_controls.py` | **SVCCA's permutation null and dimension matching** — shows the null grows with representation width |
-| 11 | `11_umap_property_grid.py` | UMAP of the same residues/chains in each model, coloured by each property, side by side |
-| 12 | `12_linear_stitch.py` | Linear predictivity between a model pair, both directions, with a permutation control |
-| 13 | `13_model_stitching.py` | **Model stitching**: map a structure representation through a fitted linear connector into ESM's own frozen `lm_head` and read out residues, against untrained floor and native ceiling |
-| 14 | `14_functional_grids.py` | Per-property convergence grids for the functional/annotation labels |
-| 15 | `15_predictivity_matrix.py` | Linear predictivity across **every** model pair in both directions, with nulls |
-| 16 | `16_depth_stitch.py` | Per-property stitching at depth: inject a donor representation at an intermediate ESM layer and let the remaining frozen blocks process it |
+| **`01_dataset.py`** | `fetch` | CATH S35 chains + PDB structures → per-chain `npz` (sequence, backbone coords, 3-state SSE, RSA) + `index.jsonl` |
+| | `annotate` | UniProt chain labels via the SIFTS flatfile → `annotations.jsonl` |
+| | `targets` | per-residue binding / active / PTM sites and per-chain-normalised B-factor |
+| **`02_extract.py`** | `esm` | ESM-2 all-layer per-residue embeddings |
+| | `struct` | ProteinMPNN encoder per-layer node embeddings (sequence-agnostic) |
+| | `esmif1` | ESM-IF1 (GVP-transformer) — the second structure architecture |
+| | `carp` | CARP-38M (dilated CNN) — the second sequence architecture |
+| | `random` | randomly-initialised counterparts — the untrained floor |
+| **`03_geometry.py`** | `depth-law` | per-layer k-NN purity and LVR → the depth law |
+| | `overlap` | overlap between unsupervised geometry and the property labels |
+| | `health` | effective rank, anisotropy, collapse, conditioning |
+| | `clusters` | HDBSCAN density clusters against every categorical label |
+| | `umap` | UMAP grids, models side by side, coloured by each property |
+| **`04_convergence.py`** | `grids` | **the core**: layer × layer CKA / SVCCA / mutual k-NN with a residue-permutation null |
+| | `supervised` | Cohen's κ between the two models' probe predictions |
+| | `significance` | resampled CIs and an empirical p-value for the convergence peak |
+| | `svcca-controls` | SVCCA's permutation null and dimension matching — shows the null grows with width |
+| | `functional` | per-property convergence grids for the annotation labels |
+| **`05_probes.py`** | `probe` | linear + XGBoost probes per layer × property, chain-grouped splits |
+| | `composition` | amino-acid-composition-only baseline with CIs — what the probes must beat |
+| **`06_stitching.py`** | `stitch` | stitching through each model's own frozen head |
+| | `predictivity` | linear predictivity for one pair, both directions |
+| | `matrix` | linear predictivity across every model pair |
+| | `depth` | per-property stitching at an intermediate layer |
+
+Supporting files: `qc_common.py` (CKA / SVCCA / mutual k-NN / k-NN purity / LVR, plus the
+provenance recorder), `fig1_schematic.py`, and `vendor/proteinmpnn/`.
 
 Typical run (from the repo root, environment active):
 
 ```bash
-uv run python scripts/01_fetch_proteins.py        --structures-dir /ssc/structures --limit 5000
-uv run python scripts/02_extract_embeddings_esm.py --structures-dir /ssc/structures --results-dir /ssc/results/esm
-uv run python scripts/02_extract_embeddings_struct.py --structures-dir /ssc/structures --results-dir /ssc/results/proteinmpnn
-uv run python scripts/03_analyze_embeddings.py    --results-dir /ssc/results
-uv run python scripts/04_convergence.py           --results-dir /ssc/results
-uv run python scripts/05_property_prediction.py   --results-dir /ssc/results/esm --model-name esm --structures-dir /ssc/structures
-uv run python scripts/06_significance.py           --esm-dir /ssc/results/esm --struct-dir /ssc/results/proteinmpnn --structures-dir /ssc/structures
+uv run python scripts/01_dataset.py fetch      --structures-dir /ssc/structures --limit 5000
+uv run python scripts/01_dataset.py annotate   --structures-dir /ssc/structures
+uv run python scripts/01_dataset.py targets    --structures-dir /ssc/structures
+uv run python scripts/02_extract.py esm        --structures-dir /ssc/structures --results-dir /ssc/results/esm
+uv run python scripts/02_extract.py struct     --structures-dir /ssc/structures --results-dir /ssc/results/proteinmpnn
+uv run python scripts/03_geometry.py depth-law --results-dir /ssc/results
+uv run python scripts/04_convergence.py grids  --esm-dir /ssc/results/esm --struct-dir /ssc/results/proteinmpnn \
+    --structures-dir /ssc/structures --out-dir /ssc/results/conv
+uv run python scripts/05_probes.py probe       --results-dir /ssc/results/esm --model-name esm \
+    --structures-dir /ssc/structures
+uv run python scripts/06_stitching.py stitch   --structures-dir /ssc/structures \
+    --esm-dir /ssc/results/esm --struct-dir /ssc/results/proteinmpnn --out-dir /ssc/results/stitching
 ```
+
+Each subcommand takes exactly the flags it took as a standalone script; run
+`uv run python scripts/<file>.py <subcommand> --help` for the full list.
 
 ### Testing on a small subset
 
@@ -231,7 +244,7 @@ Start with a small subset and small models (`esm2_t12_35M`, ProteinMPNN) to vali
 pipeline before scaling. Stage 01 takes a `--limit`, e.g. a 6-chain smoke test:
 
 ```bash
-uv run python scripts/01_fetch_proteins.py --structures-dir structures_test --limit 6
+uv run python scripts/01_dataset.py fetch --structures-dir structures_test --limit 6
 ```
 
 ---

@@ -189,17 +189,18 @@ were deliberately excluded for this reason.
 
 ### 4.4 Pipeline stages
 
-| Stage | Script | What it does |
+Six entry points, each grouping the stages that answer one kind of question, selected by
+subcommand. Every stage writes a `params.json` beside its outputs recording the resolved
+arguments, the command, the git commit and library versions.
+
+| Entry point | Subcommands | What it does |
 |---|---|---|
-| 01 | `01_fetch_proteins.py` | CATH S35 chains + structures → per-chain manifest and `.npz` (sequence, coords, SSE, RSA) |
-| 01b / 01c | `01b_fetch_annotations.py`, `01c_residue_targets.py` | UniProt/SIFTS chain labels; per-residue site and B-factor targets |
-| 02 | `02_extract_embeddings_{esm,struct}.py`, `02c`–`02e` | Forward-hook all-layer per-residue extraction for every model arm |
-| 03 | `03_analyze_embeddings.py` | Per-layer PCA/UMAP, k-NN purity, LVR |
-| 04 / 04b | `04_convergence.py`, `04b_supervised_convergence.py` | Layer × layer CKA / SVCCA / mutual k-NN with permutation nulls; supervised prediction agreement (Cohen's κ) |
-| 05 / 05b | `05_property_prediction.py`, `05b_composition_baseline.py` | Linear + XGBoost probes per layer × property, chain-grouped splits; amino-acid-composition baseline |
-| 06–08 | `06_significance.py`, `07_geometry_overlap.py`, `08_embedding_health.py` | Robustness; geometry overlap; effective rank, anisotropy, collapse |
-| 09–11 | `09_hdbscan_clustering.py`, `10_svcca_controls.py`, `11_umap_property_grid.py` | Density clustering vs labels; SVCCA null and dimension matching; property-coloured projections |
-| 12–16 | `12_linear_stitch.py`, `13_model_stitching.py`, `15_predictivity_matrix.py`, `16_depth_stitch.py` | Linear predictivity; stitching into a frozen output head; all-pair predictivity matrix; per-property stitching at depth |
+| `01_dataset.py` | `fetch`, `annotate`, `targets` | CATH S35 chains and structures; UniProt/SIFTS chain labels; per-residue site and B-factor targets |
+| `02_extract.py` | `esm`, `struct`, `esmif1`, `carp`, `random` | Forward-hook all-layer per-residue extraction for every model arm, including untrained counterparts |
+| `03_geometry.py` | `depth-law`, `overlap`, `health`, `clusters`, `umap` | Per-model representation structure: k-NN purity and LVR, geometry–label overlap, effective rank and anisotropy, density clusters, projections |
+| `04_convergence.py` | `grids`, `supervised`, `significance`, `svcca-controls`, `functional` | Layer × layer CKA/SVCCA/mutual-kNN against a permutation null; prediction agreement; resampled CIs; the SVCCA null and dimension matching |
+| `05_probes.py` | `probe`, `composition` | Linear + XGBoost probes per layer × property with chain-grouped splits, against an amino-acid-composition baseline |
+| `06_stitching.py` | `stitch`, `predictivity`, `matrix`, `depth` | Functional tests: stitching through each model's own frozen head, and linear predictivity across every pair |
 
 ### 4.5 Headline results
 

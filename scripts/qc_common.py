@@ -113,3 +113,83 @@ def mutual_knn(X: np.ndarray, Y: np.ndarray, k: int = 10,
     iy = ny.kneighbors(return_distance=False)[:, 1:]
     shared = [len(set(a) & set(b)) / k for a, b in zip(ix, iy)]
     return float(np.mean(shared))
+
+
+# ---------------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------------
+
+def record_params(out_dir, args=None, extra=None, filename="params.json") -> dict:
+    """Write `params.json` beside a stage's outputs, recording what produced them.
+
+    Results whose configuration is not recorded cannot safely be compared across runs.
+    A concrete example from this project: two convergence grids computed at different
+    residue budgets are not directly comparable, and nothing in `grids.npz` or the
+    figures would reveal the difference — the budget lived only in whichever shell
+    command happened to launch the stage. This function removes that failure mode by
+    making every stage self-documenting.
+
+    Captures the resolved argument namespace, the exact command line, the git commit
+    (flagged dirty if the tree has uncommitted changes), library versions whose
+    numerics affect results, and a UTC timestamp.
+
+    Args:
+        out_dir:  directory the stage writes into; created if absent.
+        args:     the argparse namespace (or any object with __dict__), optional.
+        extra:    dict of stage-specific facts worth pinning — e.g. the number of
+                  residues actually sampled, as opposed to the requested budget.
+        filename: override when several stages share one output directory (the 01*
+                  stages all write into `structures/`, so they use params_01*.json)
+                  and would otherwise overwrite each other's record.
+
+    Returns the dict it wrote, so callers may log or extend it.
+    """
+    import json
+    import subprocess
+    import sys
+    from datetime import datetime, timezone
+    from pathlib import Path
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    def _jsonable(v):
+        if isinstance(v, Path):
+            return str(v)
+        if isinstance(v, (list, tuple)):
+            return [_jsonable(x) for x in v]
+        if isinstance(v, dict):
+            return {str(k): _jsonable(x) for k, x in v.items()}
+        if isinstance(v, (str, int, float, bool)) or v is None:
+            return v
+        return repr(v)
+
+    def _git(*cmd, default=None):
+        try:
+            r = subprocess.run(("git", "-C", str(Path(__file__).resolve().parent)) + cmd,
+                               capture_output=True, text=True, timeout=10)
+            return r.stdout.strip() if r.returncode == 0 else default
+        except Exception:
+            return default
+
+    versions = {"python": sys.version.split()[0]}
+    for mod in ("numpy", "scipy", "sklearn", "torch", "xgboost", "umap", "biotite"):
+        try:
+            versions[mod] = __import__(mod).__version__
+        except Exception:
+            pass
+
+    payload = {
+        "script": Path(sys.argv[0]).name,
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "command": " ".join(sys.argv),
+        "args": {k: _jsonable(v) for k, v in vars(args).items()} if args is not None else {},
+        "git_commit": _git("rev-parse", "HEAD", default="unknown"),
+        "git_dirty": bool(_git("status", "--porcelain", default="")),
+        "versions": versions,
+    }
+    if extra:
+        payload["extra"] = {k: _jsonable(v) for k, v in extra.items()}
+
+    (out / filename).write_text(json.dumps(payload, indent=2) + "\n")
+    return payload

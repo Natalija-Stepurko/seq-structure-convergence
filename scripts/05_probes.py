@@ -1,33 +1,21 @@
-"""
-05_property_prediction.py — supervised probes on frozen embeddings.
+r"""
+05_probes.py -- Property decodability, and the composition baseline it must beat.
 
-Linear and XGBoost probes on each layer's frozen embeddings, decoding labels the model was
-never trained on, with chain-grouped train/test splits (no residue leakage). Tests
-transferability, the depth law (P3), the XGB−linear (non-linear) gap, and data efficiency (P5).
+Subcommands (each keeps the exact flags it had as a standalone script):
 
-Residue-level targets (per-residue embeddings):
-    SSE (3-class acc), burial (binary acc), RSA (regression R²)
-Chain-level targets (mean-pooled embeddings) — structural + the UniProt annotations from
-stage 01b (function / localisation / taxonomy / family / PTM), each filtered to classes with
-enough support and scored by accuracy and macro-F1:
-    cath_class, cath_arch (fold/architecture)      [manifest]
-    ec_class, enzyme (function)                    [annotations]
-    localisation, kingdom                          [annotations]
-    is_phospho, is_glyco (PTM proxies)             [annotations]
-Learning curves: CATH-class and function (EC) accuracy vs training-set size, frozen
-embedding (best layer) vs an amino-acid-composition baseline.
+    probe            linear + XGBoost probes per layer x property
+    composition      amino-acid-composition-only baseline with CIs
 
-Outputs (under --out-dir/<model-name>):
-    metrics.csv          per-layer residue-level metrics
-    chain_metrics.csv    per (target, layer) chain-level acc + macro-F1 (lin & xgb)
-    probe_curves.png     residue metrics vs depth
-    chain_best_layer.png best-layer acc/F1 per chain target
-    learning_curve.png   data efficiency
+The subcommand token is removed from argv before the original parser runs, so every command
+line that worked before still works, with the subcommand inserted after the script name:
 
-Usage:
-    uv run python scripts/05_property_prediction.py \\
-        --results-dir /ssc/results/esm --model-name esm \\
-        --structures-dir /ssc/structures --out-dir /ssc/results/probes
+    uv run python scripts/05_probes.py probe --help
+
+Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+
+Merged from:
+    probe            was 05_property_prediction.py
+    composition      was 05b_composition_baseline.py
 """
 
 import argparse
@@ -36,23 +24,38 @@ import json
 import sys
 import warnings
 from pathlib import Path
-
-warnings.filterwarnings("ignore")
-
+import qc_common as qc
 import numpy as np
 import torch
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, r2_score
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from xgboost import XGBClassifier, XGBRegressor
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, f1_score
+from xgboost import XGBClassifier
+
+
+
+
+
+# ======================================================================================
+# probe  --  from 05_property_prediction.py
+# ======================================================================================
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+warnings.filterwarnings("ignore")
 
 AA = "ACDEFGHIKLMNPQRSTVWY"
+
 AA_IDX = {a: i for i, a in enumerate(AA)}
+
 BURIAL_RSA = 0.25
+
 SS3_IDX = {"a": 0, "b": 1, "c": 2}
 
-# chain-level targets: name -> (source, key). source in {"manifest","annot"}
-CHAIN_TARGETS = [
+CHAIN_TARGETS_probe = [
     # structural / fold-family (from CATH, already in manifest)
     ("cath_class", "manifest", "cath_class"),
     ("cath_arch", "manifest", "cath_arch"),
@@ -77,11 +80,12 @@ CHAIN_TARGETS = [
     ("is_phospho", "annot", "is_phospho"),
     ("is_glyco", "annot", "is_glyco"),
 ]
-MIN_CLASS_COUNT = 40   # drop chains in classes rarer than this before probing a target
-MAX_CLASSES = 12       # cap high-cardinality targets to top classes (bounds XGB multiclass cost)
-# label values that mean "no annotation" and must be excluded from a target's probe
-EXCLUDE_VALUES = {"localisation": {"unknown", "other"}, "kingdom": {"other"}}
 
+MIN_CLASS_COUNT_probe = 40   # drop chains in classes rarer than this before probing a target
+
+MAX_CLASSES_probe = 12       # cap high-cardinality targets to top classes (bounds XGB multiclass cost)
+
+EXCLUDE_VALUES = {"localisation": {"unknown", "other"}, "kingdom": {"other"}}
 
 def _load_labels(structures_dir: Path):
     manifest = {}
@@ -99,13 +103,12 @@ def _load_labels(structures_dir: Path):
                 annot[a["id"]] = a
     return manifest, annot
 
-
 def _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, max_chains, per_chain, seed):
     rng = np.random.default_rng(seed)
     res_emb, ss3, burial, rsa, grp = [], [], [], [], []
     bfactor, binding, active, ptm = [], [], [], []
     pooled, comp = [], []
-    chain_lab = {name: [] for name, _, _ in CHAIN_TARGETS}
+    chain_lab = {name: [] for name, _, _ in CHAIN_TARGETS_probe}
     g = 0
     for cid in ids:
         pt = res_dir / f"{cid}.pt"
@@ -122,7 +125,7 @@ def _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, max_chains, pe
             if a in AA_IDX:
                 cc[AA_IDX[a]] += 1
         comp.append(cc / max(1, len(seq)))
-        for name, src, key in CHAIN_TARGETS:
+        for name, src, key in CHAIN_TARGETS_probe:
             d = manifest[cid] if src == "manifest" else annot.get(cid, {})
             chain_lab[name].append(d.get(key, None))
         # per-residue intrinsic proxies (01c); missing file -> unlabelled
@@ -171,8 +174,7 @@ def _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, max_chains, pe
         "comp": np.array(comp), "n_chains": g,
     }
 
-
-def _clf(Xtr, ytr, Xte, yte, linear=True, balanced=False):
+def _clf_probe(Xtr, ytr, Xte, yte, linear=True, balanced=False):
     if linear:
         sc = StandardScaler().fit(Xtr)
         m = LogisticRegression(max_iter=300,
@@ -188,7 +190,6 @@ def _clf(Xtr, ytr, Xte, yte, linear=True, balanced=False):
         pred = m.predict(Xte)
     return accuracy_score(yte, pred), f1_score(yte, pred, average="macro")
 
-
 def _reg(Xtr, ytr, Xte, yte, linear=True):
     if linear:
         sc = StandardScaler().fit(Xtr)
@@ -198,8 +199,7 @@ def _reg(Xtr, ytr, Xte, yte, linear=True):
                      n_jobs=4, verbosity=0).fit(Xtr, ytr)
     return r2_score(yte, m.predict(Xte))
 
-
-def main() -> None:
+def _main_probe() -> None:
     ap = argparse.ArgumentParser(description="Frozen-embedding probes")
     ap.add_argument("--results-dir", default="results/esm")
     ap.add_argument("--model-name", default="esm")
@@ -216,6 +216,7 @@ def main() -> None:
     restgt_dir = Path(args.structures_dir) / "residue_targets"
     out_dir = Path(args.out_dir) / args.model_name
     out_dir.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
 
     manifest, annot = _load_labels(Path(args.structures_dir))
     ids = list(manifest.keys())
@@ -260,8 +261,8 @@ def main() -> None:
                 row[f"{name}_xgb_r2"] = round(_reg(Xr[tr], y[tr], Xr[te], y[te], False), 4)
             else:
                 bal = kind == "clfbin"
-                la, lf = _clf(Xr[tr], y[tr], Xr[te], y[te], linear=True, balanced=bal)
-                xa, xf = _clf(Xr[tr], y[tr], Xr[te], y[te], linear=False, balanced=bal)
+                la, lf = _clf_probe(Xr[tr], y[tr], Xr[te], y[te], linear=True, balanced=bal)
+                xa, xf = _clf_probe(Xr[tr], y[tr], Xr[te], y[te], linear=False, balanced=bal)
                 row[f"{name}_lin_acc"] = round(la, 4); row[f"{name}_xgb_acc"] = round(xa, 4)
                 if bal:  # sparse sites: F1 is the honest metric
                     row[f"{name}_lin_f1"] = round(lf, 4); row[f"{name}_xgb_f1"] = round(xf, 4)
@@ -274,7 +275,7 @@ def main() -> None:
 
     # ---- chain-level probes (structural + annotations) ----
     chain_rows = []
-    for name, _, _ in CHAIN_TARGETS:
+    for name, _, _ in CHAIN_TARGETS_probe:
         y_raw = D["chain_lab"][name]
         excl = EXCLUDE_VALUES.get(name, set())
         have = np.array([v is not None and str(v) not in excl for v in y_raw])
@@ -282,13 +283,13 @@ def main() -> None:
             print(f"  [skip {name}] only {have.sum()} labelled chains"); continue
         yv = y_raw[have]
         vals, counts = np.unique(yv.astype(str), return_counts=True)
-        ok = counts >= MIN_CLASS_COUNT
+        ok = counts >= MIN_CLASS_COUNT_probe
         vals, counts = vals[ok], counts[ok]
-        # keep only the top-MAX_CLASSES most frequent classes (bounds multiclass XGB cost)
-        keep_classes = set(vals[np.argsort(-counts)][:MAX_CLASSES])
+        # keep only the top-MAX_CLASSES_probe most frequent classes (bounds multiclass XGB cost)
+        keep_classes = set(vals[np.argsort(-counts)][:MAX_CLASSES_probe])
         keep = have & np.array([str(v) in keep_classes for v in y_raw])
         if len(keep_classes) < 2 or keep.sum() < 60:
-            print(f"  [skip {name}] <2 classes with >= {MIN_CLASS_COUNT} support"); continue
+            print(f"  [skip {name}] <2 classes with >= {MIN_CLASS_COUNT_probe} support"); continue
         y = LabelEncoder().fit_transform(y_raw[keep].astype(str))
         tr = keep & ~ch_test; te = keep & ch_test
         if len(set(y[np.isin(np.where(keep)[0], np.where(tr)[0])])) < 2:
@@ -298,8 +299,8 @@ def main() -> None:
         print(f"  [{name}] {keep.sum()} chains, {len(keep_classes)} classes")
         for i in range(n_layers):
             Xp = D["pooled"][i]
-            la, lf = _clf(Xp[tr], ytr, Xp[te], yte, linear=True)
-            xa, xf = _clf(Xp[tr], ytr, Xp[te], yte, linear=False)
+            la, lf = _clf_probe(Xp[tr], ytr, Xp[te], yte, linear=True)
+            xa, xf = _clf_probe(Xp[tr], ytr, Xp[te], yte, linear=False)
             chain_rows.append({"target": name, "layer": labels[i], "n_classes": len(keep_classes),
                                "lin_acc": round(la, 4), "lin_f1": round(lf, 4),
                                "xgb_acc": round(xa, 4), "xgb_f1": round(xf, 4)})
@@ -316,7 +317,6 @@ def main() -> None:
                         out_dir / "learning_curve.png")
     _diagnostic_figures(D, res_test, ch_test, rows, chain_rows, labels, args.model_name, out_dir)
     print(f"-> {out_dir}")
-
 
 def _diagnostic_figures(D, res_test, ch_test, rows, chain_rows, labels, model_name, out_dir):
     """Diagnostic figures: regression parity + classification confusion/per-class-F1
@@ -353,8 +353,8 @@ def _diagnostic_figures(D, res_test, ch_test, rows, chain_rows, labels, model_na
         y_raw = D["chain_lab"][name]; excl = EXCLUDE_VALUES.get(name, set())
         have = np.array([v is not None and str(v) not in excl for v in y_raw])
         vals, cnt = np.unique(y_raw[have].astype(str), return_counts=True)
-        ok = cnt >= MIN_CLASS_COUNT; vals, cnt = vals[ok], cnt[ok]
-        keep = list(vals[np.argsort(-cnt)][:MAX_CLASSES])
+        ok = cnt >= MIN_CLASS_COUNT_probe; vals, cnt = vals[ok], cnt[ok]
+        keep = list(vals[np.argsort(-cnt)][:MAX_CLASSES_probe])
         m_ = have & np.array([str(v) in set(keep) for v in y_raw])
         enc = LabelEncoder().fit(np.array(keep))
         tr = m_ & ~ch_test; te = m_ & ch_test
@@ -379,7 +379,6 @@ def _diagnostic_figures(D, res_test, ch_test, rows, chain_rows, labels, model_na
         a2.set_xlabel("per-class F1"); a2.set_xlim(0, 1); a2.grid(alpha=0.3, axis="x")
         a2.set_title(f"macro-F1={best['xgb_f1']:.2f}")
         fig.tight_layout(); fig.savefig(fig_dir / f"confusion_{name}.png", dpi=130); plt.close(fig)
-
 
 def _plot_chain_heatmap(chain_rows, labels, model_name, out_png):
     """Property × layer probe-accuracy heatmaps (linear and XGB) — supervised analog of
@@ -409,7 +408,6 @@ def _plot_chain_heatmap(chain_rows, labels, model_name, out_png):
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     fig.tight_layout(); fig.savefig(out_png, dpi=140); plt.close(fig)
 
-
 def _learning_curve(D, ch_test, chain_rows, labels, model_name, seed, out_png):
     """Data efficiency: accuracy vs training-set size, embedding vs AA-composition baseline,
     for up to two targets (CATH class and, if present, function/EC class)."""
@@ -425,7 +423,7 @@ def _learning_curve(D, ch_test, chain_rows, labels, model_name, seed, out_png):
         y_raw = D["chain_lab"][tname]
         have = np.array([v is not None for v in y_raw])
         vals, counts = np.unique(y_raw[have].astype(str), return_counts=True)
-        keep_cls = set(vals[counts >= MIN_CLASS_COUNT])
+        keep_cls = set(vals[counts >= MIN_CLASS_COUNT_probe])
         keep = have & np.array([str(v) in keep_cls for v in y_raw])
         enc = LabelEncoder().fit(y_raw[keep].astype(str))
         best = max((r for r in chain_rows if r["target"] == tname), key=lambda r: r["xgb_acc"])
@@ -437,15 +435,14 @@ def _learning_curve(D, ch_test, chain_rows, labels, model_name, seed, out_png):
         for fr in fracs:
             k = max(10, int(len(tr) * fr)); sub = rng.choice(tr, k, replace=False)
             ysub = enc.transform(y_raw[sub].astype(str))
-            a1, _ = _clf(D["pooled"][li][sub], ysub, emb_te, yte, linear=False)
-            a2, _ = _clf(D["comp"][sub], ysub, base_te, yte, linear=False)
+            a1, _ = _clf_probe(D["pooled"][li][sub], ysub, emb_te, yte, linear=False)
+            a2, _ = _clf_probe(D["comp"][sub], ysub, base_te, yte, linear=False)
             acc_emb.append(a1); acc_base.append(a2)
         ax.plot(fracs, acc_emb, "o-", label=f"{model_name} embedding ({best['layer']})")
         ax.plot(fracs, acc_base, "s--", label="AA-composition baseline")
         ax.set_xlabel("training-set fraction"); ax.set_ylabel("accuracy")
         ax.set_title(f"{tname} data efficiency"); ax.legend(); ax.grid(alpha=0.3)
     fig.tight_layout(); fig.savefig(out_png, dpi=140); plt.close(fig)
-
 
 def _plot_residue(rows, labels, model_name, out_png):
     """One XGB curve per residue target vs depth (sites shown by macro-F1, others by acc/R²)."""
@@ -467,7 +464,6 @@ def _plot_residue(rows, labels, model_name, out_png):
     ax.legend(fontsize=8, ncol=3); ax.grid(alpha=0.3)
     fig.tight_layout(); fig.savefig(out_png, dpi=140); plt.close(fig)
 
-
 def _plot_chain_best(chain_rows, model_name, out_png):
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
     targets = sorted({r["target"] for r in chain_rows})
@@ -483,6 +479,146 @@ def _plot_chain_best(chain_rows, model_name, out_png):
     ax.set_yticks(y); ax.set_yticklabels(targets); ax.set_xlabel("best-layer XGB score")
     ax.set_title(f"{model_name}: chain-level property decodability"); ax.legend()
     ax.grid(alpha=0.3, axis="x"); fig.tight_layout(); fig.savefig(out_png, dpi=140); plt.close(fig)
+
+# ======================================================================================
+# composition  --  from 05b_composition_baseline.py
+# ======================================================================================
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+warnings.filterwarnings("ignore")
+
+MIN_CLASS_COUNT_composition = 40
+
+MAX_CLASSES_composition = 12
+
+CHAIN_TARGETS_composition = [
+    ("cath_class", "manifest"), ("cath_arch", "manifest"), ("cath_topol", "manifest"),
+    ("ec_class", "annot"), ("enzyme", "annot"), ("protein_class", "annot"),
+    ("localisation", "annot"), ("kingdom", "annot"),
+    ("is_transport", "annot"), ("is_dna_binding", "annot"), ("is_rna_binding", "annot"),
+    ("is_kinase", "annot"), ("is_ribosomal", "annot"), ("is_membrane_protein", "annot"),
+    ("is_structural", "annot"), ("is_immune", "annot"),
+    ("is_phospho", "annot"), ("is_glyco", "annot"),
+]
+
+def _boot_ci(yte, pred, n_boot=1000, seed=42):
+    """95% bootstrap CI on accuracy and macro-F1 by resampling test items."""
+    rng = np.random.default_rng(seed)
+    n = len(yte)
+    accs, f1s = [], []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        accs.append(accuracy_score(yte[idx], pred[idx]))
+        f1s.append(f1_score(yte[idx], pred[idx], average="macro"))
+    return (np.percentile(accs, [2.5, 97.5]), np.percentile(f1s, [2.5, 97.5]))
+
+def _clf_composition(Xtr, ytr, Xte, yte, linear):
+    if linear:
+        sc = StandardScaler().fit(Xtr)
+        m = LogisticRegression(max_iter=300).fit(sc.transform(Xtr), ytr)
+        p = m.predict(sc.transform(Xte))
+    else:
+        m = XGBClassifier(n_estimators=80, max_depth=4, tree_method="hist",
+                          n_jobs=4, verbosity=0).fit(Xtr, ytr)
+        p = m.predict(Xte)
+    acc, f1 = accuracy_score(yte, p), f1_score(yte, p, average="macro")
+    acc_ci, f1_ci = _boot_ci(np.asarray(yte), np.asarray(p))
+    return acc, f1, acc_ci, f1_ci
+
+def _main_composition() -> None:
+    ap = argparse.ArgumentParser(description="AA-composition baseline for chain targets")
+    ap.add_argument("--structures-dir", default="structures")
+    ap.add_argument("--ref-results-dir", default="results/esm",
+                    help="embeddings dir defining the chain set/order (match stage 05)")
+    ap.add_argument("--out-dir", default="results/probes")
+    ap.add_argument("--max-chains", type=int, default=5000)
+    ap.add_argument("--test-frac", type=float, default=0.25)
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    sdir = Path(args.structures_dir); prot = sdir / "proteins"
+    ref = Path(args.ref_results_dir)
+    manifest = {json.loads(l)["id"]: json.loads(l)
+                for l in (sdir / "index.jsonl").open() if l.strip()}
+    annot = {}
+    if (sdir / "annotations.jsonl").exists():
+        annot = {json.loads(l)["id"]: json.loads(l)
+                 for l in (sdir / "annotations.jsonl").open() if l.strip()}
+
+    comp, chain_lab, g = [], {n: [] for n, _ in CHAIN_TARGETS_composition}, 0
+    for cid, r in manifest.items():
+        if not r.get("valid", True) or not (ref / f"{cid}.pt").exists():
+            continue
+        seq = str(np.load(prot / f"{cid}.npz", allow_pickle=True)["seq"])
+        cc = np.zeros(20)
+        for a in seq:
+            if a in AA_IDX:
+                cc[AA_IDX[a]] += 1
+        comp.append(cc / max(1, len(seq)))
+        for name, src in CHAIN_TARGETS_composition:
+            d = manifest[cid] if src == "manifest" else annot.get(cid, {})
+            chain_lab[name].append(d.get(name))
+        g += 1
+        if g >= args.max_chains:
+            break
+    comp = np.array(comp); C = g
+    print(f"composition baseline over {C:,} chains")
+
+    rng = np.random.default_rng(args.seed)
+    test = np.zeros(C, bool)
+    test[rng.choice(C, max(1, int(C * args.test_frac)), replace=False)] = True
+
+    rows = []
+    for name, _ in CHAIN_TARGETS_composition:
+        y_raw = np.array(chain_lab[name], dtype=object)
+        excl = EXCLUDE_VALUES.get(name, set())
+        have = np.array([v is not None and str(v) not in excl for v in y_raw])
+        vals, cnt = np.unique(y_raw[have].astype(str), return_counts=True)
+        ok = cnt >= MIN_CLASS_COUNT_composition; vals, cnt = vals[ok], cnt[ok]
+        keep = set(vals[np.argsort(-cnt)][:MAX_CLASSES_composition])
+        m = have & np.array([str(v) in keep for v in y_raw])
+        if len(keep) < 2 or m.sum() < 60:
+            continue
+        enc = LabelEncoder().fit(y_raw[m].astype(str))
+        tr = m & ~test; te = m & test
+        ytr, yte = enc.transform(y_raw[tr].astype(str)), enc.transform(y_raw[te].astype(str))
+        la, lf, _, lf_ci = _clf_composition(comp[tr], ytr, comp[te], yte, True)
+        xa, xf, xa_ci, xf_ci = _clf_composition(comp[tr], ytr, comp[te], yte, False)
+        rows.append({"target": name, "n_classes": len(keep), "n_test": int(te.sum()),
+                     "comp_lin_f1": round(lf, 4),
+                     "comp_lin_f1_lo": round(lf_ci[0], 4), "comp_lin_f1_hi": round(lf_ci[1], 4),
+                     "comp_xgb_acc": round(xa, 4),
+                     "comp_xgb_acc_lo": round(xa_ci[0], 4), "comp_xgb_acc_hi": round(xa_ci[1], 4),
+                     "comp_xgb_f1": round(xf, 4),
+                     "comp_xgb_f1_lo": round(xf_ci[0], 4), "comp_xgb_f1_hi": round(xf_ci[1], 4)})
+        print(f"  {name:20s} comp xgb F1={xf:.3f} [{xf_ci[0]:.3f}, {xf_ci[1]:.3f}] ({len(keep)} cls)")
+
+
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
+    out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    with (out / "composition_metrics.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+    print(f"-> {out/'composition_metrics.csv'}")
+
+
+# ==========================================================================================
+# dispatch
+# ==========================================================================================
+
+_SUBCOMMANDS = {
+    "probe": _main_probe,
+    "composition": _main_composition,
+}
+
+
+def main() -> None:
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help") or sys.argv[1] not in _SUBCOMMANDS:
+        print(__doc__)
+        print("subcommands: " + ", ".join(_SUBCOMMANDS))
+        raise SystemExit(0 if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help") else 2)
+    cmd = sys.argv.pop(1)                 # the original main() then sees its original argv
+    _SUBCOMMANDS[cmd]()
 
 
 if __name__ == "__main__":
