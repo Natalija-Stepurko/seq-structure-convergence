@@ -8,6 +8,7 @@ Subcommands (each keeps the exact flags it had as a standalone script):
     significance     resampled CIs and empirical p-value for the peak
     svcca-controls   SVCCA permutation null and dimension matching
     functional       per-property convergence grids for annotation labels
+    aa-control       convergence with the shared training target partialled out
 
 The subcommand token is removed from argv before the original parser runs, so every command
 line that worked before still works, with the subcommand inserted after the script name:
@@ -676,6 +677,157 @@ def _main_functional():
     print(f"-> {out}")
 
 
+
+
+# ==========================================================================================
+# aa-control  --  convergence with the shared training target partialled out
+# ==========================================================================================
+#
+# Both model families are trained to predict amino-acid identity: the sequence models by
+# masking it, the inverse-folding models by recovering it from backbone geometry. A shared
+# representation of the residue's own amino acid is therefore a common cause, not evidence of
+# a shared representation of protein space -- and it is large, because a sequence model's input
+# layer is very nearly a pure amino-acid code (SVCCA 1.000 against a one-hot encoding).
+#
+# This subcommand reports every pair before and after removing that target. Because the one-hot
+# design is full rank, projecting it out reduces to subtracting each residue's amino-acid class
+# mean. Layers whose residual is degenerate (a pure amino-acid lookup) are excluded from BOTH
+# columns so the two are computed over one layer set and remain comparable.
+
+AA = "ACDEFGHIKLMNPQRSTVWY"
+AA_IDX = {a: i for i, a in enumerate(AA)}
+
+
+def _aa_load_layers(p):
+    return torch.load(p, weights_only=False)["layers"].to(torch.float32).numpy()
+
+
+def _aa_collect(ids, a_dir, b_dir, prot_dir, max_residues, seed=42):
+    rng = np.random.default_rng(seed)
+    A_parts, B_parts, aa_parts = [], [], []
+    total = 0
+    for cid in ids:
+        pa, pb = a_dir / f"{cid}.pt", b_dir / f"{cid}.pt"
+        if not (pa.exists() and pb.exists()):
+            continue
+        A, B = _aa_load_layers(pa), _aa_load_layers(pb)
+        if A.shape[1] != B.shape[1]:
+            continue
+        npz = np.load(prot_dir / f"{cid}.npz", allow_pickle=True)
+        seq = str(npz["seq"])
+        L = A.shape[1]
+        if len(seq) != L:
+            continue
+        cap = max(1, min(L, max_residues // 50))
+        idx = rng.choice(L, cap, replace=False) if L > cap else np.arange(L)
+        A_parts.append(A[:, idx, :]); B_parts.append(B[:, idx, :])
+        aa_parts.append(np.array([AA_IDX.get(seq[i], -1) for i in idx]))
+        total += len(idx)
+        if total >= max_residues:
+            break
+    A = np.concatenate(A_parts, axis=1); B = np.concatenate(B_parts, axis=1)
+    aa = np.concatenate(aa_parts)
+    keep = aa >= 0
+    return A[:, keep, :], B[:, keep, :], aa[keep]
+
+
+def _aa_residualise(X, aa):
+    """Remove E[X | amino acid] -- i.e. project out the one-hot amino-acid design."""
+    R = X.astype(np.float64).copy()
+    for a in np.unique(aa):
+        m = aa == a
+        R[m] -= R[m].mean(axis=0, keepdims=True)
+    return R
+
+
+def _aa_degenerate(X, tol=1e-9):
+    """A residual with no variance left carries nothing beyond amino-acid identity."""
+    return float(np.sum(X ** 2)) < tol
+
+
+def _aa_grid_peaks(A, B, aa, partial):
+    """Peak similarity over the layer grid.
+
+    Residualised layers are computed ONCE per layer rather than once per pair. Layers whose
+    residual is degenerate -- a pure amino-acid lookup, e.g. a sequence model's embedding --
+    are skipped: with nothing left after the shared target is removed there is no subspace to
+    compare, and SVCCA would divide by zero.
+    """
+    # Use the SAME layer set for raw and partial. A layer whose residual is degenerate is a
+    # pure amino-acid lookup (a sequence model's embedding); its raw similarity is a comparison
+    # of amino-acid codes, not of representations, and the raw CKA peak otherwise lands there --
+    # which would make the raw and partial columns peak at different layers and not be comparable.
+    Ares = [_aa_residualise(A[i], aa) for i in range(A.shape[0])]
+    Bres = [_aa_residualise(B[j], aa) for j in range(B.shape[0])]
+    Aok = [i for i in range(A.shape[0]) if not _aa_degenerate(Ares[i])]
+    Bok = [j for j in range(B.shape[0]) if not _aa_degenerate(Bres[j])]
+    Alay = {i: (Ares[i] if partial else A[i].astype(np.float64)) for i in Aok}
+    Blay = {j: (Bres[j] if partial else B[j].astype(np.float64)) for j in Bok}
+    best = {"cka": (-9.0, None), "svcca": (-9.0, None), "mutual_knn": (-9.0, None)}
+    for i, Ai in Alay.items():
+        Aic = qc.column_center(Ai)
+        for j, Bj in Blay.items():
+            for k, v in [("cka", qc.linear_cka(Aic, qc.column_center(Bj))),
+                         ("svcca", qc.svcca(Ai, Bj)),
+                         ("mutual_knn", qc.mutual_knn(Ai, Bj))]:
+                if np.isfinite(v) and v > best[k][0]:
+                    best[k] = (float(v), f"A{i}xB{j}")
+    for k in best:
+        if best[k][1] is None:
+            best[k] = (float("nan"), "all layers degenerate")
+    return best
+
+
+_AA_PAIRS = [
+    ("CARP x ESM-2",             "carp",        "esm",         "within-sequence"),
+    ("ESM-IF1 x ProteinMPNN",    "esmif1",      "proteinmpnn", "within-structure"),
+    ("ESM-2 650M x ESM-IF1",     "esm650",      "esmif1",      "cross-modality"),
+    ("ESM-2 35M x ProteinMPNN",  "esm",         "proteinmpnn", "cross-modality"),
+    ("CARP x ESM-IF1",           "carp",        "esmif1",      "cross-modality"),
+    ("ESM-2 650M x ProteinMPNN", "esm650",      "proteinmpnn", "cross-modality"),
+    ("CARP x ProteinMPNN",       "carp",        "proteinmpnn", "cross-modality"),
+    ("ESM-1v x ProteinMPNN",     "esm1v_s1",    "proteinmpnn", "cross-modality"),
+    ("untrained x untrained",    "rand_esm",    "rand_mpnn",   "control"),
+    ("trained seq x untrained str","esm",       "rand_mpnn",   "control"),
+    ("untrained seq x trained str","rand_esm",  "proteinmpnn", "control"),
+    ("ESM-1v s1 x ESM-1v s2",    "esm1v_s1",    "esm1v_s2",    "same arch, diff seed"),
+]
+
+
+def _main_aacontrol() -> None:
+    ap = argparse.ArgumentParser(
+        description="Convergence before and after partialling out amino-acid identity")
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--results-root", default="/ssc/results")
+    ap.add_argument("--max-residues", type=int, default=20000)
+    ap.add_argument("--out-dir", default="/ssc/results/aa_control")
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    sdir = Path(args.structures_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    out = Path(args.out_dir)
+    qc.record_params(out, args)
+    results = {}
+    for label, a, b, kind in _AA_PAIRS:
+        da, db = Path(args.results_root) / a, Path(args.results_root) / b
+        if not (da.exists() and db.exists()):
+            print(f"  {label:<30} SKIP (missing embeddings)"); continue
+        A, B, aa = _aa_collect(ids, da, db, sdir / "proteins", args.max_residues, args.seed)
+        raw = _aa_grid_peaks(A, B, aa, partial=False)
+        par = _aa_grid_peaks(A, B, aa, partial=True)
+        results[label] = {"kind": kind, "n_residues": int(len(aa)),
+                          "raw": {k: v[0] for k, v in raw.items()},
+                          "partial": {k: v[0] for k, v in par.items()}}
+        print(f"  {label:<30} raw cka={raw['cka'][0]:.3f} svcca={raw['svcca'][0]:.3f} "
+              f"knn={raw['mutual_knn'][0]:.3f}  |  partial cka={par['cka'][0]:.3f} "
+              f"svcca={par['svcca'][0]:.3f} knn={par['mutual_knn'][0]:.3f}", flush=True)
+        (out / "partial_convergence.json").write_text(json.dumps(results, indent=2) + "\n")
+    qc.record_params(out, args, extra={"n_pairs": len(results)})
+    print(f"-> {out}")
+
+
 # ==========================================================================================
 # dispatch
 # ==========================================================================================
@@ -686,6 +838,7 @@ _SUBCOMMANDS = {
     "significance": _main_significance,
     "svcca-controls": _main_svccacontrols,
     "functional": _main_functional,
+    "aa-control": _main_aacontrol,
 }
 
 
