@@ -5,6 +5,7 @@ Subcommands (each keeps the exact flags it had as a standalone script):
 
     probe            linear + XGBoost probes per layer x property
     composition      amino-acid-composition-only baseline with CIs
+    repeats          run `probe` N times on independent splits -> mean + 95% CI
 
 The subcommand token is removed from argv before the original parser runs, so every command
 line that worked before still works, with the subcommand inserted after the script name:
@@ -606,9 +607,103 @@ def _main_composition() -> None:
 # dispatch
 # ==========================================================================================
 
+# ==========================================================================================
+# repeats  --  independent refits with confidence intervals
+# ==========================================================================================
+
+def _main_repeats() -> None:
+    """Run the probe N times on independent chain-level splits and report mean + 95% CI.
+
+    A single probe score is one fit on one split: it carries no uncertainty, so a small gap
+    between two models on one property cannot be distinguished from noise. This repeats the
+    WHOLE pipeline -- resampling which chains are held out, not merely re-seeding the
+    classifier -- because the split is the dominant source of variance when test sets are
+    chain-grouped and some classes are rare.
+
+    Each repeat calls the ordinary `probe` path unchanged, so the per-repeat numbers stay
+    directly comparable to a single-run result; only the aggregation is new.
+
+    Outputs, beside the per-repeat directories:
+        metrics_ci.csv        residue-level: mean, lo, hi, sd, n over repeats
+        chain_metrics_ci.csv  chain-level:   ditto, per (target, layer)
+    """
+    import argparse
+    import csv
+    import statistics
+    from pathlib import Path
+
+    ap = argparse.ArgumentParser(description="Repeat the probe on independent splits, with CIs")
+    ap.add_argument("--n-repeats", type=int, default=5)
+    ap.add_argument("--seed0", type=int, default=42, help="first seed; repeats use seed0..seed0+n-1")
+    ap.add_argument("--out-dir", required=True, help="parent dir; each repeat writes to <out>/rep<k>")
+    ap.add_argument("--passthrough", nargs=argparse.REMAINDER,
+                    help="everything after this flag is forwarded to `probe` verbatim")
+    a = ap.parse_args()
+
+    parent = Path(a.out_dir); parent.mkdir(parents=True, exist_ok=True)
+    qc.record_params(parent, a)
+    fwd = list(a.passthrough or [])
+    if fwd and fwd[0] == "--":
+        fwd = fwd[1:]
+
+    rep_dirs = []
+    for k in range(a.n_repeats):
+        seed = a.seed0 + k
+        rd = parent / f"rep{k}"
+        rep_dirs.append(rd)
+        if any(rd.rglob("metrics.csv")):
+            print(f"  repeat {k + 1}/{a.n_repeats} (seed {seed}): already present, skipping")
+            continue
+        print(f"  repeat {k + 1}/{a.n_repeats} (seed {seed}) -> {rd}", flush=True)
+        argv = sys.argv[0:1] + fwd + ["--seed", str(seed), "--out-dir", str(rd)]
+        saved, sys.argv = sys.argv, argv
+        try:
+            _main_probe()
+        finally:
+            sys.argv = saved
+
+    def _agg(fname, keycols, out_name):
+        """Pool one metric file across repeats, keyed by keycols."""
+        pooled = {}
+        for rd in rep_dirs:
+            # the probe writes into <rep>/<model_name>/, so search rather than assume the path
+            found = sorted(rd.rglob(fname))
+            if not found:
+                continue
+            for row in csv.DictReader(found[0].open()):
+                key = tuple(row[c] for c in keycols)
+                for col, val in row.items():
+                    # counts describe the split, not the model -- pooling them would read as a score
+                    if col in keycols or col in ("n_classes", "n_test") or val in ("", "nan", None):
+                        continue
+                    try:
+                        pooled.setdefault((key, col), []).append(float(val))
+                    except ValueError:
+                        pass
+        if not pooled:
+            print(f"  no {fname} to aggregate"); return
+        rows = []
+        for (key, col), vals in sorted(pooled.items()):
+            n = len(vals); mean = statistics.fmean(vals)
+            sd = statistics.stdev(vals) if n > 1 else 0.0
+            half = 1.96 * sd / (n ** 0.5) if n > 1 else 0.0   # normal approx; n is small, report sd too
+            rows.append(dict(zip(keycols, key)) | {
+                "metric": col, "mean": round(mean, 4), "lo": round(mean - half, 4),
+                "hi": round(mean + half, 4), "sd": round(sd, 4), "n": n})
+        with (parent / out_name).open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+        print(f"  -> {parent / out_name}  ({len(rows)} rows)")
+
+    _agg("metrics.csv", ["layer"], "metrics_ci.csv")
+    _agg("chain_metrics.csv", ["target", "layer"], "chain_metrics_ci.csv")
+    qc.record_params(parent, a, extra={"n_repeats": a.n_repeats,
+                                       "seeds": [a.seed0 + k for k in range(a.n_repeats)]})
+
+
 _SUBCOMMANDS = {
     "probe": _main_probe,
     "composition": _main_composition,
+    "repeats": _main_repeats,
 }
 
 
