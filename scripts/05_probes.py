@@ -121,11 +121,14 @@ def _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, max_chains, pe
         if E.shape[1] != L:
             continue
         pooled.append(E.mean(axis=1))
-        cc = np.zeros(20)
-        for a in seq:
-            if a in AA_IDX:
-                cc[AA_IDX[a]] += 1
-        comp.append(cc / max(1, len(seq)))
+        if args.features == "physchem":
+            comp.append(_physchem_features(seq))
+        else:
+            cc = np.zeros(20)
+            for a in seq:
+                if a in AA_IDX:
+                    cc[AA_IDX[a]] += 1
+            comp.append(cc / max(1, len(seq)))
         for name, src, key in CHAIN_TARGETS_probe:
             d = manifest[cid] if src == "manifest" else annot.get(cid, {})
             chain_lab[name].append(d.get(key, None))
@@ -514,6 +517,57 @@ def _boot_ci(yte, pred, n_boot=1000, seed=42):
         f1s.append(f1_score(yte[idx], pred[idx], average="macro"))
     return (np.percentile(accs, [2.5, 97.5]), np.percentile(f1s, [2.5, 97.5]))
 
+# ---------------------------------------------------------------------------
+# Physicochemical descriptor baseline (the analogue of Magpie in materials ML)
+# ---------------------------------------------------------------------------
+# Plain amino-acid composition is the weakest defensible null -- it is the protein
+# equivalent of bare element fractions. Magpie, the standard materials baseline, instead
+# aggregates *elemental property* statistics (mean, spread, range of electronegativity,
+# radius, valence ...). The equivalent here is to aggregate amino-acid property scales
+# over the sequence. It is strictly stronger than composition, so a Delta measured against
+# it is a far more conservative claim of emergence.
+#
+# Published scales, one row per property, in AA order ACDEFGHIKLMNPQRSTVWY:
+#   kd      Kyte & Doolittle (1982) hydropathy
+#   chg     formal charge at pH 7
+#   vol     residue volume, A^3 (Zamyatnin 1972)
+#   pol     polarity (Grantham 1974)
+#   pI      isoelectric point
+#   helix   Chou-Fasman P(alpha)
+#   sheet   Chou-Fasman P(beta)
+#   flex    backbone flexibility (Bhaskaran & Ponnuswamy 1988)
+#   arom    aromatic indicator
+_AA_ORDER = "ACDEFGHIKLMNPQRSTVWY"
+_SCALES = {
+ "kd":    [ 1.8, 2.5,-3.5,-3.5, 2.8,-0.4,-3.2, 4.5,-3.9, 3.8, 1.9,-3.5,-1.6,-3.5,-4.5,-0.8,-0.7, 4.2,-0.9,-1.3],
+ "chg":   [ 0.0, 0.0,-1.0,-1.0, 0.0, 0.0, 0.1, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+ "vol":   [88.6,108.5,111.1,138.4,189.9,60.1,153.2,166.7,168.6,166.7,162.9,114.1,112.7,143.8,173.4,89.0,116.1,140.0,227.8,193.6],
+ "pol":   [ 8.1, 5.5,13.0,12.3, 5.2, 9.0,10.4, 5.2,11.3, 4.9, 5.7,11.6, 8.0,10.5,10.5, 9.2, 8.6, 5.9, 5.4, 6.2],
+ "pI":    [6.00,5.07,2.77,3.22,5.48,5.97,7.59,6.02,9.74,5.98,5.74,5.41,6.30,5.65,10.76,5.68,5.60,5.96,5.89,5.66],
+ "helix": [1.42,0.70,1.01,1.51,1.13,0.57,1.00,1.08,1.16,1.21,1.45,0.67,0.57,1.11,0.98,0.77,0.83,1.06,1.08,0.69],
+ "sheet": [0.83,1.19,0.54,0.37,1.38,0.75,0.87,1.60,0.74,1.30,1.05,0.89,0.55,1.10,0.93,0.75,1.19,1.70,1.37,1.47],
+ "flex":  [0.357,0.346,0.511,0.497,0.314,0.544,0.323,0.462,0.466,0.365,0.295,0.463,0.509,0.493,0.529,0.507,0.444,0.386,0.305,0.420],
+ "arom":  [0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+}
+
+
+def _physchem_features(seq):
+    """Magpie-style descriptor: per-property mean, sd, min, max over the sequence.
+
+    Returns composition (20) + 9 properties x 4 statistics (36) + log length = 57 features.
+    """
+    idx = [_AA_ORDER.index(a) for a in seq if a in _AA_ORDER]
+    if not idx:
+        return np.zeros(20 + 9 * 4 + 1)
+    comp = np.bincount(idx, minlength=20) / len(idx)
+    feats = [comp]
+    for name in ("kd", "chg", "vol", "pol", "pI", "helix", "sheet", "flex", "arom"):
+        v = np.asarray(_SCALES[name], dtype=float)[idx]
+        feats.append(np.array([v.mean(), v.std(), v.min(), v.max()]))
+    feats.append(np.array([np.log10(len(idx))]))
+    return np.concatenate(feats)
+
+
 def _clf_composition(Xtr, ytr, Xte, yte, linear):
     if linear:
         sc = StandardScaler().fit(Xtr)
@@ -533,6 +587,10 @@ def _main_composition() -> None:
     ap.add_argument("--ref-results-dir", default="results/esm",
                     help="embeddings dir defining the chain set/order (match stage 05)")
     ap.add_argument("--out-dir", default="results/probes")
+    ap.add_argument("--features", choices=["composition", "physchem"], default="composition",
+                    help="composition = 20-D amino-acid fractions (weak null). "
+                         "physchem = + mean/sd/min/max of 9 published property scales, "
+                         "the analogue of Magpie in materials ML and a much harder null.")
     ap.add_argument("--max-chains", type=int, default=5000)
     ap.add_argument("--test-frac", type=float, default=0.25)
     ap.add_argument("--seed", type=int, default=42)
@@ -564,7 +622,7 @@ def _main_composition() -> None:
         if g >= args.max_chains:
             break
     comp = np.array(comp); C = g
-    print(f"composition baseline over {C:,} chains")
+    print(f"{args.features} baseline over {C:,} chains, {comp.shape[1]} features")
 
     rng = np.random.default_rng(args.seed)
     test = np.zeros(C, bool)
