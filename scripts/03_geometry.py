@@ -236,8 +236,8 @@ def _main_overlap() -> None:
         lines.append(f"  {k:8s} vs {ref}: chain mutual-kNN={mkn:.3f}  cross-cluster ARI={cari:.3f}")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     (out / "summary.txt").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 
@@ -328,8 +328,8 @@ def _main_health() -> None:
         print(f"  {labels[i]:5s} cos={mc:.3f} cond={cond:.0f} pca90={p90} eff_rank={er:.1f}")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir) / args.model_name; out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     with (out / "health.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
 
@@ -453,8 +453,8 @@ def _main_clusters() -> None:
     print(f"[{args.model_name}] {res_emb.shape[1]:,} residues, {pool_emb.shape[1]:,} chains, {n_layers} layers")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir) / args.model_name; out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     for level, emb, lab in [("residue", res_emb, res_lab), ("chain", pool_emb, ch_lab)]:
         rows = []
         for i in range(n_layers):
@@ -671,8 +671,8 @@ def _main_umap() -> None:
     print(f"residues: {next(iter(res.values())).shape[0]:,}  chains: {next(iter(pool.values())).shape[0]:,}")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     cache = out / "coords.npz"
     if args.replot and cache.exists():        # re-render figures without recomputing UMAP
         z = np.load(cache, allow_pickle=True)

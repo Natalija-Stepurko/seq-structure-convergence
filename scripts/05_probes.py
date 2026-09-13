@@ -121,14 +121,11 @@ def _collect(ids, res_dir, prot_dir, restgt_dir, manifest, annot, max_chains, pe
         if E.shape[1] != L:
             continue
         pooled.append(E.mean(axis=1))
-        if args.features == "physchem":
-            comp.append(_physchem_features(seq))
-        else:
-            cc = np.zeros(20)
-            for a in seq:
-                if a in AA_IDX:
-                    cc[AA_IDX[a]] += 1
-            comp.append(cc / max(1, len(seq)))
+        cc = np.zeros(20)
+        for a in seq:
+            if a in AA_IDX:
+                cc[AA_IDX[a]] += 1
+        comp.append(cc / max(1, len(seq)))
         for name, src, key in CHAIN_TARGETS_probe:
             d = manifest[cid] if src == "manifest" else annot.get(cid, {})
             chain_lab[name].append(d.get(key, None))
@@ -610,11 +607,14 @@ def _main_composition() -> None:
         if not r.get("valid", True) or not (ref / f"{cid}.pt").exists():
             continue
         seq = str(np.load(prot / f"{cid}.npz", allow_pickle=True)["seq"])
-        cc = np.zeros(20)
-        for a in seq:
-            if a in AA_IDX:
-                cc[AA_IDX[a]] += 1
-        comp.append(cc / max(1, len(seq)))
+        if args.features == "physchem":
+            comp.append(_physchem_features(seq))
+        else:
+            cc = np.zeros(20)
+            for a in seq:
+                if a in AA_IDX:
+                    cc[AA_IDX[a]] += 1
+            comp.append(cc / max(1, len(seq)))
         for name, src in CHAIN_TARGETS_composition:
             d = manifest[cid] if src == "manifest" else annot.get(cid, {})
             chain_lab[name].append(d.get(name))
@@ -654,8 +654,8 @@ def _main_composition() -> None:
         print(f"  {name:20s} comp xgb F1={xf:.3f} [{xf_ci[0]:.3f}, {xf_ci[1]:.3f}] ({len(keep)} cls)")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     with (out / "composition_metrics.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
     print(f"-> {out/'composition_metrics.csv'}")

@@ -325,8 +325,8 @@ def _main_supervised() -> None:
               f"struct {s_lab[np.unravel_index(np.nanargmax(K), K.shape)[1]]}")
 
 
-    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     np.savez(out_dir / "kappa_grids.npz", e_lab=e_lab, s_lab=s_lab, **grids)
     _plot_supervised(panels, e_lab, s_lab, out_dir / "supervised_convergence.png")
     print(f"-> {out_dir}/supervised_convergence.png")
@@ -409,8 +409,8 @@ def _main_significance() -> None:
     args = ap.parse_args()
 
 
-    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     ids = [json.loads(l)["id"] for l in (Path(args.structures_dir) / "index.jsonl").open()
            if l.strip() and json.loads(l).get("valid", True)]
 
@@ -547,8 +547,8 @@ def _main_svccacontrols() -> None:
         lines.append("")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     with (out / "svcca_controls.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
     (out / "summary.txt").write_text("\n".join(lines) + "\n")
@@ -648,8 +648,8 @@ def _main_functional():
         stitch[lab] = accs
 
 
-    qc.record_params(out, a)   # provenance: exactly what produced these outputs
     out = Path(a.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, a)   # provenance: exactly what produced these outputs
     np.savez(out/"predictivity_grids.npz", esm_to_mpnn=G_es, mpnn_to_esm=G_se,
              stitch_real=stitch["ProteinMPNN"], stitch_rand=stitch["untrained MPNN"])
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt

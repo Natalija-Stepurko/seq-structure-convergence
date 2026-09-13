@@ -141,8 +141,8 @@ def _main_predictivity() -> None:
                   f"probe {acc_real:.3f} -> {acc_map:.3f} ({acc_map/acc_real:.0%} retained)")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     with (out / "stitch.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
     lines = ["Linear cross-prediction (stitching-lite): how much of the target representation is",
@@ -364,8 +364,8 @@ def _main_stitch() -> None:
         print(f"  [ESM lm_head]  {lab:38s} residue readout   {acc:.3f}")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     with (out / "stitch_results.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
     lines = ["Model stitching: each direction feeds one model's representation through a fitted",
@@ -603,8 +603,8 @@ def _main_depth() -> None:
                   f"   [base {b['majority_baseline']:.3f}, min-class n={b['min_class_support']}]{flag}")
 
 
-    qc.record_params(o, a)   # provenance: exactly what produced these outputs
     o = Path(a.out_dir); o.mkdir(parents=True, exist_ok=True)
+    qc.record_params(o, a)   # provenance: exactly what produced these outputs
     with (o / "depth_stitch.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
     lines = ["Per-property stitching at depth (macro-F1). 'stitched' = ProteinMPNN mapped into ESM",
