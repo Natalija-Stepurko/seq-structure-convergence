@@ -924,16 +924,29 @@ def _main_ladderci() -> None:
                 if at is None:
                     continue
                 i, j = at
-                # 2. resample residues, recomputing at that fixed layer pair
-                # CHAIN-level (block) bootstrap: residues within a chain are correlated, so
-                # resampling residues independently is pseudo-replication and yields intervals
-                # that are far too tight. Resample whole chains with replacement instead.
+                # 2. re-estimate at that fixed layer pair over independent CHAIN-level subsamples.
+                #
+                # Chains, not residues: residues within a chain are correlated, so resampling them
+                # independently is pseudo-replication and yields intervals far too tight.
+                #
+                # WITHOUT replacement, unlike a textbook bootstrap. Drawing chains with replacement
+                # duplicates whole chains, and a duplicated residue is its own nearest neighbour in
+                # BOTH models -- mutual k-NN then scores those pairs as automatic agreement. Measured
+                # against the no-duplicate estimate that inflated mutual k-NN by ~26%.
+                #
+                # All three metrics are also biased upward at small n, so every subsample is drawn to
+                # the SAME fixed residue budget and the estimate is reported at that budget. Comparing
+                # these numbers against a study using a different budget is not meaningful.
                 vals = []
                 for _ in range(args.n_resamples):
-                    pick = rng.choice(chains, len(chains), replace=True)
-                    idx = np.concatenate([by_chain[c] for c in pick])
-                    if idx.size > args.resample_size:
-                        idx = idx[rng.choice(idx.size, args.resample_size, replace=False)]
+                    order = rng.permutation(len(chains))
+                    take, n = [], 0
+                    for c in order:                      # accumulate whole chains up to the budget
+                        take.append(by_chain[chains[c]])
+                        n += take[-1].size
+                        if n >= args.resample_size:
+                            break
+                    idx = np.concatenate(take)[:args.resample_size]
                     v = fn(Alay[i][idx], Blay[j][idx])
                     if np.isfinite(v):
                         vals.append(float(v))
@@ -941,21 +954,32 @@ def _main_ladderci() -> None:
                     continue
                 m = statistics.fmean(vals)
                 sd = statistics.stdev(vals) if len(vals) > 1 else 0.0
-                half = 1.96 * sd / (len(vals) ** 0.5)
+                # PERCENTILE interval of the statistic. The previous 1.96*sd/sqrt(n) was the standard
+                # error of the resampling MEAN -- it described how precisely the mean was known, not
+                # how much the statistic varies, and was ~5x too narrow.
+                lo, hi = (float(np.percentile(vals, 2.5)), float(np.percentile(vals, 97.5)))
                 rows.append({"pair": label, "type": kind, "mode": mode, "metric": mname,
                              "full_sample": round(best, 4), "mean": round(m, 4),
-                             "lo": round(m - half, 4), "hi": round(m + half, 4),
+                             "lo": round(lo, 4), "hi": round(hi, 4),
                              "sd": round(sd, 4), "n_resamples": len(vals),
                              "peak_at": f"A{i}xB{j}", "n_chains": int(len(chains)),
-                             "bootstrap": "chain-level"})
+                             "n_residues_per_subsample": int(args.resample_size),
+                             "bootstrap": "chain-level subsample, no replacement, percentile CI"})
                 print(f"  {label:<30} {mode:<8} {mname:<11} "
                       f"{m:.3f} [{m - half:.3f}, {m + half:.3f}]  sd {sd:.4f}  ({len(chains)} chains)", flush=True)
         with (out / "ladder_ci.csv").open("w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
 
-    lines = ["Confidence intervals for every ladder pair, raw and amino-acid-controlled.",
-             f"{args.n_resamples} CHAIN-level bootstrap resamples at the peak layer pair,",
-             "which is located once on the full sample -- intervals are conditional on that location.", ""]
+    lines = ["Convergence for every ladder pair, raw and amino-acid-controlled.",
+             f"Point estimate and 95% percentile interval over {args.n_resamples} independent",
+             f"CHAIN-level subsamples of {args.resample_size:,} residues, drawn without replacement.",
+             "",
+             "Read the estimate as 'the value at this residue budget'. CKA, SVCCA and mutual k-NN are",
+             "all biased upward at smaller n (mutual k-NN worst), so these numbers are comparable",
+             "ACROSS THE ROWS of this table and not against a study using a different budget.",
+             "full_sample is the value on the whole collected sample, reported for reference only --",
+             "it is a different quantity and will sit outside the interval.",
+             "The peak layer pair is located once on the full sample; intervals are conditional on it.", ""]
     for r in rows:
         lines.append(f"  {r['pair']:<32} {r['mode']:<8} {r['metric']:<11} "
                      f"{r['mean']:.3f} [{r['lo']:.3f}, {r['hi']:.3f}]")
