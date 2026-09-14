@@ -8,6 +8,8 @@ Subcommands (each keeps the exact flags it had as a standalone script):
     significance     resampled CIs and empirical p-value for the peak
     svcca-controls   SVCCA permutation null and dimension matching
     functional       per-property convergence grids for annotation labels
+    aa-control       convergence with the shared training target partialled out
+    ladder-ci        confidence intervals for every pair, raw and AA-controlled
 
 The subcommand token is removed from argv before the original parser runs, so every command
 line that worked before still works, with the subcommand inserted after the script name:
@@ -324,8 +326,8 @@ def _main_supervised() -> None:
               f"struct {s_lab[np.unravel_index(np.nanargmax(K), K.shape)[1]]}")
 
 
-    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     np.savez(out_dir / "kappa_grids.npz", e_lab=e_lab, s_lab=s_lab, **grids)
     _plot_supervised(panels, e_lab, s_lab, out_dir / "supervised_convergence.png")
     print(f"-> {out_dir}/supervised_convergence.png")
@@ -408,8 +410,8 @@ def _main_significance() -> None:
     args = ap.parse_args()
 
 
-    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out_dir, args)   # provenance: exactly what produced these outputs
     ids = [json.loads(l)["id"] for l in (Path(args.structures_dir) / "index.jsonl").open()
            if l.strip() and json.loads(l).get("valid", True)]
 
@@ -546,8 +548,8 @@ def _main_svccacontrols() -> None:
         lines.append("")
 
 
-    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)   # provenance: exactly what produced these outputs
     with (out / "svcca_controls.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
     (out / "summary.txt").write_text("\n".join(lines) + "\n")
@@ -647,8 +649,8 @@ def _main_functional():
         stitch[lab] = accs
 
 
-    qc.record_params(out, a)   # provenance: exactly what produced these outputs
     out = Path(a.out_dir); out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, a)   # provenance: exactly what produced these outputs
     np.savez(out/"predictivity_grids.npz", esm_to_mpnn=G_es, mpnn_to_esm=G_se,
              stitch_real=stitch["ProteinMPNN"], stitch_rand=stitch["untrained MPNN"])
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
@@ -676,9 +678,291 @@ def _main_functional():
     print(f"-> {out}")
 
 
+
+
+# ==========================================================================================
+# aa-control  --  convergence with the shared training target partialled out
+# ==========================================================================================
+#
+# Both model families are trained to predict amino-acid identity: the sequence models by
+# masking it, the inverse-folding models by recovering it from backbone geometry. A shared
+# representation of the residue's own amino acid is therefore a common cause, not evidence of
+# a shared representation of protein space -- and it is large, because a sequence model's input
+# layer is very nearly a pure amino-acid code (SVCCA 1.000 against a one-hot encoding).
+#
+# This subcommand reports every pair before and after removing that target. Because the one-hot
+# design is full rank, projecting it out reduces to subtracting each residue's amino-acid class
+# mean. Layers whose residual is degenerate (a pure amino-acid lookup) are excluded from BOTH
+# columns so the two are computed over one layer set and remain comparable.
+
+AA = "ACDEFGHIKLMNPQRSTVWY"
+AA_IDX = {a: i for i, a in enumerate(AA)}
+
+
+def _aa_load_layers(p):
+    return torch.load(p, weights_only=False)["layers"].to(torch.float32).numpy()
+
+
+def _aa_collect(ids, a_dir, b_dir, prot_dir, max_residues, seed=42, return_groups=False):
+    """Residue-aligned layer stacks for a model pair, plus the amino acid at each residue.
+
+    With return_groups=True also returns a chain index per residue. Residues from one chain
+    are strongly correlated, so any resampling that treats them as independent understates
+    uncertainty; callers doing statistics must resample chains, not residues.
+    """
+    rng = np.random.default_rng(seed)
+    A_parts, B_parts, aa_parts, grp_parts = [], [], [], []
+    total = 0
+    n_chain = 0
+    for cid in ids:
+        pa, pb = a_dir / f"{cid}.pt", b_dir / f"{cid}.pt"
+        if not (pa.exists() and pb.exists()):
+            continue
+        A, B = _aa_load_layers(pa), _aa_load_layers(pb)
+        if A.shape[1] != B.shape[1]:
+            continue
+        npz = np.load(prot_dir / f"{cid}.npz", allow_pickle=True)
+        seq = str(npz["seq"])
+        L = A.shape[1]
+        if len(seq) != L:
+            continue
+        cap = max(1, min(L, max_residues // 50))
+        idx = rng.choice(L, cap, replace=False) if L > cap else np.arange(L)
+        A_parts.append(A[:, idx, :]); B_parts.append(B[:, idx, :])
+        aa_parts.append(np.array([AA_IDX.get(seq[i], -1) for i in idx]))
+        grp_parts.append(np.full(len(idx), n_chain)); n_chain += 1
+        total += len(idx)
+        if total >= max_residues:
+            break
+    A = np.concatenate(A_parts, axis=1); B = np.concatenate(B_parts, axis=1)
+    aa = np.concatenate(aa_parts); grp = np.concatenate(grp_parts)
+    keep = aa >= 0
+    if return_groups:
+        return A[:, keep, :], B[:, keep, :], aa[keep], grp[keep]
+    return A[:, keep, :], B[:, keep, :], aa[keep]
+
+
+def _aa_residualise(X, aa):
+    """Remove E[X | amino acid] -- i.e. project out the one-hot amino-acid design."""
+    R = X.astype(np.float64).copy()
+    for a in np.unique(aa):
+        m = aa == a
+        R[m] -= R[m].mean(axis=0, keepdims=True)
+    return R
+
+
+def _aa_degenerate(X, tol=1e-9):
+    """A residual with no variance left carries nothing beyond amino-acid identity."""
+    return float(np.sum(X ** 2)) < tol
+
+
+def _aa_grid_peaks(A, B, aa, partial):
+    """Peak similarity over the layer grid.
+
+    Residualised layers are computed ONCE per layer rather than once per pair. Layers whose
+    residual is degenerate -- a pure amino-acid lookup, e.g. a sequence model's embedding --
+    are skipped: with nothing left after the shared target is removed there is no subspace to
+    compare, and SVCCA would divide by zero.
+    """
+    # Use the SAME layer set for raw and partial. A layer whose residual is degenerate is a
+    # pure amino-acid lookup (a sequence model's embedding); its raw similarity is a comparison
+    # of amino-acid codes, not of representations, and the raw CKA peak otherwise lands there --
+    # which would make the raw and partial columns peak at different layers and not be comparable.
+    Ares = [_aa_residualise(A[i], aa) for i in range(A.shape[0])]
+    Bres = [_aa_residualise(B[j], aa) for j in range(B.shape[0])]
+    Aok = [i for i in range(A.shape[0]) if not _aa_degenerate(Ares[i])]
+    Bok = [j for j in range(B.shape[0]) if not _aa_degenerate(Bres[j])]
+    Alay = {i: (Ares[i] if partial else A[i].astype(np.float64)) for i in Aok}
+    Blay = {j: (Bres[j] if partial else B[j].astype(np.float64)) for j in Bok}
+    best = {"cka": (-9.0, None), "svcca": (-9.0, None), "mutual_knn": (-9.0, None)}
+    for i, Ai in Alay.items():
+        Aic = qc.column_center(Ai)
+        for j, Bj in Blay.items():
+            for k, v in [("cka", qc.linear_cka(Aic, qc.column_center(Bj))),
+                         ("svcca", qc.svcca(Ai, Bj)),
+                         ("mutual_knn", qc.mutual_knn(Ai, Bj))]:
+                if np.isfinite(v) and v > best[k][0]:
+                    best[k] = (float(v), f"A{i}xB{j}")
+    for k in best:
+        if best[k][1] is None:
+            best[k] = (float("nan"), "all layers degenerate")
+    return best
+
+
+_AA_PAIRS = [
+    ("CARP x ESM-2",             "carp",        "esm",         "within-sequence"),
+    ("ESM-IF1 x ProteinMPNN",    "esmif1",      "proteinmpnn", "within-structure"),
+    ("ESM-2 650M x ESM-IF1",     "esm650",      "esmif1",      "cross-modality"),
+    ("ESM-2 35M x ProteinMPNN",  "esm",         "proteinmpnn", "cross-modality"),
+    ("CARP x ESM-IF1",           "carp",        "esmif1",      "cross-modality"),
+    ("ESM-2 650M x ProteinMPNN", "esm650",      "proteinmpnn", "cross-modality"),
+    ("CARP x ProteinMPNN",       "carp",        "proteinmpnn", "cross-modality"),
+    ("ESM-1v x ProteinMPNN",     "esm1v_s1",    "proteinmpnn", "cross-modality"),
+    ("untrained x untrained",    "rand_esm",    "rand_mpnn",   "control"),
+    ("trained seq x untrained str","esm",       "rand_mpnn",   "control"),
+    ("untrained seq x trained str","rand_esm",  "proteinmpnn", "control"),
+    ("ESM-1v s1 x ESM-1v s2",    "esm1v_s1",    "esm1v_s2",    "same arch, diff seed"),
+]
+
+
+def _main_aacontrol() -> None:
+    ap = argparse.ArgumentParser(
+        description="Convergence before and after partialling out amino-acid identity")
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--results-root", default="/ssc/results")
+    ap.add_argument("--max-residues", type=int, default=20000)
+    ap.add_argument("--out-dir", default="/ssc/results/aa_control")
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    sdir = Path(args.structures_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    out = Path(args.out_dir)
+    qc.record_params(out, args)
+    results = {}
+    for label, a, b, kind in _AA_PAIRS:
+        da, db = Path(args.results_root) / a, Path(args.results_root) / b
+        if not (da.exists() and db.exists()):
+            print(f"  {label:<30} SKIP (missing embeddings)"); continue
+        A, B, aa = _aa_collect(ids, da, db, sdir / "proteins", args.max_residues, args.seed)
+        raw = _aa_grid_peaks(A, B, aa, partial=False)
+        par = _aa_grid_peaks(A, B, aa, partial=True)
+        results[label] = {"kind": kind, "n_residues": int(len(aa)),
+                          "raw": {k: v[0] for k, v in raw.items()},
+                          "partial": {k: v[0] for k, v in par.items()}}
+        print(f"  {label:<30} raw cka={raw['cka'][0]:.3f} svcca={raw['svcca'][0]:.3f} "
+              f"knn={raw['mutual_knn'][0]:.3f}  |  partial cka={par['cka'][0]:.3f} "
+              f"svcca={par['svcca'][0]:.3f} knn={par['mutual_knn'][0]:.3f}", flush=True)
+        (out / "partial_convergence.json").write_text(json.dumps(results, indent=2) + "\n")
+    qc.record_params(out, args, extra={"n_pairs": len(results)})
+    print(f"-> {out}")
+
+
 # ==========================================================================================
 # dispatch
 # ==========================================================================================
+
+# ==========================================================================================
+# ladder-ci  --  confidence intervals for every pair in the control ladder
+# ==========================================================================================
+
+def _main_ladderci() -> None:
+    """Resample residues to put a confidence interval on every pair, raw and AA-controlled.
+
+    Only one pair in the study was ever resampled; the rest of the ladder is single
+    measurements. Since the central claims are comparisons BETWEEN rows of that ladder
+    (cross-modality vs ceiling vs floor), rows without error bars cannot support them.
+
+    Recomputing the full layer x layer grid per resample is not affordable -- one 34x34 grid
+    takes hours -- so the peak layer pair is located once on the full sample and the metric
+    is then recomputed at that fixed pair across resamples. The interval is therefore
+    *conditional on the peak location*, which is stated in the output. Peak-location
+    stability is measured separately by the `significance` subcommand.
+
+    Outputs (under --out-dir): ladder_ci.csv, summary.txt
+    """
+    import argparse
+    import csv
+    import statistics
+
+    ap = argparse.ArgumentParser(description="Confidence intervals for every ladder pair")
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--results-root", default="/ssc/results")
+    ap.add_argument("--max-residues", type=int, default=20000)
+    ap.add_argument("--n-resamples", type=int, default=25)
+    ap.add_argument("--resample-size", type=int, default=8000,
+                    help="residues drawn per resample; smaller keeps mutual k-NN affordable")
+    ap.add_argument("--out-dir", default="/ssc/results/ladder_ci")
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    out = Path(args.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)
+
+    sdir = Path(args.structures_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    rng = np.random.default_rng(args.seed)
+
+    METRICS = {"cka": lambda a, b: qc.linear_cka(qc.column_center(a), qc.column_center(b)),
+               "svcca": qc.svcca,
+               "mutual_knn": qc.mutual_knn}
+    rows = []
+    for label, an, bn, kind in _AA_PAIRS:
+        da, db = Path(args.results_root) / an, Path(args.results_root) / bn
+        if not (da.exists() and db.exists()):
+            print(f"  {label:<30} SKIP (missing embeddings)", flush=True)
+            continue
+        A, B, aa, grp = _aa_collect(ids, da, db, sdir / "proteins", args.max_residues,
+                                    args.seed, return_groups=True)
+        chains = np.unique(grp)
+        by_chain = {c: np.flatnonzero(grp == c) for c in chains}
+
+        for mode in ("raw", "partial"):
+            Alay = [(_aa_residualise(A[i], aa) if mode == "partial" else A[i].astype(np.float64))
+                    for i in range(A.shape[0])]
+            Blay = [(_aa_residualise(B[j], aa) if mode == "partial" else B[j].astype(np.float64))
+                    for j in range(B.shape[0])]
+            # exclude layers that are pure amino-acid lookups, as elsewhere
+            Ares = [_aa_residualise(A[i], aa) for i in range(A.shape[0])]
+            Bres = [_aa_residualise(B[j], aa) for j in range(B.shape[0])]
+            ok_a = [i for i in range(len(Alay)) if not _aa_degenerate(Ares[i])]
+            ok_b = [j for j in range(len(Blay)) if not _aa_degenerate(Bres[j])]
+            if not ok_a or not ok_b:
+                continue
+
+            for mname, fn in METRICS.items():
+                # 1. locate the peak once, on the full sample
+                best, at = -9.0, None
+                for i in ok_a:
+                    for j in ok_b:
+                        v = fn(Alay[i], Blay[j])
+                        if np.isfinite(v) and v > best:
+                            best, at = float(v), (i, j)
+                if at is None:
+                    continue
+                i, j = at
+                # 2. resample residues, recomputing at that fixed layer pair
+                # CHAIN-level (block) bootstrap: residues within a chain are correlated, so
+                # resampling residues independently is pseudo-replication and yields intervals
+                # that are far too tight. Resample whole chains with replacement instead.
+                vals = []
+                for _ in range(args.n_resamples):
+                    pick = rng.choice(chains, len(chains), replace=True)
+                    idx = np.concatenate([by_chain[c] for c in pick])
+                    if idx.size > args.resample_size:
+                        idx = idx[rng.choice(idx.size, args.resample_size, replace=False)]
+                    v = fn(Alay[i][idx], Blay[j][idx])
+                    if np.isfinite(v):
+                        vals.append(float(v))
+                if not vals:
+                    continue
+                m = statistics.fmean(vals)
+                sd = statistics.stdev(vals) if len(vals) > 1 else 0.0
+                half = 1.96 * sd / (len(vals) ** 0.5)
+                rows.append({"pair": label, "type": kind, "mode": mode, "metric": mname,
+                             "full_sample": round(best, 4), "mean": round(m, 4),
+                             "lo": round(m - half, 4), "hi": round(m + half, 4),
+                             "sd": round(sd, 4), "n_resamples": len(vals),
+                             "peak_at": f"A{i}xB{j}", "n_chains": int(len(chains)),
+                             "bootstrap": "chain-level"})
+                print(f"  {label:<30} {mode:<8} {mname:<11} "
+                      f"{m:.3f} [{m - half:.3f}, {m + half:.3f}]  sd {sd:.4f}  ({len(chains)} chains)", flush=True)
+        with (out / "ladder_ci.csv").open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+
+    lines = ["Confidence intervals for every ladder pair, raw and amino-acid-controlled.",
+             f"{args.n_resamples} CHAIN-level bootstrap resamples at the peak layer pair,",
+             "which is located once on the full sample -- intervals are conditional on that location.", ""]
+    for r in rows:
+        lines.append(f"  {r['pair']:<32} {r['mode']:<8} {r['metric']:<11} "
+                     f"{r['mean']:.3f} [{r['lo']:.3f}, {r['hi']:.3f}]")
+    (out / "summary.txt").write_text("\n".join(lines) + "\n")
+    qc.record_params(out, args, extra={"n_pairs": len({r["pair"] for r in rows})})
+    print(f"-> {out}")
+
 
 _SUBCOMMANDS = {
     "grids": _main_grids,
@@ -686,6 +970,8 @@ _SUBCOMMANDS = {
     "significance": _main_significance,
     "svcca-controls": _main_svccacontrols,
     "functional": _main_functional,
+    "aa-control": _main_aacontrol,
+    "ladder-ci": _main_ladderci,
 }
 
 

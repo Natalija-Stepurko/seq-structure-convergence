@@ -1,24 +1,33 @@
 # seq-structure-convergence
 
 **Do a sequence-trained and a structure-trained protein foundation model converge to the
-same internal representation of protein space — despite never sharing a training signal?**
+same internal representation of protein space — beyond what their shared training target
+already explains?**
 
-This project takes two protein foundation models built on *fundamentally different* learning
-signals and asks whether their internal representations nonetheless organise protein space the
-same way — a cross-modality test of the [Platonic Representation Hypothesis](https://arxiv.org/abs/2405.07987)
-across the sequence/structure divide.
+This project takes two protein foundation models with *opposite inputs* and asks whether their
+internal representations nonetheless organise protein space the same way — a cross-modality test
+of the [Platonic Representation Hypothesis](https://arxiv.org/abs/2405.07987) across the
+sequence/structure divide.
+
+The qualifier matters, and it is the point of the study. The two models see disjoint inputs, but
+they are trained against the **same target**: amino-acid identity — one by masking it, the other
+by recovering it from backbone geometry. A sequence model's input layer is very nearly a pure
+amino-acid code (SVCCA 1.000 against a one-hot encoding), so a naive similarity measurement will
+report that shared target as convergence. Measured convergence is therefore reported **with
+amino-acid identity partialled out**, alongside a residue-permutation null.
 
 - **Sequence arm — [ESM-2](https://www.science.org/doi/10.1126/science.ade2574).** A transformer
   trained *only* on masked amino-acid prediction. It never sees 3D coordinates, yet is known to
   encode structure in its representations (Rives et al. 2021; Rao et al. 2021; Lin et al. 2023).
 - **Structure arm — [ESM-IF1](https://www.science.org/doi/10.1126/science.add2187) / [ProteinMPNN](https://www.science.org/doi/10.1126/science.add2187).**
-  A GVP / message-passing network trained *on 3D structure* (to recover sequence). It never
-  optimises a sequence-only objective, and implicitly learns structural energetics
+  A GVP / message-passing network whose *input* is 3D backbone geometry alone; it never sees the
+  sequence, though it is trained to recover it. It implicitly learns structural energetics
   (cf. AlphaFold: Roney & Ovchinnikov 2022).
 
-The two use different architectures and opposite *input* modalities. If their internal maps of
-protein space converge — measured with CKA/SVCCA/mutual-kNN, layer by layer — that is evidence for a
-shared, modality-independent representation of proteins.
+The two use different architectures and opposite *input* modalities, but a shared *prediction
+target*. If their internal maps of protein space converge beyond that shared target — measured
+with CKA/SVCCA/mutual-kNN layer by layer, with amino-acid identity partialled out — that is
+evidence for a shared, modality-independent representation of proteins.
 
 ### What this repository is for
 
@@ -36,6 +45,9 @@ score can be produced by an untrained network. This repository exists to measure
 - **A ladder of reference points** — within-sequence and within-structure ceilings, randomly
   initialised floors, one-side-trained controls, and a same-architecture different-seed pair that
   establishes each metric *can* detect correspondence when it exists.
+- **A shared-target control.** Both arms are trained to predict amino-acid identity, which is a
+  common cause rather than evidence of a shared representation. Every similarity is therefore also
+  reported with amino-acid identity residualised out — the convergence that survives is the claim.
 - **Functional checks as well as structural ones** — model stitching through a frozen output head,
   and linear predictivity across every pair in both directions.
 - **Probes on a single fixed protein set**, so no property comparison is confounded by a change of
