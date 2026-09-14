@@ -26,27 +26,48 @@ def linear_cka(X: np.ndarray, Y: np.ndarray) -> float:
     return float(xy / (xx * yy)) if xx * yy > 0 else float("nan")
 
 
-def svcca(Xa: np.ndarray, Xb: np.ndarray, var: float = 0.99,
-          max_rows: int = 5000, seed: int = 42) -> float:
-    """SVD-denoise each representation to `var` energy, then mean CCA correlation."""
-    rng = np.random.default_rng(seed)
-    n = Xa.shape[0]
+def svcca_reduce(X: np.ndarray, var: float = 0.99,
+                 max_rows: int = 5000, seed: int = 42) -> np.ndarray:
+    """The per-matrix half of SVCCA: subsample rows, centre, SVD-denoise, orthonormalise.
+
+    Split out so a layer grid can reduce each layer ONCE instead of once per partner. The row
+    subsample is seeded and depends only on n, so reductions computed separately still align
+    row-for-row -- which is what makes caching safe.
+
+    On a 34x49 grid this is 83 reductions instead of 3,332; the SVD dominates svcca's cost, so
+    the grid gets roughly an order of magnitude cheaper.
+    """
+    X = np.asarray(X, dtype=np.float64)
+    n = X.shape[0]
     if n > max_rows and max_rows > 0:
-        idx = rng.choice(n, max_rows, replace=False)
-        Xa, Xb = Xa[idx], Xb[idx]
+        X = X[np.random.default_rng(seed).choice(n, max_rows, replace=False)]
+    Xc = X - X.mean(0, keepdims=True)
+    U, S, _ = np.linalg.svd(Xc, full_matrices=False)
+    total = np.sum(S ** 2)
+    if not np.isfinite(total) or total <= 0:
+        return np.zeros((Xc.shape[0], 0))
+    k = int(np.searchsorted(np.cumsum(S ** 2) / total, var) + 1)
+    Q, _ = np.linalg.qr(U[:, :k] * S[:k])
+    return Q
 
-    def _reduce(X: np.ndarray) -> np.ndarray:
-        Xc = X - X.mean(0, keepdims=True)
-        U, S, _ = np.linalg.svd(Xc, full_matrices=False)
-        energy = np.cumsum(S ** 2) / np.sum(S ** 2)
-        k = int(np.searchsorted(energy, var) + 1)
-        return U[:, :k] * S[:k]
 
-    A, B = _reduce(Xa), _reduce(Xb)
-    Qa, _ = np.linalg.qr(A)
-    Qb, _ = np.linalg.qr(B)
+def svcca_from_reduced(Qa: np.ndarray, Qb: np.ndarray) -> float:
+    """Mean CCA correlation between two matrices already passed through svcca_reduce."""
+    if Qa.shape[1] == 0 or Qb.shape[1] == 0:
+        return float("nan")
     s = np.linalg.svd(Qa.T @ Qb, compute_uv=False)
     return float(np.clip(s, 0, 1).mean())
+
+
+def svcca(Xa: np.ndarray, Xb: np.ndarray, var: float = 0.99,
+          max_rows: int = 5000, seed: int = 42) -> float:
+    """SVD-denoise each representation to `var` energy, then mean CCA correlation.
+
+    Note the `max_rows` cap: SVCCA is evaluated on at most 5,000 rows even when handed more,
+    so its effective sample size differs from CKA's and mutual k-NN's on the same call.
+    """
+    return svcca_from_reduced(svcca_reduce(Xa, var, max_rows, seed),
+                              svcca_reduce(Xb, var, max_rows, seed))
 
 
 def knn_purity(X: np.ndarray, labels: np.ndarray, k: int = 15,

@@ -886,9 +886,10 @@ def _main_ladderci() -> None:
            if l.strip() and json.loads(l).get("valid", True)]
     rng = np.random.default_rng(args.seed)
 
-    METRICS = {"cka": lambda a, b: qc.linear_cka(qc.column_center(a), qc.column_center(b)),
-               "svcca": qc.svcca,
-               "mutual_knn": qc.mutual_knn}
+    # (per-matrix prep, pairing) -- see the peak-search loop for why these are split
+    METRICS = {"cka": (qc.column_center, qc.linear_cka),
+               "svcca": (qc.svcca_reduce, qc.svcca_from_reduced),
+               "mutual_knn": (lambda x: x, qc.mutual_knn)}
     rows = []
     for label, an, bn, kind in _AA_PAIRS:
         da, db = Path(args.results_root) / an, Path(args.results_root) / bn
@@ -913,14 +914,21 @@ def _main_ladderci() -> None:
             if not ok_a or not ok_b:
                 continue
 
-            for mname, fn in METRICS.items():
-                # 1. locate the peak once, on the full sample
+            for mname, (prep, pair_fn) in METRICS.items():
+                # 1. locate the peak once, on the full sample.
+                # Each layer is prepared ONCE rather than once per partner. Both CKA and SVCCA
+                # split into a per-matrix step (centring; SVD-denoise) and a cheap pairing step,
+                # and the per-matrix step is what costs -- SVCCA's SVD is ~9 s at 480 dimensions.
+                # Preparing inside the double loop repeated it len(ok_b) and len(ok_a) times.
+                Aprep = {i: prep(Alay[i]) for i in ok_a}
+                Bprep = {j: prep(Blay[j]) for j in ok_b}
                 best, at = -9.0, None
                 for i in ok_a:
                     for j in ok_b:
-                        v = fn(Alay[i], Blay[j])
+                        v = pair_fn(Aprep[i], Bprep[j])
                         if np.isfinite(v) and v > best:
                             best, at = float(v), (i, j)
+                del Aprep, Bprep
                 if at is None:
                     continue
                 i, j = at
@@ -947,7 +955,9 @@ def _main_ladderci() -> None:
                         if n >= args.resample_size:
                             break
                     idx = np.concatenate(take)[:args.resample_size]
-                    v = fn(Alay[i][idx], Blay[j][idx])
+                    # prep must be redone here: the rows differ every subsample, so a cached
+                    # reduction from the peak search would not apply.
+                    v = pair_fn(prep(Alay[i][idx]), prep(Blay[j][idx]))
                     if np.isfinite(v):
                         vals.append(float(v))
                 if not vals:
