@@ -220,12 +220,16 @@ versions, so a result can always be traced to what produced it.
 | | `significance` | resampled CIs and an empirical p-value for the convergence peak |
 | | `svcca-controls` | SVCCA's permutation null and dimension matching — shows the null grows with width |
 | | `functional` | per-property convergence grids for the annotation labels |
+| | `aa-control` | re-measures every pair with amino-acid identity partialled out — the training target both model families share |
+| | `ladder-ci` | the full control ladder, raw and AA-controlled, with intervals from chain-level subsampling |
 | **`05_probes.py`** | `probe` | linear + XGBoost probes per layer × property, chain-grouped splits |
-| | `composition` | amino-acid-composition-only baseline with CIs — what the probes must beat |
+| | `composition` | composition and physicochemical baselines with CIs — what the probes must beat |
+| | `repeats` | refits `probe` N times on independent chain-level splits and aggregates to intervals |
 | **`06_stitching.py`** | `stitch` | stitching through each model's own frozen head |
 | | `predictivity` | linear predictivity for one pair, both directions |
 | | `matrix` | linear predictivity across every model pair |
 | | `depth` | per-property stitching at an intermediate layer |
+| | `grid` | every donor layer × every injection depth, scoring all four conditions |
 
 Supporting files: `qc_common.py` (CKA / SVCCA / mutual k-NN / k-NN purity / LVR, plus the
 provenance recorder), `fig1_schematic.py`, and `vendor/proteinmpnn/`.
@@ -270,6 +274,25 @@ uv run python scripts/01_dataset.py fetch --structures-dir structures_test --lim
 - **Redundancy control.** Use identity-clustered / held-out-superfamily splits (e.g. CATH-S40) so
   probe accuracy reflects generalisation, not memorised homology.
 - **CPU numerics.** Runs are CPU-only by default; results are independent of GPU availability.
+- **Provenance.** Every stage writes `params.json` beside its outputs: resolved arguments, the exact
+  command, git commit and dirty flag, library versions, and a UTC timestamp. Two grids computed at
+  different residue budgets are not comparable, and nothing in the arrays or figures would otherwise
+  reveal the difference.
+
+### Reading the interval estimates
+
+Three conventions matter when comparing these numbers against another study:
+
+- **Intervals come from chain-level subsampling without replacement.** Residues within a chain are
+  correlated, so resampling residues independently understates the spread. Chains are drawn *without*
+  replacement because a duplicated chain makes a residue its own nearest neighbour in both models,
+  which mutual k-NN scores as automatic agreement.
+- **CKA, SVCCA and mutual k-NN are all biased upward at smaller n**, and not equally — going from
+  20,190 residues to 8,000 raises CKA ~2%, SVCCA ~5% and mutual k-NN ~26%. Every subsample is
+  therefore drawn to the same fixed residue budget, and the estimate is reported *at that budget*.
+  **A convergence score is not comparable across studies that used different sample sizes.**
+- **`qc.svcca` caps at `max_rows=5000`** internally, so its effective sample size is smaller than
+  CKA's and mutual k-NN's on the same call.
 
 ---
 
