@@ -966,7 +966,7 @@ def _main_ladderci() -> None:
                              "n_residues_per_subsample": int(args.resample_size),
                              "bootstrap": "chain-level subsample, no replacement, percentile CI"})
                 print(f"  {label:<30} {mode:<8} {mname:<11} "
-                      f"{m:.3f} [{m - half:.3f}, {m + half:.3f}]  sd {sd:.4f}  ({len(chains)} chains)", flush=True)
+                      f"{m:.3f} [{lo:.3f}, {hi:.3f}]  sd {sd:.4f}  ({len(chains)} chains)", flush=True)
         with (out / "ladder_ci.csv").open("w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
 
