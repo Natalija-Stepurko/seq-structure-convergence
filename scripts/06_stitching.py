@@ -26,6 +26,7 @@ Merged from:
 import argparse
 import csv
 import json
+import statistics
 import sys
 import warnings
 from itertools import combinations
@@ -762,7 +763,11 @@ def _main_grid() -> None:
                     sc = _score(F[cond], Y[prop], tr & m, te & m, kind)
                     rec[f"{prop}_{cond}"] = sc[0] if isinstance(sc, tuple) else sc
             rows.append(rec)
-            msg = "  ".join(f"{p}={rec.get(f'{p}_stitched')}" for p in args.properties)
+            # Report stitched against DONOR-DIRECT, not against native. Native is the flattering
+            # comparison -- the donor is simply better at these properties to begin with -- so
+            # quoting it alone makes stitching look like it works when it does not.
+            msg = "  ".join(f"{p} stitch={rec.get(f'{p}_stitched')} donor={rec.get(f'{p}_donor')}"
+                            for p in args.properties)
             print(f"  donor enc{dl+1} -> ESM L{il:<2d}  connector R2={conn_r2:+.3f}   {msg}", flush=True)
             with (out / "stitch_grid.csv").open("w", newline="") as f:
                 w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
@@ -770,16 +775,36 @@ def _main_grid() -> None:
 
     best = max(rows, key=lambda r: r["connector_r2_heldout"]) if rows else None
     lines = ["Stitching grid: every donor layer into every injection depth.",
+             "",
+             "Four conditions per cell. The comparison that decides the question is",
+             "stitched vs DONOR, not stitched vs native:",
+             "  donor          the donor representation alone, no receiver blocks at all",
+             "  stitched_rand  through the receiver's UNTRAINED blocks  (did training matter?)",
+             "  stitched       through the receiver's TRAINED blocks",
+             "  native         the receiver's own representation",
+             "",
              "connector_r2_heldout is the linear map's own quality on held-out chains -- if it is",
              "low, the stitched scores describe the map rather than the models' composability.", ""]
     if best:
         lines.append(f"best connector: donor enc{best['donor_layer']} -> ESM L{best['inject_layer']}"
                      f"  R2={best['connector_r2_heldout']:.3f}")
+
+    # headline: receiver blocks only earn their keep if stitched beats donor-direct
+    wins = sum(1 for r in rows for p in args.properties if r[f"{p}_stitched"] > r[f"{p}_donor"])
+    total = len(rows) * len(args.properties)
+    lines.append(f"stitched beat donor-direct in {wins} of {total} cells "
+                 f"({'receiver blocks add nothing' if wins * 2 < total else 'see per-cell rows'})")
+    for cond in ("donor", "stitched_rand", "stitched", "native"):
+        means = " ".join(f"{p}={statistics.fmean(r[f'{p}_{cond}'] for r in rows):.3f}"
+                         for p in args.properties)
+        lines.append(f"  mean {cond:<14} {means}")
+    lines.append("")
     for r in rows:
         lines.append(f"  enc{r['donor_layer']} -> L{r['inject_layer']:<2d} "
                      f"connR2={r['connector_r2_heldout']:+.3f} " +
-                     " ".join(f"{k}={v}" for k, v in r.items()
-                              if k.endswith("_stitched") or k.endswith("_native")))
+                     " ".join(f"{p}[don={r[f'{p}_donor']} rnd={r[f'{p}_stitched_rand']} "
+                              f"stch={r[f'{p}_stitched']} nat={r[f'{p}_native']}]"
+                              for p in args.properties))
     (out / "summary.txt").write_text("\n".join(lines) + "\n")
     qc.record_params(out, args, extra={"n_cells": len(rows)})
     print(f"-> {out}")
