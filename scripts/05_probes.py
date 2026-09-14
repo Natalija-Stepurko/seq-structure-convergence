@@ -744,10 +744,18 @@ def _main_repeats() -> None:
         for (key, col), vals in sorted(pooled.items()):
             n = len(vals); mean = statistics.fmean(vals)
             sd = statistics.stdev(vals) if n > 1 else 0.0
-            half = 1.96 * sd / (n ** 0.5) if n > 1 else 0.0   # normal approx; n is small, report sd too
+            # Spread of the SCORE across refits (mean +- 1.96 sd), not the standard error of the
+            # mean. sd/sqrt(n) answers "how precisely do we know the average of these 5 fits",
+            # which is not the question -- it shrinks with more refits and produced intervals so
+            # narrow that two targets read as separated when they are not.
+            #
+            # Still not a paired significance test: the two models are refit independently on
+            # their own splits, so a non-overlap is suggestive rather than decisive.
+            half = 1.96 * sd if n > 1 else 0.0
             rows.append(dict(zip(keycols, key)) | {
                 "metric": col, "mean": round(mean, 4), "lo": round(mean - half, 4),
-                "hi": round(mean + half, 4), "sd": round(sd, 4), "n": n})
+                "hi": round(mean + half, 4), "sd": round(sd, 4), "n": n,
+                "interval": "mean +- 1.96 sd across refits"})
         with (parent / out_name).open("w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
         print(f"  -> {parent / out_name}  ({len(rows)} rows)")
