@@ -1,0 +1,4 @@
+direction,source,accuracy
+"struct→seq (ESM lm_head, residue readout)",ESM's own final layer (ceiling),0.969
+"struct→seq (ESM lm_head, residue readout)",ProteinMPNN stitched into ESM lm_head,0.523
+"struct→seq (ESM lm_head, residue readout)",untrained MPNN stitched in (floor),0.1653

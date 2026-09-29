@@ -1,0 +1,36 @@
+{
+  "script": "06_stitching.py",
+  "timestamp_utc": "2026-09-13T22:18:46+00:00",
+  "command": "scripts/06_stitching.py --n-chains 400 --per-chain 25 --properties ss3 burial rsa --out-dir /ssc/results/stitch_grid",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "esm_dir": "/ssc/results/esm",
+    "struct_dir": "/ssc/results/proteinmpnn",
+    "esm_model": "esm2_t12_35M_UR50D",
+    "out_dir": "/ssc/results/stitch_grid",
+    "n_chains": 400,
+    "per_chain": 25,
+    "alpha": 100.0,
+    "properties": [
+      "ss3",
+      "burial",
+      "rsa"
+    ],
+    "seed": 42
+  },
+  "git_commit": "fe14e65ecacd06d5e38ce0d25b5540f0d8fda0ef",
+  "git_dirty": false,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "n_cells": 36
+  }
+}

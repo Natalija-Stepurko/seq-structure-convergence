@@ -16,7 +16,7 @@ line that worked before still works, with the subcommand inserted after the scri
 
     uv run python scripts/04_convergence.py grids --help
 
-Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+Provenance: every subcommand writes params.json beside its outputs (see ssc.metrics.record_params).
 
 Merged from:
     grids            was 04_convergence.py
@@ -33,7 +33,8 @@ import time
 from pathlib import Path
 import numpy as np
 import torch
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 from sklearn.metrics import accuracy_score, cohen_kappa_score
 from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
@@ -53,7 +54,6 @@ from sklearn.metrics import r2_score
 # grids  --  from 04_convergence.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 def _load_layers(pt_path: Path) -> np.ndarray:
     """Return [n_reps, L, D] float32."""
@@ -192,7 +192,6 @@ def _main_grids() -> None:
 # supervised  --  from 04b_supervised_convergence.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 SS3_IDX = {"a": 0, "b": 1, "c": 2}
 
@@ -361,7 +360,6 @@ def _plot_supervised(panels, e_lab, s_lab, out_png):
 # significance  --  from 06_significance.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 def _one_repeat(ids, esm_dir, struct_dir, max_residues, rng):
     esm_parts, st_parts, total = [], [], 0
@@ -456,7 +454,6 @@ def _main_significance() -> None:
 # svcca-controls  --  from 10_svcca_controls.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 def _collect_pair(ids, seq_dir, struct_dir, max_residues, per_chain, rng):
     S, T, total = [], [], 0
@@ -574,7 +571,6 @@ def _main_svccacontrols() -> None:
 # functional  --  from 14_functional_grids.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -759,7 +755,7 @@ def _aa_degenerate(X, tol=1e-9):
 def _aa_grid_peaks(A, B, aa, partial):
     """Peak similarity over the layer grid.
 
-    Residualised layers are computed ONCE per layer rather than once per pair. Layers whose
+    Residualised layers are computed ONCE per layer and reused for every pair. Layers whose
     residual is degenerate -- a pure amino-acid lookup, e.g. a sequence model's embedding --
     are skipped: with nothing left after the shared target is removed there is no subspace to
     compare, and SVCCA would divide by zero.
@@ -916,7 +912,7 @@ def _main_ladderci() -> None:
 
             for mname, (prep, pair_fn) in METRICS.items():
                 # 1. locate the peak once, on the full sample.
-                # Each layer is prepared ONCE rather than once per partner. Both CKA and SVCCA
+                # Each layer is prepared ONCE and reused for every partner. Both CKA and SVCCA
                 # split into a per-matrix step (centring; SVD-denoise) and a cheap pairing step,
                 # and the per-matrix step is what costs -- SVCCA's SVD is ~9 s at 480 dimensions.
                 # Preparing inside the double loop repeated it len(ok_b) and len(ok_a) times.

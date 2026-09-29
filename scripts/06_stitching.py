@@ -14,7 +14,7 @@ line that worked before still works, with the subcommand inserted after the scri
 
     uv run python scripts/06_stitching.py predictivity --help
 
-Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+Provenance: every subcommand writes params.json beside its outputs (see ssc.metrics.record_params).
 
 Merged from:
     predictivity     was 12_linear_stitch.py
@@ -31,7 +31,8 @@ import sys
 import warnings
 from itertools import combinations
 from pathlib import Path
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 import numpy as np
 import torch
 from sklearn.linear_model import Ridge
@@ -54,7 +55,6 @@ from xgboost import XGBClassifier, XGBRegressor
 # predictivity  --  from 12_linear_stitch.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -161,7 +161,6 @@ def _main_predictivity() -> None:
 # stitch  --  from 13_model_stitching.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -382,7 +381,6 @@ def _main_stitch() -> None:
 # matrix  --  from 15_predictivity_matrix.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -453,7 +451,6 @@ def _main_matrix():
 # depth  --  from 16_depth_stitch.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -485,7 +482,7 @@ def _score(X, y, tr, te, kind):
     For a rare binary label an unweighted classifier predicts the majority class everywhere and
     scores macro-F1 = F1(negative)/2 (~0.49 at 97.5 % negatives) identically in every condition,
     which looks like a result and is not one. We rebalance with scale_pos_weight and return the
-    constant-prediction baseline alongside the score so degeneracy is visible rather than inferred.
+    constant-prediction baseline alongside the score so degeneracy is visible.
     """
     if kind == "reg":
         m = XGBRegressor(n_estimators=80, max_depth=4, tree_method="hist",
@@ -656,7 +653,7 @@ def _main_grid() -> None:
     ones -- explicable if the connector cannot reach the receiver's layer distribution, so
     the injected state is off-distribution for trained blocks and merely harmless to random
     ones. If connector quality is low everywhere, the stitching scores say more about the map
-    than about composability, and the grid makes that visible rather than leaving it inferred.
+    than about composability, and the grid makes that visible.
 
     Outputs (under --out-dir): stitch_grid.csv, summary.txt
     """
@@ -784,7 +781,7 @@ def _main_grid() -> None:
              "  native         the receiver's own representation",
              "",
              "connector_r2_heldout is the linear map's own quality on held-out chains -- if it is",
-             "low, the stitched scores describe the map rather than the models' composability.", ""]
+             "low, the stitched scores describe the map more than the models' composability.", ""]
     if best:
         lines.append(f"best connector: donor enc{best['donor_layer']} -> ESM L{best['inject_layer']}"
                      f"  R2={best['connector_r2_heldout']:.3f}")

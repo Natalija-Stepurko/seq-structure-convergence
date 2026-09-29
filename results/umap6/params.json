@@ -1,0 +1,33 @@
+{
+  "script": "03_geometry.py",
+  "timestamp_utc": "2026-09-17T13:48:36+00:00",
+  "command": "scripts/03_geometry.py --models esm=results/esm esm650=results/esm650 carp=results/carp esm1v=results/esm1v_s1 mpnn=results/proteinmpnn esmif1=results/esmif1 --out-dir /ssc/results/umap6",
+  "args": {
+    "structures_dir": "structures",
+    "models": [
+      "esm=results/esm",
+      "esm650=results/esm650",
+      "carp=results/carp",
+      "esm1v=results/esm1v_s1",
+      "mpnn=results/proteinmpnn",
+      "esmif1=results/esmif1"
+    ],
+    "out_dir": "/ssc/results/umap6",
+    "max_residues": 8000,
+    "per_chain": 4,
+    "seed": 42,
+    "replot": false
+  },
+  "git_commit": "654a492f3388150d92997e22e25e7e76f1dae025",
+  "git_dirty": false,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  }
+}

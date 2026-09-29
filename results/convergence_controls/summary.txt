@@ -1,0 +1,14 @@
+SVCCA controls — permutation null and dimension matching
+
+[esm35 × mpnn]  peak layers: seq 12, struct 2; dims 480/128
+  raw SVCCA          0.408  (permuted null 0.291 [0.289, 0.293])   gap +0.116
+  dim-matched k=64    0.281  (permuted 0.094)   gap +0.187
+  dim-matched k=128   0.262  (permuted 0.136)   gap +0.126
+  dim-matched k=128   0.262  (permuted 0.137)   gap +0.125
+
+[esm650 × mpnn]  peak layers: seq 32, struct 2; dims 1280/128
+  raw SVCCA          0.598  (permuted null 0.484 [0.483, 0.486])   gap +0.114
+  dim-matched k=64    0.312  (permuted 0.095)   gap +0.217
+  dim-matched k=128   0.295  (permuted 0.137)   gap +0.158
+  dim-matched k=128   0.295  (permuted 0.137)   gap +0.158
+

@@ -1,0 +1,4 @@
+layer,ss3_lin_acc,ss3_xgb_acc,burial_lin_acc,burial_xgb_acc,rsa_lin_r2,rsa_xgb_r2,bfactor_lin_r2,bfactor_xgb_r2,binding_site_lin_acc,binding_site_xgb_acc,binding_site_lin_f1,binding_site_xgb_f1,active_site_lin_acc,active_site_xgb_acc,active_site_lin_f1,active_site_xgb_f1,ptm_site_lin_acc,ptm_site_xgb_acc,ptm_site_lin_f1,ptm_site_xgb_f1
+enc1,0.8842,0.8862,0.8877,0.8766,0.7915,0.7833,0.2471,0.2142,0.7028,0.7191,0.6978,0.7119,0.7302,0.9124,0.4822,0.5881,0.6476,0.8348,0.4466,0.512
+enc2,0.8859,0.887,0.89,0.8867,0.8132,0.798,0.272,0.2469,0.7498,0.7543,0.7446,0.7485,0.7526,0.926,0.5008,0.6169,0.6454,0.8512,0.4448,0.5263
+enc3,0.873,0.8759,0.8953,0.8884,0.8286,0.8119,0.2791,0.268,0.8031,0.7976,0.7975,0.7918,0.7853,0.9337,0.5264,0.6465,0.6594,0.8591,0.4551,0.5447

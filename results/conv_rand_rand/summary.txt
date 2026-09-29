@@ -1,0 +1,8 @@
+Sequence↔structure convergence  (N residues budget 30,000)
+ESM-2 layers: ['emb', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10', 'b11', 'b12']
+structure layers: ['enc1', 'enc2', 'enc3']
+
+cka          peak 0.038 at ESM b10 × struct enc2
+svcca        peak 0.163 at ESM b5 × struct enc3
+mutual_knn   peak 0.004 at ESM b1 × struct enc2
+CKA permutation baseline (mean): 0.000

@@ -1,0 +1,10 @@
+Geometric-organisation overlap over 3,000 chains (chain-level, last-layer pooled)
+
+Per-model unsupervised organisation by CATH class (cluster vs CATH):
+  esm     : 0 clusters, 100% noise, cluster-vs-CATH ARI=nan NMI=nan
+  esm650  : 0 clusters, 100% noise, cluster-vs-CATH ARI=nan NMI=nan
+  mpnn    : 0 clusters, 100% noise, cluster-vs-CATH ARI=nan NMI=nan
+
+Cross-model overlap vs structure reference 'mpnn' (does organisation align, and grow with sequence-model scale?):
+  esm      vs mpnn: chain mutual-kNN=0.073  cross-cluster ARI=nan
+  esm650   vs mpnn: chain mutual-kNN=0.042  cross-cluster ARI=nan

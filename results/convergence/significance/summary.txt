@@ -1,0 +1,6 @@
+Convergence significance over 25 residue resamples (budget 15,000)
+  peak CKA:        mean 0.274  95% CI [0.258, 0.293]
+  permuted CKA:    mean 0.005  95% CI [0.005, 0.005]
+  separation:      0.269
+  modal peak pair: ESM layer 11 × struct layer 2  (13/25 repeats)
+  empirical p (peak <= permuted): 0

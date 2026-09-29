@@ -1,0 +1,55 @@
+Stitching grid: every donor layer into every injection depth.
+
+Four conditions per cell. The comparison that decides the question is
+stitched vs DONOR, not stitched vs native:
+  donor          the donor representation alone, no receiver blocks at all
+  stitched_rand  through the receiver's UNTRAINED blocks  (did training matter?)
+  stitched       through the receiver's TRAINED blocks
+  native         the receiver's own representation
+
+connector_r2_heldout is the linear map's own quality on held-out chains -- if it is
+low, the stitched scores describe the map rather than the models' composability.
+
+best connector: donor enc3 -> ESM L1  R2=0.175
+stitched beat donor-direct in 13 of 108 cells (receiver blocks add nothing)
+  mean donor          ss3=0.833 burial=0.876 rsa=0.758
+  mean stitched_rand  ss3=0.835 burial=0.875 rsa=0.760
+  mean stitched       ss3=0.786 burial=0.827 rsa=0.585
+  mean native         ss3=0.679 burial=0.740 rsa=0.317
+
+  enc1 -> L1  connR2=+0.093 ss3[don=0.841 rnd=0.8347 stch=0.6791 nat=0.6842] burial[don=0.866 rnd=0.8645 stch=0.7816 nat=0.7395] rsa[don=0.7584 rnd=0.7285 stch=0.4134 nat=0.3026]
+  enc1 -> L2  connR2=+0.069 ss3[don=0.8311 rnd=0.8352 stch=0.7647 nat=0.692] burial[don=0.8667 rnd=0.8619 stch=0.805 nat=0.7603] rsa[don=0.7574 rnd=0.7499 stch=0.5005 nat=0.3545]
+  enc1 -> L3  connR2=+0.053 ss3[don=0.8326 rnd=0.8376 stch=0.7107 nat=0.6749] burial[don=0.852 rnd=0.8609 stch=0.7603 nat=0.7421] rsa[don=0.7087 rnd=0.7376 stch=0.392 nat=0.3239]
+  enc1 -> L4  connR2=+0.053 ss3[don=0.853 rnd=0.8471 stch=0.7849 nat=0.6848] burial[don=0.8647 rnd=0.8677 stch=0.8038 nat=0.72] rsa[don=0.7433 rnd=0.7617 stch=0.4975 nat=0.3061]
+  enc1 -> L5  connR2=+0.051 ss3[don=0.8436 rnd=0.8484 stch=0.8194 nat=0.6806] burial[don=0.866 rnd=0.872 stch=0.832 nat=0.735] rsa[don=0.7561 rnd=0.776 stch=0.5834 nat=0.3191]
+  enc1 -> L6  connR2=+0.042 ss3[don=0.8476 rnd=0.8354 stch=0.8172 nat=0.709] burial[don=0.877 rnd=0.8733 stch=0.8513 nat=0.7654] rsa[don=0.7572 rnd=0.7551 stch=0.6346 nat=0.3192]
+  enc1 -> L7  connR2=+0.028 ss3[don=0.8458 rnd=0.831 stch=0.8275 nat=0.7069] burial[don=0.8647 rnd=0.8798 stch=0.8587 nat=0.7572] rsa[don=0.7585 rnd=0.7919 stch=0.6714 nat=0.334]
+  enc1 -> L8  connR2=+0.030 ss3[don=0.8303 rnd=0.8208 stch=0.8397 nat=0.6738] burial[don=0.8834 rnd=0.8825 stch=0.8607 nat=0.7456] rsa[don=0.7461 rnd=0.7675 stch=0.6558 nat=0.3536]
+  enc1 -> L9  connR2=+0.033 ss3[don=0.8452 rnd=0.8551 stch=0.8308 nat=0.6768] burial[don=0.848 rnd=0.8704 stch=0.8312 nat=0.7431] rsa[don=0.7228 rnd=0.7547 stch=0.6451 nat=0.2982]
+  enc1 -> L10 connR2=+0.045 ss3[don=0.8449 rnd=0.8524 stch=0.8416 nat=0.6748] burial[don=0.8858 rnd=0.8798 stch=0.8704 nat=0.7298] rsa[don=0.729 rnd=0.7896 stch=0.7033 nat=0.3221]
+  enc1 -> L11 connR2=+0.067 ss3[don=0.8543 rnd=0.8551 stch=0.8631 nat=0.6852] burial[don=0.8726 rnd=0.8854 stch=0.8809 nat=0.7216] rsa[don=0.7371 rnd=0.7776 stch=0.728 nat=0.3033]
+  enc1 -> L12 connR2=+0.072 ss3[don=0.8429 rnd=0.8431 stch=0.8431 nat=0.6696] burial[don=0.8569 rnd=0.8728 stch=0.8728 nat=0.7234] rsa[don=0.7175 rnd=0.7646 stch=0.7646 nat=0.279]
+  enc2 -> L1  connR2=+0.134 ss3[don=0.8252 rnd=0.7935 stch=0.6928 nat=0.6771] burial[don=0.8839 rnd=0.8717 stch=0.7524 nat=0.7339] rsa[don=0.7478 rnd=0.7251 stch=0.4027 nat=0.3099]
+  enc2 -> L2  connR2=+0.094 ss3[don=0.8309 rnd=0.8228 stch=0.7053 nat=0.683] burial[don=0.8805 rnd=0.8715 stch=0.7768 nat=0.7347] rsa[don=0.7743 rnd=0.7437 stch=0.441 nat=0.278]
+  enc2 -> L3  connR2=+0.070 ss3[don=0.8327 rnd=0.8299 stch=0.7101 nat=0.6508] burial[don=0.8783 rnd=0.8699 stch=0.7648 nat=0.7368] rsa[don=0.7399 rnd=0.7455 stch=0.3967 nat=0.3266]
+  enc2 -> L4  connR2=+0.070 ss3[don=0.8432 rnd=0.8495 stch=0.7582 nat=0.6703] burial[don=0.8683 rnd=0.8704 stch=0.8099 nat=0.7419] rsa[don=0.7521 rnd=0.7685 stch=0.5032 nat=0.3494]
+  enc2 -> L5  connR2=+0.068 ss3[don=0.8367 rnd=0.8471 stch=0.7936 nat=0.6521] burial[don=0.8806 rnd=0.8776 stch=0.8237 nat=0.7212] rsa[don=0.7857 rnd=0.7872 stch=0.5852 nat=0.2875]
+  enc2 -> L6  connR2=+0.057 ss3[don=0.8179 rnd=0.8302 stch=0.7884 nat=0.7252] burial[don=0.8826 rnd=0.8841 stch=0.8555 nat=0.7447] rsa[don=0.7408 rnd=0.7419 stch=0.5804 nat=0.3158]
+  enc2 -> L7  connR2=+0.040 ss3[don=0.8514 rnd=0.849 stch=0.8221 nat=0.6787] burial[don=0.8635 rnd=0.8748 stch=0.847 nat=0.7496] rsa[don=0.7564 rnd=0.7628 stch=0.6543 nat=0.3025]
+  enc2 -> L8  connR2=+0.040 ss3[don=0.8497 rnd=0.8528 stch=0.8279 nat=0.6644] burial[don=0.8891 rnd=0.8921 stch=0.8574 nat=0.7381] rsa[don=0.777 rnd=0.8031 stch=0.6868 nat=0.3049]
+  enc2 -> L9  connR2=+0.043 ss3[don=0.8434 rnd=0.8375 stch=0.8473 nat=0.6845] burial[don=0.8772 rnd=0.8847 stch=0.8357 nat=0.7535] rsa[don=0.7551 rnd=0.7821 stch=0.6335 nat=0.3014]
+  enc2 -> L10 connR2=+0.057 ss3[don=0.8554 rnd=0.8619 stch=0.8489 nat=0.6942] burial[don=0.8736 rnd=0.8865 stch=0.8585 nat=0.7675] rsa[don=0.7429 rnd=0.7597 stch=0.6655 nat=0.363]
+  enc2 -> L11 connR2=+0.086 ss3[don=0.8521 rnd=0.8458 stch=0.8438 nat=0.6944] burial[don=0.8904 rnd=0.8889 stch=0.8761 nat=0.7402] rsa[don=0.7615 rnd=0.7837 stch=0.758 nat=0.3376]
+  enc2 -> L12 connR2=+0.090 ss3[don=0.836 rnd=0.8409 stch=0.8409 nat=0.6719] burial[don=0.8855 rnd=0.8878 stch=0.8878 nat=0.7656] rsa[don=0.7824 rnd=0.819 stch=0.819 nat=0.3819]
+  enc3 -> L1  connR2=+0.175 ss3[don=0.8236 rnd=0.7683 stch=0.6854 nat=0.6895] burial[don=0.893 rnd=0.85 stch=0.7672 nat=0.7425] rsa[don=0.7741 rnd=0.6891 stch=0.3818 nat=0.326]
+  enc3 -> L2  connR2=+0.118 ss3[don=0.8212 rnd=0.8268 stch=0.7036 nat=0.7175] burial[don=0.8741 rnd=0.8621 stch=0.7605 nat=0.7486] rsa[don=0.7742 rnd=0.7396 stch=0.3857 nat=0.3205]
+  enc3 -> L3  connR2=+0.087 ss3[don=0.8009 rnd=0.8158 stch=0.6944 nat=0.6743] burial[don=0.887 rnd=0.8726 stch=0.7647 nat=0.7326] rsa[don=0.778 rnd=0.7207 stch=0.4138 nat=0.2676]
+  enc3 -> L4  connR2=+0.088 ss3[don=0.8161 rnd=0.8264 stch=0.7334 nat=0.6825] burial[don=0.8886 rnd=0.8772 stch=0.7836 nat=0.7271] rsa[don=0.7831 rnd=0.7325 stch=0.4499 nat=0.3189]
+  enc3 -> L5  connR2=+0.088 ss3[don=0.8327 rnd=0.833 stch=0.7327 nat=0.6799] burial[don=0.8748 rnd=0.865 stch=0.8093 nat=0.7446] rsa[don=0.768 rnd=0.7588 stch=0.5119 nat=0.331]
+  enc3 -> L6  connR2=+0.074 ss3[don=0.7945 rnd=0.8162 stch=0.7469 nat=0.6158] burial[don=0.8884 rnd=0.8635 stch=0.8168 nat=0.7271] rsa[don=0.7843 rnd=0.7618 stch=0.5955 nat=0.2959]
+  enc3 -> L7  connR2=+0.053 ss3[don=0.8123 rnd=0.8313 stch=0.7983 nat=0.6814] burial[don=0.8841 rnd=0.8803 stch=0.8444 nat=0.7416] rsa[don=0.7839 rnd=0.7556 stch=0.6255 nat=0.3353]
+  enc3 -> L8  connR2=+0.051 ss3[don=0.8239 rnd=0.8361 stch=0.8045 nat=0.6718] burial[don=0.8674 rnd=0.868 stch=0.8406 nat=0.7354] rsa[don=0.7696 rnd=0.7445 stch=0.6354 nat=0.2999]
+  enc3 -> L9  connR2=+0.054 ss3[don=0.8105 rnd=0.8424 stch=0.8103 nat=0.6487] burial[don=0.8929 rnd=0.8921 stch=0.8329 nat=0.7596] rsa[don=0.7559 rnd=0.762 stch=0.5973 nat=0.3103]
+  enc3 -> L10 connR2=+0.070 ss3[don=0.8161 rnd=0.8289 stch=0.8046 nat=0.6696] burial[don=0.8892 rnd=0.8877 stch=0.8551 nat=0.7182] rsa[don=0.7918 rnd=0.7893 stch=0.6603 nat=0.3003]
+  enc3 -> L11 connR2=+0.106 ss3[don=0.8291 rnd=0.8239 stch=0.8208 nat=0.666] burial[don=0.873 rnd=0.8781 stch=0.8642 nat=0.7437] rsa[don=0.7681 rnd=0.7793 stch=0.7219 nat=0.335]
+  enc3 -> L12 connR2=+0.108 ss3[don=0.8309 rnd=0.8549 stch=0.8549 nat=0.6921] burial[don=0.8725 rnd=0.8739 stch=0.8739 nat=0.7218] rsa[don=0.7642 rnd=0.7651 stch=0.7651 nat=0.3081]

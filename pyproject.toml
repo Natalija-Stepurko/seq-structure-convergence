@@ -27,6 +27,15 @@ dependencies = [
     "matplotlib>=3.11.0",
 ]
 
-# NOTE: the structure arm (ESM-IF1 / ProteinMPNN) needs extra geometry deps
-# (torch-geometric, torch-scatter, torch-sparse, torch-cluster). Those are added
-# in stage 02b to keep the base install clean — see paper/PROJECT_PLAN.md.
+# NOTE: ESM-IF1 and CARP need their own environments (ESM-IF1 needs torch-geometric and
+# its compiled extensions; CARP needs the sequence-models package). They are kept out of
+# the base install -- see "Model environments" in the README.
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
