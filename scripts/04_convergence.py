@@ -871,6 +871,16 @@ def _main_ladderci() -> None:
                     help="residues drawn per resample; smaller keeps mutual k-NN affordable")
     ap.add_argument("--out-dir", default="/ssc/results/ladder_ci")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--with-null", action="store_true",
+                    help="also score every subsample with residue correspondence scrambled, so each "
+                         "row carries its own null on the same residues and budget")
+    ap.add_argument("--peaks-from", default=None,
+                    help="a previous ladder_ci.csv: reuse its peak layer pairs and skip the peak "
+                         "search (hours on the wide models). Subsample draws are unchanged, so the "
+                         "estimates reproduce that run exactly")
+    ap.add_argument("--pairs", nargs="+", default=None,
+                    help="restrict to these pair labels (smoke tests; changes the subsample draws "
+                         "of later pairs, so do not use for a reproduction)")
     args = ap.parse_args()
 
     out = Path(args.out_dir)
@@ -881,6 +891,12 @@ def _main_ladderci() -> None:
     ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
            if l.strip() and json.loads(l).get("valid", True)]
     rng = np.random.default_rng(args.seed)
+    # The scrambles draw from their own stream so that adding them leaves the chain subsamples,
+    # and therefore every published estimate, exactly as they were.
+    rng_null = np.random.default_rng(args.seed + 1_000_003)
+    peaks = None
+    if args.peaks_from:
+        peaks = {(r["pair"], r["mode"], r["metric"]): r for r in csv.DictReader(open(args.peaks_from))}
 
     # (per-matrix prep, pairing) -- see the peak-search loop for why these are split
     METRICS = {"cka": (qc.column_center, qc.linear_cka),
@@ -888,6 +904,8 @@ def _main_ladderci() -> None:
                "mutual_knn": (lambda x: x, qc.mutual_knn)}
     rows = []
     for label, an, bn, kind in _AA_PAIRS:
+        if args.pairs and label not in args.pairs:
+            continue
         da, db = Path(args.results_root) / an, Path(args.results_root) / bn
         if not (da.exists() and db.exists()):
             print(f"  {label:<30} SKIP (missing embeddings)", flush=True)
@@ -916,15 +934,22 @@ def _main_ladderci() -> None:
                 # split into a per-matrix step (centring; SVD-denoise) and a cheap pairing step,
                 # and the per-matrix step is what costs -- SVCCA's SVD is ~9 s at 480 dimensions.
                 # Preparing inside the double loop repeated it len(ok_b) and len(ok_a) times.
-                Aprep = {i: prep(Alay[i]) for i in ok_a}
-                Bprep = {j: prep(Blay[j]) for j in ok_b}
-                best, at = -9.0, None
-                for i in ok_a:
-                    for j in ok_b:
-                        v = pair_fn(Aprep[i], Bprep[j])
-                        if np.isfinite(v) and v > best:
-                            best, at = float(v), (i, j)
-                del Aprep, Bprep
+                if peaks is not None:
+                    rec = peaks.get((label, mode, mname))
+                    if rec is None:
+                        continue
+                    i, j = (int(x) for x in rec["peak_at"][1:].split("xB"))
+                    best, at = float(rec["full_sample"]), (i, j)
+                else:
+                    Aprep = {i: prep(Alay[i]) for i in ok_a}
+                    Bprep = {j: prep(Blay[j]) for j in ok_b}
+                    best, at = -9.0, None
+                    for i in ok_a:
+                        for j in ok_b:
+                            v = pair_fn(Aprep[i], Bprep[j])
+                            if np.isfinite(v) and v > best:
+                                best, at = float(v), (i, j)
+                    del Aprep, Bprep
                 if at is None:
                     continue
                 i, j = at
@@ -941,7 +966,7 @@ def _main_ladderci() -> None:
                 # All three metrics are also biased upward at small n, so every subsample is drawn to
                 # the SAME fixed residue budget and the estimate is reported at that budget. Comparing
                 # these numbers against a study using a different budget is not meaningful.
-                vals = []
+                vals, nulls = [], []
                 for _ in range(args.n_resamples):
                     order = rng.permutation(len(chains))
                     take, n = [], 0
@@ -956,6 +981,13 @@ def _main_ladderci() -> None:
                     v = pair_fn(prep(Alay[i][idx]), prep(Blay[j][idx]))
                     if np.isfinite(v):
                         vals.append(float(v))
+                    if args.with_null:
+                        # the same residues and budget, with the correspondence between the two
+                        # models destroyed: what the measure reports for unrelated data
+                        perm = rng_null.permutation(len(idx))
+                        vn = pair_fn(prep(Alay[i][idx]), prep(Blay[j][idx][perm]))
+                        if np.isfinite(vn):
+                            nulls.append(float(vn))
                 if not vals:
                     continue
                 m = statistics.fmean(vals)
@@ -971,6 +1003,12 @@ def _main_ladderci() -> None:
                              "peak_at": f"A{i}xB{j}", "n_chains": int(len(chains)),
                              "n_residues_per_subsample": int(args.resample_size),
                              "bootstrap": "chain-level subsample, no replacement, percentile CI"})
+                if args.with_null and nulls:
+                    rows[-1].update({
+                        "null_mean": round(statistics.fmean(nulls), 4),
+                        "null_lo": round(float(np.percentile(nulls, 2.5)), 4),
+                        "null_hi": round(float(np.percentile(nulls, 97.5)), 4),
+                        "null_share": round(statistics.fmean(nulls) / m, 4) if m else float("nan")})
                 print(f"  {label:<30} {mode:<8} {mname:<11} "
                       f"{m:.3f} [{lo:.3f}, {hi:.3f}]  sd {sd:.4f}  ({len(chains)} chains)", flush=True)
         with (out / "ladder_ci.csv").open("w", newline="") as f:

@@ -623,6 +623,93 @@ def _main_depth() -> None:
 # grid  --  stitching across donor layer x injection depth
 # ==========================================================================================
 
+def _fit_connector(A, B, kind, alpha, seed):
+    """The map from donor states to receiver states: ridge, or a small MLP to test whether a
+    stronger map changes the answer."""
+    if kind == "ridge":
+        return Ridge(alpha=alpha).fit(A, B)
+    if kind == "mlp":
+        from sklearn.compose import TransformedTargetRegressor
+        from sklearn.neural_network import MLPRegressor
+        from sklearn.pipeline import make_pipeline
+        net = make_pipeline(StandardScaler(),
+                            MLPRegressor(hidden_layer_sizes=(512,), early_stopping=True,
+                                         max_iter=200, random_state=seed))
+        return TransformedTargetRegressor(regressor=net, transformer=StandardScaler()).fit(A, B)
+    raise ValueError(f"unknown connector {kind!r}")
+
+
+def _grid_cells(model, rnd, S_dir, E_dir, prot, fit_c, ev_c, donor_layers, inject_layers,
+                rng_for, per_chain, properties, connector="ridge", alpha=100.0, seed=0,
+                on_row=None, label="donor"):
+    """Score every (donor layer, injection layer) cell under the four stitching conditions.
+
+    `rng_for(dl, il)` supplies the generator used for the residue draws and the probe split in
+    that cell. `grid` passes one shared generator (the original sequential behaviour); `grid-ci`
+    passes a generator seeded per cell, so a resumed run draws exactly what an uninterrupted
+    one would.
+    """
+    rows = []
+    for dl in donor_layers:
+        A_fit = np.concatenate([_emb(S_dir / f"{c}.pt", dl).numpy() for c in fit_c])
+        for il in inject_layers:
+            rng = rng_for(dl, il)
+            B_fit = np.concatenate([_emb(E_dir / f"{c}.pt", il).numpy() for c in fit_c])
+            W = _fit_connector(A_fit, B_fit, connector, alpha, seed)
+
+            feats = {"stitched": [], "native": [], "stitched_rand": [], "donor": []}
+            labs = {k: [] for k in ("ss3", "burial", "rsa")}
+            held_true, held_pred = [], []
+            for c in ev_c:
+                npz = np.load(prot / f"{c}.npz", allow_pickle=True)
+                L = int(npz["ss3"].shape[0])
+                don = _emb(S_dir / f"{c}.pt", dl)
+                nat = _emb(E_dir / f"{c}.pt", il)
+                if don.shape[0] != L or nat.shape[0] != L:
+                    continue
+                mapped = W.predict(don.numpy()).astype(np.float32)
+                held_true.append(nat.numpy()); held_pred.append(mapped)
+                inj = torch.from_numpy(mapped)
+                idx = rng.choice(L, min(per_chain, L), replace=False)
+                feats["stitched"].append(_run_blocks(model, inj[None], il)[0][idx].numpy())
+                feats["native"].append(_run_blocks(model, nat[None], il)[0][idx].numpy())
+                feats["stitched_rand"].append(_run_blocks(rnd, inj[None], il)[0][idx].numpy())
+                feats["donor"].append(don[idx].numpy())          # donor with NO receiver blocks
+                labs["ss3"].append(np.array([SS3_IDX.get(x, 2) for x in npz["ss3"][idx]]))
+                r = npz["rsa"][idx].astype(np.float64)
+                labs["burial"].append(np.where(np.isfinite(r), (r < BURIAL_RSA).astype(int), -1))
+                labs["rsa"].append(np.where(np.isfinite(r), r, np.nan))
+            if not held_true:
+                continue
+            conn_r2 = float(r2_score(np.concatenate(held_true), np.concatenate(held_pred),
+                                     multioutput="variance_weighted"))
+            F = {k: np.concatenate(v) for k, v in feats.items()}
+            Y = {k: np.concatenate(v) for k, v in labs.items()}
+            n = len(Y["ss3"]); te = np.zeros(n, bool)
+            te[rng.choice(n, n // 3, replace=False)] = True; tr = ~te
+
+            rec = {"donor_layer": dl + 1, "inject_layer": il,
+                   "connector_r2_heldout": round(conn_r2, 4), "n_eval_residues": int(n)}
+            for prop in properties:
+                if prop not in Y:
+                    continue
+                kind = "reg" if prop == "rsa" else "clf"
+                m = np.isfinite(Y[prop]) if kind == "reg" else (Y[prop] >= 0)
+                for cond in ("stitched", "native", "stitched_rand", "donor"):
+                    sc = _score(F[cond], Y[prop], tr & m, te & m, kind)
+                    rec[f"{prop}_{cond}"] = sc[0] if isinstance(sc, tuple) else sc
+            rows.append(rec)
+            # Report stitched against DONOR-DIRECT, not against native. Native is the flattering
+            # comparison -- the donor is simply better at these properties to begin with -- so
+            # quoting it alone makes stitching look like it works when it does not.
+            msg = "  ".join(f"{p} stitch={rec.get(f'{p}_stitched')} donor={rec.get(f'{p}_donor')}"
+                            for p in properties)
+            print(f"  {label} L{dl+1} -> ESM L{il:<2d}  connector R2={conn_r2:+.3f}   {msg}", flush=True)
+            if on_row:
+                on_row(rows)
+    return rows
+
+
 def _main_grid() -> None:
     """Stitch every donor layer into every receiver depth, and score what survives.
 
@@ -699,7 +786,9 @@ def _main_grid() -> None:
     import esm as esmlib
     model, alphabet = getattr(esmlib.pretrained, args.esm_model)(); model.eval()
     # untrained twin of the receiver: same architecture, random weights. Without it a high
-    # stitched score cannot be attributed to the receiver having LEARNED anything.
+    # stitched score cannot be attributed to the receiver having LEARNED anything. Seeded, so
+    # the stitched_rand column reproduces; before this the initialisation varied run to run.
+    torch.manual_seed(args.seed)
     rnd = esmlib.model.esm2.ESM2(
         num_layers=model.num_layers,
         embed_dim=getattr(model, "embed_dim", None) or model.args.embed_dim,
@@ -711,64 +800,17 @@ def _main_grid() -> None:
           f"{n_don} donor layers x {n_esm} injection depths", flush=True)
 
     rng = np.random.default_rng(args.seed)
-    rows = []
-    for dl in range(n_don):
-        A_fit = np.concatenate([_emb(S_dir / f"{c}.pt", dl).numpy() for c in fit_c])
-        for il in range(1, n_esm + 1):
-            B_fit = np.concatenate([_emb(E_dir / f"{c}.pt", il).numpy() for c in fit_c])
-            W = Ridge(alpha=args.alpha).fit(A_fit, B_fit)
 
-            feats = {"stitched": [], "native": [], "stitched_rand": [], "donor": []}
-            labs = {k: [] for k in ("ss3", "burial", "rsa")}
-            held_true, held_pred = [], []
-            for c in ev_c:
-                npz = np.load(prot / f"{c}.npz", allow_pickle=True)
-                L = int(npz["ss3"].shape[0])
-                don = _emb(S_dir / f"{c}.pt", dl)
-                nat = _emb(E_dir / f"{c}.pt", il)
-                if don.shape[0] != L or nat.shape[0] != L:
-                    continue
-                mapped = W.predict(don.numpy()).astype(np.float32)
-                held_true.append(nat.numpy()); held_pred.append(mapped)
-                inj = torch.from_numpy(mapped)
-                idx = rng.choice(L, min(args.per_chain, L), replace=False)
-                feats["stitched"].append(_run_blocks(model, inj[None], il)[0][idx].numpy())
-                feats["native"].append(_run_blocks(model, nat[None], il)[0][idx].numpy())
-                feats["stitched_rand"].append(_run_blocks(rnd, inj[None], il)[0][idx].numpy())
-                feats["donor"].append(don[idx].numpy())          # donor with NO receiver blocks
-                labs["ss3"].append(np.array([SS3_IDX.get(x, 2) for x in npz["ss3"][idx]]))
-                r = npz["rsa"][idx].astype(np.float64)
-                labs["burial"].append(np.where(np.isfinite(r), (r < BURIAL_RSA).astype(int), -1))
-                labs["rsa"].append(np.where(np.isfinite(r), r, np.nan))
-            if not held_true:
-                continue
-            conn_r2 = float(r2_score(np.concatenate(held_true), np.concatenate(held_pred),
-                                     multioutput="variance_weighted"))
-            F = {k: np.concatenate(v) for k, v in feats.items()}
-            Y = {k: np.concatenate(v) for k, v in labs.items()}
-            n = len(Y["ss3"]); te = np.zeros(n, bool)
-            te[rng.choice(n, n // 3, replace=False)] = True; tr = ~te
+    def checkpoint(rows):
+        with (out / "stitch_grid.csv").open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+            w.writeheader(); w.writerows(rows)
 
-            rec = {"donor_layer": dl + 1, "inject_layer": il,
-                   "connector_r2_heldout": round(conn_r2, 4), "n_eval_residues": int(n)}
-            for prop in args.properties:
-                if prop not in Y:
-                    continue
-                kind = "reg" if prop == "rsa" else "clf"
-                m = np.isfinite(Y[prop]) if kind == "reg" else (Y[prop] >= 0)
-                for cond in ("stitched", "native", "stitched_rand", "donor"):
-                    sc = _score(F[cond], Y[prop], tr & m, te & m, kind)
-                    rec[f"{prop}_{cond}"] = sc[0] if isinstance(sc, tuple) else sc
-            rows.append(rec)
-            # Report stitched against DONOR-DIRECT, not against native. Native is the flattering
-            # comparison -- the donor is simply better at these properties to begin with -- so
-            # quoting it alone makes stitching look like it works when it does not.
-            msg = "  ".join(f"{p} stitch={rec.get(f'{p}_stitched')} donor={rec.get(f'{p}_donor')}"
-                            for p in args.properties)
-            print(f"  donor enc{dl+1} -> ESM L{il:<2d}  connector R2={conn_r2:+.3f}   {msg}", flush=True)
-            with (out / "stitch_grid.csv").open("w", newline="") as f:
-                w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-                w.writeheader(); w.writerows(rows)
+    rows = _grid_cells(model, rnd, S_dir, E_dir, prot, fit_c, ev_c,
+                       donor_layers=range(n_don), inject_layers=range(1, n_esm + 1),
+                       rng_for=lambda dl, il: rng, per_chain=args.per_chain,
+                       properties=args.properties, connector="ridge", alpha=args.alpha,
+                       on_row=checkpoint)
 
     best = max(rows, key=lambda r: r["connector_r2_heldout"]) if rows else None
     lines = ["Stitching grid: every donor layer into every injection depth.",
@@ -807,12 +849,182 @@ def _main_grid() -> None:
     print(f"-> {out}")
 
 
+def _main_gridci() -> None:
+    """The stitching grid with intervals: independent repeats on fresh chain samples.
+
+    A single `grid` run scores each cell once on ~1,300 held-out residues, so differences of a
+    few thousandths between stitched and donor-direct sit inside the noise. This subcommand repeats
+    the grid on independent chain samples and reports, per cell and property, the paired
+    difference stitched - donor as mean +- 1.96 sd across repeats (the refit convention used for
+    the probes). A cell counts as worse or better only when that interval excludes zero.
+
+    --connector mlp replaces the linear map with a one-hidden-layer network, which tests whether
+    a stronger map changes the answer. --donor-dir takes any donor model, so a within-modality
+    pair (CARP -> ESM-2) serves as a positive control for the protocol itself.
+
+    Outputs (under --out-dir): repeats.csv (one row per repeat x cell), cells.csv (aggregated),
+    summary.txt. Resumes from repeats.csv.
+    """
+    ap = argparse.ArgumentParser(description="Stitching grid with intervals across repeats")
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--esm-dir", default="/ssc/results/esm")
+    ap.add_argument("--donor-dir", default="/ssc/results/proteinmpnn")
+    ap.add_argument("--donor-name", default="ProteinMPNN")
+    ap.add_argument("--esm-model", default="esm2_t12_35M_UR50D")
+    ap.add_argument("--out-dir", default="/ssc/results/stitch_grid_ci")
+    ap.add_argument("--n-chains", type=int, default=400)
+    ap.add_argument("--per-chain", type=int, default=25)
+    ap.add_argument("--alpha", type=float, default=100.0)
+    ap.add_argument("--properties", nargs="+", default=["ss3", "burial", "rsa"])
+    ap.add_argument("--repeats", type=int, default=5)
+    ap.add_argument("--seed0", type=int, default=42)
+    ap.add_argument("--connector", choices=["ridge", "mlp"], default="ridge")
+    ap.add_argument("--donor-layers", type=int, nargs="+", default=None,
+                    help="1-based donor layers (default: all)")
+    ap.add_argument("--inject-layers", type=int, nargs="+", default=None,
+                    help="receiver injection depths (default: all)")
+    ap.add_argument("--threads", type=int, default=4)
+    args = ap.parse_args()
+    warnings.filterwarnings("ignore")
+    torch.set_num_threads(args.threads)
+
+    out = Path(args.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)
+
+    sdir = Path(args.structures_dir); prot = sdir / "proteins"
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    E_dir, S_dir = Path(args.esm_dir), Path(args.donor_dir)
+    eligible = [c for c in ids if (E_dir / f"{c}.pt").exists() and (S_dir / f"{c}.pt").exists()]
+
+    import esm as esmlib
+    model, alphabet = getattr(esmlib.pretrained, args.esm_model)(); model.eval()
+
+    def untrained(seed):
+        # a fresh random receiver per repeat, seeded: the interval then also covers the
+        # variation between random initialisations
+        torch.manual_seed(seed)
+        r = esmlib.model.esm2.ESM2(
+            num_layers=model.num_layers,
+            embed_dim=getattr(model, "embed_dim", None) or model.args.embed_dim,
+            attention_heads=20, alphabet=alphabet)
+        return r.eval()
+
+    n_esm = model.num_layers
+    n_don = torch.load(S_dir / f"{eligible[0]}.pt", weights_only=False)["layers"].shape[0]
+    donor_layers = [l - 1 for l in args.donor_layers] if args.donor_layers else list(range(n_don))
+    inject_layers = args.inject_layers or list(range(1, n_esm + 1))
+
+    rep_path = out / "repeats.csv"
+    done_rows = list(csv.DictReader(rep_path.open())) if rep_path.exists() else []
+    done = {(int(r["repeat"]), int(r["donor_layer"]), int(r["inject_layer"])) for r in done_rows}
+    all_rows = [{k: (float(v) if k not in ("repeat", "donor_layer", "inject_layer", "n_eval_residues")
+                     else int(v)) for k, v in r.items()} for r in done_rows]
+    print(f"{args.donor_name} -> {args.esm_model}: {len(eligible)} eligible chains; "
+          f"{args.repeats} repeats x {len(donor_layers)} donor x {len(inject_layers)} depths; "
+          f"connector={args.connector}; {len(done)} cells already done", flush=True)
+
+    def save():
+        with rep_path.open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(all_rows[0].keys()))
+            w.writeheader(); w.writerows(all_rows)
+
+    for r in range(args.repeats):
+        seed = args.seed0 + r
+        pick = np.random.default_rng(seed).choice(len(eligible), min(args.n_chains, len(eligible)),
+                                                  replace=False)
+        use = [eligible[i] for i in pick]
+        n_fit = int(len(use) * 0.6)
+        fit_c, ev_c = use[:n_fit], use[n_fit:]
+        rnd = untrained(seed)
+        for dl in donor_layers:
+            todo = [il for il in inject_layers if (r, dl + 1, il) not in done]
+            if not todo:
+                continue
+
+            def keep(rows, r=r):
+                all_rows.append({"repeat": r, **rows[-1]}); save()
+
+            _grid_cells(model, rnd, S_dir, E_dir, prot, fit_c, ev_c,
+                        donor_layers=[dl], inject_layers=todo,
+                        rng_for=lambda d, i, s=seed: np.random.default_rng([s, d, i]),
+                        per_chain=args.per_chain, properties=args.properties,
+                        connector=args.connector, alpha=args.alpha, seed=seed,
+                        on_row=keep, label=f"rep{r} {args.donor_name}")
+
+    # ---- aggregate: paired stitched - donor per repeat, mean +- 1.96 sd across repeats
+    conds = ("stitched", "native", "stitched_rand", "donor")
+    cells, verdicts = [], {"worse": 0, "better": 0, "no clear difference": 0}
+    by_depth = {}
+    for dl in donor_layers:
+        for il in inject_layers:
+            reps = [x for x in all_rows if x["donor_layer"] == dl + 1 and x["inject_layer"] == il]
+            if not reps:
+                continue
+            r2 = [x["connector_r2_heldout"] for x in reps]
+            rec = {"donor_layer": dl + 1, "inject_layer": il, "n_repeats": len(reps),
+                   "connector_r2_mean": round(statistics.fmean(r2), 4),
+                   "connector_r2_sd": round(statistics.stdev(r2), 4) if len(r2) > 1 else 0.0}
+            for prop in args.properties:
+                for cond in conds:
+                    v = [x[f"{prop}_{cond}"] for x in reps]
+                    rec[f"{prop}_{cond}_mean"] = round(statistics.fmean(v), 4)
+                    rec[f"{prop}_{cond}_sd"] = round(statistics.stdev(v), 4) if len(v) > 1 else 0.0
+                for name, cond in (("delta", "stitched"), ("delta_rand", "stitched_rand")):
+                    d = [x[f"{prop}_{cond}"] - x[f"{prop}_donor"] for x in reps]
+                    m = statistics.fmean(d)
+                    h = 1.96 * statistics.stdev(d) if len(d) > 1 else 0.0
+                    rec[f"{prop}_{name}_mean"] = round(m, 4)
+                    rec[f"{prop}_{name}_lo"] = round(m - h, 4)
+                    rec[f"{prop}_{name}_hi"] = round(m + h, 4)
+                lo, hi = rec[f"{prop}_delta_lo"], rec[f"{prop}_delta_hi"]
+                v = "worse" if hi < 0 else "better" if lo > 0 else "no clear difference"
+                rec[f"{prop}_verdict"] = v
+                verdicts[v] += 1
+                by_depth.setdefault(il, {"worse": 0, "better": 0, "no clear difference": 0})[v] += 1
+            cells.append(rec)
+    if not cells:
+        return
+    with (out / "cells.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(cells[0].keys())); w.writeheader(); w.writerows(cells)
+
+    total = sum(verdicts.values())
+    r2m = [c["connector_r2_mean"] for c in cells]
+    lines = [f"Stitching with intervals: {args.donor_name} -> {args.esm_model}, "
+             f"connector = {args.connector}.",
+             f"{cells[0]['n_repeats']} repeats on independent samples of {args.n_chains} chains; "
+             f"{args.per_chain} residues per held-out chain.",
+             "Per cell and property: stitched - donor-direct, paired within each repeat,",
+             "mean +- 1.96 sd across repeats. A cell is worse or better only if that excludes zero.",
+             "",
+             f"cells x properties: {total}",
+             *(f"  {k:<20} {v}" for k, v in verdicts.items()),
+             "",
+             "by injection depth (worse / no clear difference / better):",
+             *(f"  L{il:<3} {c['worse']:>3} / {c['no clear difference']:>3} / {c['better']:>3}"
+               for il, c in sorted(by_depth.items())),
+             "",
+             f"connector held-out R2: {min(r2m):.3f} to {max(r2m):.3f} "
+             f"(mean {statistics.fmean(r2m):.3f})"]
+    for prop in args.properties:
+        lines.append("")
+        lines.append(f"{prop}: mean over cells")
+        for cond in conds:
+            lines.append(f"  {cond:<14} {statistics.fmean(c[f'{prop}_{cond}_mean'] for c in cells):.3f}")
+    (out / "summary.txt").write_text("\n".join(lines) + "\n")
+    qc.record_params(out, args, extra={"n_cells": len(cells), "verdicts": verdicts})
+    print("\n".join(lines))
+    print(f"-> {out}")
+
+
 _SUBCOMMANDS = {
     "predictivity": _main_predictivity,
     "stitch": _main_stitch,
     "matrix": _main_matrix,
     "depth": _main_depth,
     "grid": _main_grid,
+    "grid-ci": _main_gridci,
 }
 
 

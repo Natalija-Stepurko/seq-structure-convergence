@@ -155,7 +155,7 @@ exact command, the git commit, library versions and a UTC timestamp.
 | | `svcca-controls` | SVCCA's permutation null and width matching |
 | | `functional` | per-property agreement grids |
 | | `aa-control` | every pair re-measured with amino-acid identity subtracted |
-| | `ladder-ci` | the full ladder, raw and with amino-acid identity subtracted, with whole-chain intervals |
+| | `ladder-ci` | the full ladder, raw and with amino-acid identity subtracted, with whole-chain intervals; `--with-null` adds a scrambled-residue null on every subsample, and `--peaks-from` reuses a previous run's peak layers so its estimates reproduce exactly |
 | **`05_probes.py`** | `probe` | linear and XGBoost probes per layer × property, chain-grouped splits |
 | | `composition` | composition and physicochemical baselines the probes must beat |
 | | `repeats` | `probe` refitted on independent splits, aggregated to intervals |
@@ -164,6 +164,9 @@ exact command, the git commit, library versions and a UTC timestamp.
 | | `matrix` | linear predictivity across every pair |
 | | `depth` | per-property stitching at each injection depth |
 | | `grid` | every donor layer × every injection depth, all four conditions |
+| | `grid-ci` | the same grid repeated on independent chain samples, with paired intervals on stitched − donor; `--connector mlp` for a non-linear connector, `--donor-dir` for any donor model |
+
+`scripts/export_benchmark.py` writes the residue-aligned embedding benchmark published on Hugging Face: every model arm at every layer on one fixed subsample of whole chains, with labels and reference scores.
 
 Shared code lives in `src/ssc/metrics.py`: CKA, SVCCA (with the cached per-matrix split used for
 layer grids), mutual k-NN, k-NN purity, local variance ratio and the provenance recorder. It is
