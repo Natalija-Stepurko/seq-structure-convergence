@@ -126,8 +126,8 @@ founding result (§1), so the contribution is the protocol and the controls:
    SVCCA and 10–18 % by mutual k-NN: the models share a **linear subspace**, not a common geometry
    and not a common neighbourhood structure.
 3. **A mechanism for the dissociation.** Both representations are strongly anisotropic, which
-   inflates subspace overlap while destroying neighbourhood overlap — so the metric spread in (2) is
-   explained rather than merely reported.
+   inflates subspace overlap while destroying neighbourhood overlap. That mechanism accounts for the
+   metric spread in (2).
 4. **A methodological warning with teeth.** The same anisotropy makes SVCCA's permutation null large
    and width-dependent (0.29 at 480-d, 0.48 at 1280-d). An apparent growth of convergence with model
    scale disappears once the null is subtracted. Cross-model or cross-scale SVCCA comparisons that
@@ -136,8 +136,8 @@ founding result (§1), so the contribution is the protocol and the controls:
 5. **A sensitivity control for the metrics themselves.** Two replicates of one architecture differing
    only in random seed reach mutual k-NN 0.78, establishing that the neighbourhood measure can
    detect correspondence when it exists — so its near-zero cross-modality value is an absence, not a
-   pessimistic metric. This is the sensitivity/specificity standard urged by Ding et al. (2021),
-   applied rather than cited.
+   pessimistic metric. This applies the sensitivity/specificity standard of Ding et al.
+   (2021).
 6. **Functional criteria alongside structural ones.** Structural similarity measures are criticised
    for ignoring behaviour, so convergence is checked by model stitching — mapping a structure model's
    representation through a fitted linear connector into the sequence model's own frozen output head
@@ -226,7 +226,8 @@ arguments, the command, the git commit and library versions.
   dissociation and the inflated SVCCA null, so the geometry diagnostics carry interpretive weight.
 - **A shared prediction target.** The two arms have opposite *input* modalities but both are trained
   to predict amino-acid identity — ESM-2 by masking, ProteinMPNN by inverse folding. That shared
-  target is a competing explanation for convergence and must be addressed rather than elided.
+  target is a competing explanation for convergence, so every agreement score is also reported with
+  it subtracted.
 
 ---
 
@@ -349,8 +350,8 @@ and supervised κ agreement), each against a permutation null and against within
 an untrained floor. Our own data show why: on the same pairs, SVCCA reads ~5× more convergence than
 mutual k-NN as a fraction of the ceiling, and untrained networks reach SVCCA 0.163 while their
 mutual k-NN is 0.004 — a paper reporting SVCCA alone could mistake an untrained pair for a partially
-converged one. This makes the metric-dependence claim a *documented field problem* we quantify,
-rather than an idiosyncrasy of our setup.
+converged one. The metric dependence is therefore a *documented problem across the field*, and this
+study quantifies it.
 
 ---
 
@@ -386,7 +387,7 @@ state that a sequence model has no analogue for). Both conditions should be chec
 a stitching number; an untrained-donor control detects the failure.
 
 **Implementation notes (bugs found).** (i) ProteinMPNN's encoder updates *both* h_V and h_E; feeding
-the decoder the raw `W_e(E)` edges instead of the encoder-updated h_E collapses recovery to chance
+the decoder the raw `W_e(E)` edges, leaving out the encoder-updated h_E, collapses recovery to chance
 (0.067 vs 0.476). (ii) Teacher-forced decoding leaks neighbours' true residues, so a single-shot
 decode (no position treated as already decoded) is required; even then the circularity above
 remains.

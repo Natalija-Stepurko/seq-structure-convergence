@@ -12,7 +12,7 @@ line that worked before still works, with the subcommand inserted after the scri
 
     uv run python scripts/01_dataset.py fetch --help
 
-Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+Provenance: every subcommand writes params.json beside its outputs (see ssc.metrics.record_params).
 
 Merged from:
     fetch            was 01_fetch_proteins.py
@@ -28,7 +28,8 @@ import time
 import warnings
 from datetime import datetime, timezone
 from pathlib import Path
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 from urllib.request import urlopen
 import numpy as np
 import gzip
@@ -44,7 +45,6 @@ import re
 # fetch  --  from 01_fetch_proteins.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -307,7 +307,6 @@ def _main_fetch() -> None:
 # annotate  --  from 01b_fetch_annotations.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 SIFTS_URL = ("https://ftp.ebi.ac.uk/pub/databases/msd/sifts/flatfiles/tsv/"
              "pdb_chain_uniprot.tsv.gz")
@@ -482,7 +481,6 @@ def _main_annotate() -> None:
 # targets  --  from 01c_residue_targets.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 

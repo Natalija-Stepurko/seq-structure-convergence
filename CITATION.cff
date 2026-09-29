@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this code or these results, please cite them as below."
+title: "Do a sequence model and a structure model learn the same biology? Representation agreement between ESM-2 and ProteinMPNN"
+type: software
+authors:
+  - family-names: Stepurko
+    given-names: Natalija
+repository-code: "https://github.com/Natalija-Stepurko/seq-structure-convergence"
+url: "https://natalija-stepurko.github.io/seq-structure-convergence/"
+license: MIT
+date-released: "2026-09-29"
+keywords:
+  - protein language models
+  - representation similarity
+  - CKA
+  - SVCCA
+  - ESM-2
+  - ProteinMPNN

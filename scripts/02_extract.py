@@ -14,7 +14,7 @@ line that worked before still works, with the subcommand inserted after the scri
 
     uv run python scripts/02_extract.py esm --help
 
-Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+Provenance: every subcommand writes params.json beside its outputs (see ssc.metrics.record_params).
 
 Merged from:
     esm              was 02_extract_embeddings_esm.py
@@ -31,7 +31,8 @@ import sys
 import time
 import warnings
 from pathlib import Path
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 import numpy as np
 import torch
 import argparse, json, sys, time, warnings
@@ -45,7 +46,6 @@ import numpy as np, torch
 # esm  --  from 02_extract_embeddings_esm.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -142,7 +142,6 @@ def _main_esm() -> None:
 # struct  --  from 02_extract_embeddings_struct.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -261,7 +260,6 @@ def _main_struct() -> None:
 # esmif1  --  from 02c_extract_esmif1.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -319,7 +317,6 @@ def _main_esmif1() -> None:
 # random  --  from 02d_extract_random_init.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -400,7 +397,6 @@ def _main_random():
 # carp  --  from 02e_extract_carp.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 

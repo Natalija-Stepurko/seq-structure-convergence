@@ -1,0 +1,10 @@
+Model stitching: each direction feeds one model's representation through a fitted
+linear connector into the OTHER model's own frozen head, evaluated on that model's
+own task. 105 chains fit the connector, 45 held-out chains evaluated.
+
+  struct→seq (ESM lm_head, residue readout)
+      ESM's own final layer (ceiling)            0.969
+  struct→seq (ESM lm_head, residue readout)
+      ProteinMPNN stitched into ESM lm_head      0.523
+  struct→seq (ESM lm_head, residue readout)
+      untrained MPNN stitched in (floor)         0.165

@@ -1,0 +1,12 @@
+pair,type,n_res,r2_fwd,r2_fwd_perm,r2_rev,r2_rev_perm
+esm1v_s1 x esm1v_s2,"same arch, different seed",15000,0.3791,-0.0925,0.3929,-0.0837
+carp x esm,within-sequence,15000,0.3529,-0.1109,0.3794,-0.0329
+esmif1 x proteinmpnn,within-structure,15000,0.6531,-0.0368,0.2672,-0.0059
+esm650 x proteinmpnn,cross-modality,15000,0.3291,-0.0569,0.1256,-0.0082
+esm650 x esmif1,cross-modality,15000,0.205,-0.0569,0.1747,-0.0385
+esm x proteinmpnn,cross-modality,15000,0.2587,-0.0304,0.1111,-0.0064
+carp x proteinmpnn,cross-modality,15000,0.1882,-0.111,0.1247,-0.0072
+carp x esmif1,cross-modality,15000,0.0964,-0.1078,0.1885,-0.0382
+rand_esm x rand_mpnn,untrained,15000,0.14,-0.0106,0.0342,-0.0027
+esm x rand_mpnn,one side untrained,15000,0.2923,-0.0239,0.0555,-0.0042
+rand_esm x proteinmpnn,one side untrained,15000,0.1486,-0.0091,0.1578,-0.0056

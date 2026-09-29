@@ -14,7 +14,7 @@ line that worked before still works, with the subcommand inserted after the scri
 
     uv run python scripts/03_geometry.py depth-law --help
 
-Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+Provenance: every subcommand writes params.json beside its outputs (see ssc.metrics.record_params).
 
 Merged from:
     depth-law        was 03_analyze_embeddings.py
@@ -31,7 +31,8 @@ import sys
 from pathlib import Path
 import numpy as np
 import torch
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 from sklearn.decomposition import PCA
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 import warnings
@@ -44,7 +45,6 @@ import warnings
 # depth-law  --  from 03_analyze_embeddings.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 BURIAL_RSA_depthlaw = 0.25   # RSA below this = buried
 
@@ -179,7 +179,6 @@ def _main_depthlaw() -> None:
 # overlap  --  from 07_geometry_overlap.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 def _pooled_last(pt):
     d = torch.load(pt, weights_only=False)["layers"].to(torch.float32).numpy()  # [n,L,D]
@@ -261,7 +260,6 @@ def _main_overlap() -> None:
 # health  --  from 08_embedding_health.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 def _collect_health(ids, res_dir, prot_dir, max_residues, per_chain, seed):
     rng = np.random.default_rng(seed)
@@ -352,7 +350,6 @@ def _main_health() -> None:
 # clusters  --  from 09_hdbscan_clustering.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -495,7 +492,6 @@ def _plot_clusters(out, labels, model_name):
 # umap  --  from 11_umap_property_grid.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 

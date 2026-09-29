@@ -1,0 +1,52 @@
+Per-property stitching at depth (macro-F1). 'stitched' = ProteinMPNN mapped into ESM
+layer d then processed by ESM's remaining trained blocks; 'stitched_rand' uses the same
+architecture untrained; 'donor' probes ProteinMPNN directly; 'native' is ESM's own state.
+
+  L4   ss3       native           0.724
+  L4   ss3       stitched         0.753
+  L4   ss3       stitched_rand    0.833
+  L4   ss3       donor            0.833
+  L4   burial    native           0.764
+  L4   burial    stitched         0.808
+  L4   burial    stitched_rand    0.875
+  L4   burial    donor            0.890
+  L4   binding   native           0.542
+  L4   binding   stitched         0.557
+  L4   binding   stitched_rand    0.535
+  L4   binding   donor            0.537
+  L4   aa        native           0.971
+  L4   aa        stitched         0.237
+  L4   aa        stitched_rand    0.282
+  L4   aa        donor            0.284
+  L4   rsa       native           0.403
+  L4   rsa       stitched         0.538
+  L4   rsa       stitched_rand    0.770
+  L4   rsa       donor            0.814
+  L4   bfactor   native           0.103
+  L4   bfactor   stitched         0.119
+  L4   bfactor   stitched_rand    0.270
+  L4   bfactor   donor            0.203
+  L8   ss3       native           0.718
+  L8   ss3       stitched         0.819
+  L8   ss3       stitched_rand    0.834
+  L8   ss3       donor            0.826
+  L8   burial    native           0.758
+  L8   burial    stitched         0.839
+  L8   burial    stitched_rand    0.881
+  L8   burial    donor            0.888
+  L8   binding   native           0.567
+  L8   binding   stitched         0.550
+  L8   binding   stitched_rand    0.563
+  L8   binding   donor            0.541
+  L8   aa        native           0.971
+  L8   aa        stitched         0.253
+  L8   aa        stitched_rand    0.279
+  L8   aa        donor            0.279
+  L8   rsa       native           0.396
+  L8   rsa       stitched         0.662
+  L8   rsa       stitched_rand    0.796
+  L8   rsa       donor            0.807
+  L8   bfactor   native           0.108
+  L8   bfactor   stitched         0.190
+  L8   bfactor   stitched_rand    0.238
+  L8   bfactor   donor            0.207

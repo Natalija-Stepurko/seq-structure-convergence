@@ -1,0 +1,4 @@
+layer,mean_cosine,cond_number,pca90,eff_rank
+enc1,0.6445,73614.3,42,19.9
+enc2,0.717,25422.9,67,30.6
+enc3,0.7105,17147.1,69,31.9

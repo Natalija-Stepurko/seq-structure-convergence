@@ -1,5 +1,5 @@
 """
-qc_common.py — shared representation-similarity helpers.
+ssc.metrics — shared representation-similarity helpers used by every pipeline stage.
 
 linear_cka follows Kornblith et al. (2019); svcca follows Raghu et al. (2017);
 mutual_knn is the Platonic-hypothesis metric (Huh et al. 2024).
@@ -30,11 +30,11 @@ def svcca_reduce(X: np.ndarray, var: float = 0.99,
                  max_rows: int = 5000, seed: int = 42) -> np.ndarray:
     """The per-matrix half of SVCCA: subsample rows, centre, SVD-denoise, orthonormalise.
 
-    Split out so a layer grid can reduce each layer ONCE instead of once per partner. The row
+    Split out so a layer grid can reduce each layer ONCE and reuse it for every partner. The row
     subsample is seeded and depends only on n, so reductions computed separately still align
     row-for-row -- which is what makes caching safe.
 
-    On a 34x49 grid this is 83 reductions instead of 3,332; the SVD dominates svcca's cost, so
+    On a 34x49 grid this is 83 reductions where the direct form needs 3,332; the SVD dominates svcca's cost, so
     the grid gets roughly an order of magnitude cheaper.
     """
     X = np.asarray(X, dtype=np.float64)

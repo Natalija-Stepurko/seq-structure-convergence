@@ -1,0 +1,29 @@
+{
+  "script": "04_convergence.py",
+  "timestamp_utc": "2026-09-14T14:32:44+00:00",
+  "command": "scripts/04_convergence.py --n-resamples 50 --resample-size 8000 --max-residues 20000 --out-dir /ssc/results/ladder_ci",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "max_residues": 20000,
+    "n_resamples": 50,
+    "resample_size": 8000,
+    "out_dir": "/ssc/results/ladder_ci",
+    "seed": 42
+  },
+  "git_commit": "654a492f3388150d92997e22e25e7e76f1dae025",
+  "git_dirty": false,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "n_pairs": 12
+  }
+}

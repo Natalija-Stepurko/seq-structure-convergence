@@ -1,0 +1,27 @@
+{
+  "script": "05_probes.py",
+  "timestamp_utc": "2026-09-13T17:11:12+00:00",
+  "command": "scripts/05_probes.py --results-dir /ssc/results/esm --model-name esm --structures-dir /ssc/structures --seed 42 --out-dir /ssc/results/probes_ci/esm/rep0",
+  "args": {
+    "results_dir": "/ssc/results/esm",
+    "model_name": "esm",
+    "structures_dir": "/ssc/structures",
+    "out_dir": "/ssc/results/probes_ci/esm/rep0",
+    "max_chains": 5000,
+    "per_chain": 8,
+    "test_frac": 0.25,
+    "seed": 42
+  },
+  "git_commit": "efafac2588819e0c188250b9c854cead318e96ea",
+  "git_dirty": false,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  }
+}

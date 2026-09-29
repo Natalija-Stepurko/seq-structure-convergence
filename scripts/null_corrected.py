@@ -21,8 +21,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
-sys.path.insert(0, "/ssc/scripts")
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 
 AA = "ACDEFGHIKLMNPQRSTVWY"
 

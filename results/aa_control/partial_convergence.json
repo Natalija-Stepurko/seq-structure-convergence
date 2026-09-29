@@ -1,0 +1,170 @@
+{
+  "CARP x ESM-2": {
+    "kind": "within-sequence",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.6995161137392015,
+      "svcca": 0.6451929503262116,
+      "mutual_knn": 0.243675
+    },
+    "partial": {
+      "cka": 0.5947878345722956,
+      "svcca": 0.623613979462031,
+      "mutual_knn": 0.4292
+    }
+  },
+  "ESM-IF1 x ProteinMPNN": {
+    "kind": "within-structure",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.5183367899599404,
+      "svcca": 0.6542252972116804,
+      "mutual_knn": 0.124725
+    },
+    "partial": {
+      "cka": 0.46456516441990714,
+      "svcca": 0.6455359677410482,
+      "mutual_knn": 0.099575
+    }
+  },
+  "ESM-2 650M x ESM-IF1": {
+    "kind": "cross-modality",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.2855409745633282,
+      "svcca": 0.5600150668407441,
+      "mutual_knn": 0.046474999999999995
+    },
+    "partial": {
+      "cka": 0.21113810389363188,
+      "svcca": 0.5545657406994619,
+      "mutual_knn": 0.035225
+    }
+  },
+  "ESM-2 35M x ProteinMPNN": {
+    "kind": "cross-modality",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.2566569332391851,
+      "svcca": 0.4074682650202638,
+      "mutual_knn": 0.022775
+    },
+    "partial": {
+      "cka": 0.12488727312414921,
+      "svcca": 0.38995895340921244,
+      "mutual_knn": 0.02475
+    }
+  },
+  "CARP x ESM-IF1": {
+    "kind": "cross-modality",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.2509265527693825,
+      "svcca": 0.4421228073045558,
+      "mutual_knn": 0.03665000000000001
+    },
+    "partial": {
+      "cka": 0.14022947476479214,
+      "svcca": 0.43562573036572516,
+      "mutual_knn": 0.03045
+    }
+  },
+  "ESM-2 650M x ProteinMPNN": {
+    "kind": "cross-modality",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.25358420498626183,
+      "svcca": 0.6007563290372474,
+      "mutual_knn": 0.0297
+    },
+    "partial": {
+      "cka": 0.16715353461451696,
+      "svcca": 0.5900136065584952,
+      "mutual_knn": 0.029025
+    }
+  },
+  "CARP x ProteinMPNN": {
+    "kind": "cross-modality",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.2088931219388102,
+      "svcca": 0.4850921790165592,
+      "mutual_knn": 0.025950000000000004
+    },
+    "partial": {
+      "cka": 0.13508134176045283,
+      "svcca": 0.470302470247,
+      "mutual_knn": 0.02175
+    }
+  },
+  "ESM-1v x ProteinMPNN": {
+    "kind": "cross-modality",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.22457374020175183,
+      "svcca": 0.5716456634499586,
+      "mutual_knn": 0.019225000000000003
+    },
+    "partial": {
+      "cka": 0.10345353586027006,
+      "svcca": 0.5601913528204595,
+      "mutual_knn": 0.0176
+    }
+  },
+  "untrained x untrained": {
+    "kind": "control",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.039423950914282344,
+      "svcca": 0.17584191132032279,
+      "mutual_knn": 0.0045
+    },
+    "partial": {
+      "cka": 0.015217796515148332,
+      "svcca": 0.26539546476640896,
+      "mutual_knn": 0.009375
+    }
+  },
+  "trained seq x untrained str": {
+    "kind": "control",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.14947897578109198,
+      "svcca": 0.39519766968847014,
+      "mutual_knn": 0.01095
+    },
+    "partial": {
+      "cka": 0.11357134173482944,
+      "svcca": 0.39168476659781015,
+      "mutual_knn": 0.012
+    }
+  },
+  "untrained seq x trained str": {
+    "kind": "control",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.20215739593717702,
+      "svcca": 0.3681400317134679,
+      "mutual_knn": 0.0123
+    },
+    "partial": {
+      "cka": 0.027382377849434508,
+      "svcca": 0.23607837446948987,
+      "mutual_knn": 0.009600000000000001
+    }
+  },
+  "ESM-1v s1 x ESM-1v s2": {
+    "kind": "same arch, diff seed",
+    "n_residues": 20190,
+    "raw": {
+      "cka": 0.8315508898384677,
+      "svcca": 0.891016144787517,
+      "mutual_knn": 0.8483
+    },
+    "partial": {
+      "cka": 0.831216681802018,
+      "svcca": 0.8960587621331891,
+      "mutual_knn": 0.789125
+    }
+  }
+}

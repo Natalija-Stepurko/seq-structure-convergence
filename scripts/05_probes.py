@@ -12,7 +12,7 @@ line that worked before still works, with the subcommand inserted after the scri
 
     uv run python scripts/05_probes.py probe --help
 
-Provenance: every subcommand writes params.json beside its outputs (see qc_common.record_params).
+Provenance: every subcommand writes params.json beside its outputs (see ssc.metrics.record_params).
 
 Merged from:
     probe            was 05_property_prediction.py
@@ -25,7 +25,8 @@ import json
 import sys
 import warnings
 from pathlib import Path
-import qc_common as qc
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from ssc import metrics as qc
 import numpy as np
 import torch
 from sklearn.linear_model import LogisticRegression, Ridge
@@ -44,7 +45,6 @@ from xgboost import XGBClassifier
 # probe  --  from 05_property_prediction.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -485,7 +485,6 @@ def _plot_chain_best(chain_rows, model_name, out_png):
 # composition  --  from 05b_composition_baseline.py
 # ======================================================================================
 
-sys.path.insert(0, str(Path(__file__).parent))
 
 warnings.filterwarnings("ignore")
 
@@ -724,7 +723,7 @@ def _main_repeats() -> None:
         """Pool one metric file across repeats, keyed by keycols."""
         pooled = {}
         for rd in rep_dirs:
-            # the probe writes into <rep>/<model_name>/, so search rather than assume the path
+            # the probe writes into <rep>/<model_name>/, so search for the file
             found = sorted(rd.rglob(fname))
             if not found:
                 continue
@@ -750,7 +749,7 @@ def _main_repeats() -> None:
             # narrow that two targets read as separated when they are not.
             #
             # Still not a paired significance test: the two models are refit independently on
-            # their own splits, so a non-overlap is suggestive rather than decisive.
+            # their own splits, so a non-overlap is only suggestive.
             half = 1.96 * sd if n > 1 else 0.0
             rows.append(dict(zip(keycols, key)) | {
                 "metric": col, "mean": round(mean, 4), "lo": round(mean - half, 4),
