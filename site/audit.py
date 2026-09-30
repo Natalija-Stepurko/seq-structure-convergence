@@ -14,7 +14,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 R = HERE.parent / "results"
-page = (HERE / "build/convergence.html").read_text()
+page = (HERE / "build/index.html").read_text()
 body = page.split("</style>", 1)[1]
 body = re.sub(r"<script\b.*?</script>", " ", body, flags=re.S)
 text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", body)))
