@@ -1,0 +1,54 @@
+{
+  "script": "06_stitching.py",
+  "timestamp_utc": "2026-09-29T20:05:49+00:00",
+  "command": "scripts/06_stitching.py --threads 3 --connector mlp --donor-layers 3 --inject-layers 1 4 8 12 --repeats 3 --out-dir results/stitch_grid_ci/proteinmpnn_mlp",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "esm_dir": "/ssc/results/esm",
+    "donor_dir": "/ssc/results/proteinmpnn",
+    "donor_name": "ProteinMPNN",
+    "esm_model": "esm2_t12_35M_UR50D",
+    "out_dir": "results/stitch_grid_ci/proteinmpnn_mlp",
+    "n_chains": 400,
+    "per_chain": 25,
+    "alpha": 100.0,
+    "properties": [
+      "ss3",
+      "burial",
+      "rsa"
+    ],
+    "repeats": 3,
+    "seed0": 42,
+    "connector": "mlp",
+    "donor_layers": [
+      3
+    ],
+    "inject_layers": [
+      1,
+      4,
+      8,
+      12
+    ],
+    "threads": 3
+  },
+  "git_commit": "1cb62f107b2d0c25598905910866d416bbd90e00",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "n_cells": 4,
+    "verdicts": {
+      "worse": 10,
+      "better": 0,
+      "no clear difference": 2
+    }
+  }
+}

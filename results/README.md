@@ -15,6 +15,7 @@ that produced it; older folders predate that convention and are described here i
 | Folder | What it holds | Status |
 |---|---|---|
 | `ladder_ci/` | Every ladder pair, raw and with amino-acid identity subtracted; CKA, SVCCA, mutual k-NN; 50 whole-chain subsamples of 8,000 residues, 95% percentile intervals | **page** · headline numbers |
+| `ladder_ci_null/` | The same run with a scrambled-residue null on every subsample (`--with-null`); reproduces `ladder_ci/` on 70 of 72 rows exactly and within 0.001 on the other two (see its README) | **page** (calibration) |
 | `aa_control/` | Agreement before and after subtracting the per-amino-acid mean, all pairs | **page** |
 | `convergence_controls/` | SVCCA against its permutation null and at matched widths | **page** |
 | `convergence/` | Layer × layer grids, ESM-2 35M × ProteinMPNN, 30,000 residues; supervised (κ) grids; significance | **page** (heatmaps) |
@@ -55,7 +56,10 @@ directly comparable.
 
 | Folder | What it holds | Status |
 |---|---|---|
-| `stitch_grid/` | Every ProteinMPNN layer fed into every ESM-2 layer through a linear connector; stitched, untrained-receiver, donor-only and receiver-only scores for three properties | **page** |
+| `stitch_grid_ci/proteinmpnn_ridge/` | Every ProteinMPNN layer fed into every ESM-2 layer through a linear connector, 5 repeats on independent chain samples; per-cell intervals on stitched − donor and a verdict | **page** |
+| `stitch_grid_ci/carp_ridge/` | The same test from CARP's last layer: a within-sequence positive control | **page** |
+| `stitch_grid_ci/proteinmpnn_mlp/` | ProteinMPNN's last layer at four entry depths through a one-hidden-layer network, 3 repeats | **page** |
+| `stitch_grid/` | The original single run of the grid | superseded by `stitch_grid_ci/` |
 | `depth_stitch/` | Per-property stitching at each injection depth | supporting |
 | `functional_grids/` | How well each layer of one model linearly predicts each layer of the other | supporting |
 | `predictivity_matrix/` | The same between models' last layers, every pair | supporting |

@@ -26,11 +26,16 @@ FIGB, PNG = _OPT[0], [None, _OPT[1], _OPT[2]]
 
 sys.path.insert(0, str(HERE))
 from charts import (depth_bars, ladder_svg, null_strips, width_bars, layer_panels,
-                    stitch_bars, LADDER_ORDER, METRIC_LABEL)
+                    stitch_bars, depth_verdicts, LADDER_ORDER, METRIC_LABEL)
 
 REPO = "https://github.com/Natalija-Stepurko/seq-structure-convergence"
 EP = D["every_pair"]
 MAIN = "ESM-2 35M x ProteinMPNN"
+ST = D["stitching"]
+# how many of the shallowest entry depths lose in every case
+LEAD = next((i for i, r in enumerate(ST["by_depth"])
+             if r["worse"] < r["worse"] + r["no clear difference"] + r["better"]), len(ST["by_depth"]))
+share = lambda k: 100 * D["calibration"][k]["null"] / D["calibration"][k]["obs"]
 
 
 def block(key, tag, stop=None):
@@ -162,13 +167,14 @@ def header():
       <p>They almost never agree on which residues sit next to which:
       {v(MAIN,'partial','mutual_knn'):.3f}, against
       {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for the same model trained twice.</p></div>
-    <div class="rb"><h3>Nothing composes</h3>
-      <span class="rbn">{D['stitching']['worse']} / {D['stitching']['total']}</span>
-      <p>No entry point lets the structure model's description feed the sequence model's layers
-      without making it worse — {D['stitching']['worse']} of {D['stitching']['total']} cases.</p></div>
+    <div class="rb"><h3>No clean hand-off</h3>
+      <span class="rbn">{ST['worse']} / {ST['total']}</span>
+      <p>Fed through the sequence model's trained layers, the structure model's description comes out
+      clearly worse in {ST['worse']} of {ST['total']} cases, including every case that enters in the
+      first {LEAD} layers. Untrained layers pass it through unchanged.</p></div>
     <div class="rbfoot">Two artefacts inflate the raw scores: the amino-acid identity both models
     are trained to output, worth about half of the strongest measure, and a scrambled-data floor
-    worth 71% of another.</div>
+    worth {share('svcca'):.0f}% of another.</div>
   </div>
 
   <div class="whatsnew">
@@ -189,7 +195,7 @@ def header():
   <nav class="toc" aria-label="Contents">
     <a href="#question">The question</a><a href="#models">Models</a><a href="#measures">Measures</a>
     <a href="#f1">1 The answer key</a><a href="#f2">2 What survives</a><a href="#f3">3 No shared map</a>
-    <a href="#f4">4 Layer by layer</a><a href="#f5">5 Nothing composes</a><a href="#f6">6 Who knows what</a>
+    <a href="#f4">4 Layer by layer</a><a href="#f5">5 No clean hand-off</a><a href="#f6">6 Who knows what</a>
     <a href="#f7">7 Where it builds up</a><a href="#beyond">Beyond proteins</a><a href="#limits">Limits</a>
     <a href="#references">References</a>
   </nav>
@@ -291,17 +297,17 @@ def s_measures():
     <p class="prose">No similarity score means anything on its own. Scramble which residue is which
     and every correspondence between the two models is destroyed; whatever a measure still reports
     is what it returns for unrelated data. For the main pair: same pattern of resemblance reports
-    {c['cka']['obs']:.3f}, of which 2% is null; same main directions reports {c['svcca']['obs']:.3f},
-    of which 71% is null; same neighbours reports {c['knn']['obs']:.3f}, of which 8% is null. Two
+    {c['cka']['obs']:.3f}, of which {share('cka'):.0f}% is null; same main directions reports
+    {c['svcca']['obs']:.3f}, of which {share('svcca'):.0f}% is null; same neighbours reports
+    {c['knn']['obs']:.3f}, of which {share('knn'):.0f}% is null. Two
     high-dimensional clouds of numbers always share some direction, whether or not they are related,
     so most of the headline “same main directions” score is noise floor. The other two measures are
     nearly clean.</p>
   </div>
   <div class="figwrap">{null_strips(D)}
-    <p class="figcap">Measured on {c['cka']['n']:,} residues, resampled at the residue level — a
-    different basis from the whole-chain subsamples used for every pair further down, which is why
-    the main pair reads {c['cka']['obs']:.3f} here and {v(MAIN,'raw'):.3f} there. These measures are
-    sample-size sensitive, so each figure states its own basis.</p>
+    <p class="figcap">Each bar is the mean over the same {c['cka']['subsamples']} whole-chain
+    subsamples of {c['cka']['n']:,} residues used for every pair further down; the grey part is the
+    same subsamples with the residues scrambled.</p>
   </div>
   <div class="stack prose">
     <p class="prose">It gets worse when models of different sizes are compared, because the
@@ -313,7 +319,9 @@ def s_measures():
     proteins.</p>
   </div>
   <div class="figwrap">{width_bars(D)}
-    <p class="figcap">Gaps are computed before rounding: the displayed
+    <p class="figcap">From a separate run on a different residue sample, which is why the main pair
+    reads {D['width'][1]['obs']:.3f} here and {c['svcca']['obs']:.3f} above; each score is read only
+    against its own null. Gaps are computed before rounding: the displayed
     {D['width'][1]['obs']:.3f} − {D['width'][1]['null']:.3f} gives
     +{D['width'][1]['obs']-D['width'][1]['null']:.3f}, not the +0.117 a reader would get from the
     rounded figures.</p>
@@ -525,36 +533,53 @@ def s_f4():
 
 
 def s_f5():
-    st = D["stitching"]
+    st, ctl, mlp = D["stitching"], D["stitching_control"], D["stitching_mlp"]
     p = {x["key"]: x for x in st["props"]}
     return f"""<div class="page sec" id="f5">
   <div class="stack prose">
     <span class="eyebrow">Finding 5 · stitching</span>
-    <h2>Nothing the structure model produces can be handed to the sequence model</h2>
+    <h2>The structure model's description does not survive the sequence model's layers intact</h2>
     <p class="prose">Similar is not the same as interchangeable. Stitching — taking one model's
     description of a residue and feeding it into the other model's remaining layers — tests the
     stronger claim directly: take the structure model's description of each residue, pass it through
     a single trained translation step into the sequence model at some layer, and let the sequence
     model's own remaining layers finish the job. Every entry point was tried — {st['cells']}
-    combinations — and each stitched model was scored on three properties, {st['total']} cases in
-    all. The comparison that settles it is against the structure model <em>on its own</em>: scoring
-    against the sequence model instead would flatter stitching, because the structure model is simply
+    combinations of structure-model layer and entry point — and each stitched model was scored on
+    three properties: {st['total']} cases, each repeated on {st['repeats']} independent samples of
+    proteins. The comparison that settles it is against the structure model <em>on its own</em>:
+    scoring against the sequence model would flatter stitching, because the structure model is simply
     better at these properties to begin with (Lenc &amp; Vedaldi, 2015; Bansal et al., 2021).</p>
     <p class="prose">Passing the structure model's work through the sequence model's trained layers
-    makes it worse than not passing it through anything — in {st['worse']} of {st['total']} cases.
-    Untrained layers are indistinguishable from no layers at all: they pass the information through
+    loses part of it. In {st['worse']} of {st['total']} cases the stitched model is clearly worse than
+    the structure model alone, meaning the interval across repeats excludes zero; in {st['unclear']}
+    there is no clear difference, and in {st['better']} it is better. The losses are not spread
+    evenly: every case that enters in the first {LEAD} layers is worse, and the cases with no clear
+    difference sit at the deep entry points, where few of the sequence model's layers are left to
+    act.</p>
+    <p class="prose">What comes out is in between. Untrained layers pass the information through
     unchanged ({p['ss3']['donor']:.3f} → {p['ss3']['rand']:.3f} for local shape,
     {p['burial']['donor']:.3f} → {p['burial']['rand']:.3f} for buried or exposed,
-    {p['rsa']['donor']:.3f} → {p['rsa']['rand']:.3f} for solvent accessibility). Trained layers
-    degrade it ({p['ss3']['trained']:.3f}, {p['burial']['trained']:.3f}, {p['rsa']['trained']:.3f}),
-    because they are tuned to inputs a structure model never produces. There is no entry point at
-    which the two fit together. Same-modality stitching succeeds routinely, and models that share
-    both input and target — folding trunks — have been shown to be functionally interchangeable
-    (Lu et al., 2026); across the sequence–structure divide they are not.</p>
+    {p['rsa']['donor']:.3f} → {p['rsa']['rand']:.3f} for solvent accessibility). Trained layers keep
+    more than the sequence model knows on its own and less than the structure model supplied: for
+    solvent accessibility, {p['rsa']['trained']:.3f}, against {p['rsa']['native']:.3f} for the
+    sequence model alone and {p['rsa']['donor']:.3f} for the structure model alone. The layers are
+    tuned to inputs a structure model never produces.</p>
+    <p class="prose">Two checks bound the result. The translation step is a single linear map, and on
+    held-out proteins it captures only {st['r2_min']:.2f}–{st['r2_max']:.2f} of the variance (mean
+    {st['r2_mean']:.3f}). A small neural network in its place fits slightly better (mean
+    {mlp['r2_mean']:.3f}) and changes nothing: {mlp['worse']} of {mlp['total']} cases are still
+    clearly worse. And the same test can pass. Fed into ESM-2 from CARP, a second sequence model, the
+    linear map fits about {ctl['r2_mean'] / st['r2_mean']:.0f} times better (mean
+    {ctl['r2_mean']:.3f}) and {ctl['unclear']} of {ctl['total']} cases show no clear loss. CARP starts
+    at roughly ESM-2's level on these properties, which makes a no-loss result easier to reach; the
+    structure model carries information the sequence model lacks, and that is what is lost. Folding
+    trunks that share both input and target have likewise been shown to be functionally
+    interchangeable (Lu et al., 2026).</p>
   </div>
   <div class="minirow">{stitch_bars(D)}</div>
-  <p class="figcap">Each panel is the best entry point for that property, averaged over the
-  {st['cells']} donor-layer × entry-point combinations.</p>
+  <p class="figcap">Each panel averages the {st['cells']} combinations of structure-model layer and
+  entry point, over {st['repeats']} repeats.</p>
+  <div class="figwrap">{depth_verdicts(D)}</div>
 </div>"""
 
 
@@ -667,7 +692,7 @@ def s_beyond():
   <div class="stack prose">
     <span class="eyebrow">Beyond proteins</span>
     <h2>Three artefacts, each on its own large enough to manufacture a convergence result</h2>
-    <p class="prose">Of the headline agreement between a sequence and a structure model, 71% of one
+    <p class="prose">Of the headline agreement between a sequence and a structure model, {share('svcca'):.0f}% of one
     measure is what it reports on scrambled data; roughly half of another is the training target both
     models share; and an untrained network scores {v('untrained seq x trained str','raw'):.3f} — a
     respectable-looking number — until that target is removed, whereupon it collapses to

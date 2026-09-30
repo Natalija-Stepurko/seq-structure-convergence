@@ -1,0 +1,32 @@
+{
+  "script": "04_convergence.py",
+  "timestamp_utc": "2026-09-29T18:20:53+00:00",
+  "command": "scripts/04_convergence.py --with-null --peaks-from results/ladder_ci/ladder_ci.csv --n-resamples 50 --resample-size 8000 --max-residues 20000 --seed 42 --out-dir results/ladder_ci_null",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "max_residues": 20000,
+    "n_resamples": 50,
+    "resample_size": 8000,
+    "out_dir": "results/ladder_ci_null",
+    "seed": 42,
+    "with_null": true,
+    "peaks_from": "results/ladder_ci/ladder_ci.csv",
+    "pairs": null
+  },
+  "git_commit": "1cb62f107b2d0c25598905910866d416bbd90e00",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "n_pairs": 12
+  }
+}

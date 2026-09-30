@@ -1,0 +1,19 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      # The metric library needs only numpy and scikit-learn; the full model stack is not
+      # installed here.
+      - run: pip install numpy scikit-learn pytest
+      - run: pytest -q
