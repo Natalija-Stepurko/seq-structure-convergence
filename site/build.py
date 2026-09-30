@@ -201,9 +201,9 @@ def header():
 
   <nav class="toc" aria-label="Contents">
     <a href="#question">The question</a><a href="#models">Models</a><a href="#measures">Measures</a>
-    <a href="#f1">1 The answer key</a><a href="#f2">2 What survives</a><a href="#f3">3 No shared map</a>
-    <a href="#f4">4 Layer by layer</a><a href="#f5">5 Not interchangeable</a><a href="#f6">6 Who knows what</a>
-    <a href="#f7">7 Where it builds up</a><a href="#beyond">Beyond proteins</a><a href="#limits">Limits</a>
+    <a href="#f1">The answer key</a><a href="#f2">What survives</a><a href="#f3">No shared map</a>
+    <a href="#f4">Layer by layer</a><a href="#f5">Not interchangeable</a><a href="#f6">Who knows what</a>
+    <a href="#f7">Where it builds up</a><a href="#beyond">Beyond proteins</a><a href="#limits">Limits</a>
     <a href="#references">References</a>
   </nav>
 
@@ -341,7 +341,7 @@ def s_f1():
     dp = {r["layer"]: r["v"] for r in D["depth_cka"]}
     return f"""<div class="page sec" id="f1">
   <div class="stack prose">
-    <span class="eyebrow">Finding 1 · the answer key</span>
+    <span class="eyebrow">The answer key</span>
     <h2>The strongest agreement between the two families was the amino-acid code both are trained
     to output</h2>
     <p class="prose">Both families are trained to output the amino acid at each position — the
@@ -435,7 +435,7 @@ def ladder_details():
 def s_f2():
     return f"""<div class="page sec" id="f2">
   <div class="stack prose">
-    <span class="eyebrow">Finding 2 · every pair, before and after</span>
+    <span class="eyebrow">What survives · every pair, before and after</span>
     <h2>With the answer key removed, every sequence–structure pair still sits well above the floor —
     and well below two models that share an input</h2>
     <p class="prose">A score of 0.13 means nothing on its own until you know what the same
@@ -486,7 +486,7 @@ def s_f3():
              if t == "opposite inputs" and k in EP)
     return f"""<div class="page sec" id="f3">
   <div class="stack prose">
-    <span class="eyebrow">Finding 3 · neighbours</span>
+    <span class="eyebrow">No shared map · neighbours</span>
     <h2>They do not arrange proteins the same way</h2>
     <p class="prose">Sharing axes is weaker than sharing a map. The neighbour measure asks, for each
     residue, how many of its ten closest neighbours in one model are also among its ten closest in
@@ -506,7 +506,7 @@ def s_f3():
     reading that the subtraction removes the islands and leaves the biology intact.</p>
   </div>
   <div class="figwrap">{ladder_svg(D, 'mutual_knn', 'both')}
-    <p class="figcap">Same layout as Finding 2, on the neighbour measure. The ceiling is far to the
+    <p class="figcap">The same ladder as in “What survives”, on the neighbour measure. The ceiling is far to the
     right; every sequence–structure pair is crowded against the axis.</p>
   </div>
 </div>"""
@@ -518,7 +518,7 @@ def s_f4():
     kn = [r["v"] for r in D["depth_knn"]]
     return f"""<div class="page sec" id="f4">
   <div class="stack prose">
-    <span class="eyebrow">Finding 4 · depth</span>
+    <span class="eyebrow">Layer by layer</span>
     <h2>Agreement is highest where the sequence model has learned least</h2>
     <p class="prose">The same pair of models, every layer of one against every layer of the other, as
     measured. Read along the sequence model's depth: same pattern of resemblance is highest at the
@@ -544,7 +544,7 @@ def s_f5():
     p = {x["key"]: x for x in st["props"]}
     return f"""<div class="page sec" id="f5">
   <div class="stack prose">
-    <span class="eyebrow">Finding 5 · stitching</span>
+    <span class="eyebrow">Not interchangeable · stitching</span>
     <h2>The structure model's description does not survive the sequence model's layers intact</h2>
     <p class="prose">Similar is not the same as interchangeable. Stitching — taking one model's
     description of a residue and feeding it into the other model's remaining layers — tests the
@@ -595,7 +595,7 @@ def s_f6():
     e, m = pc["esm"], pc["proteinmpnn"]
     return f"""<div class="page sec" id="f6">
   <div class="stack prose">
-    <span class="eyebrow">Finding 6 · property probes</span>
+    <span class="eyebrow">Who knows what · property probes</span>
     <h2>Each model reads best what it was shown — except fold topology</h2>
     <p class="prose">Both models were tested on properties neither was trained to predict, with a
     probe on each layer and the best layer reported. The split is clean, and it runs along the
@@ -677,7 +677,7 @@ def s_f6():
 def s_f7():
     return f"""<div class="page sec" id="f7">
   <div class="stack prose">
-    <span class="eyebrow">Finding 7 · depth of emergence</span>
+    <span class="eyebrow">Where it builds up · depth</span>
     <h2>Geometry is handed to the structure model; the sequence model has to build it</h2>
     <p class="prose">Left is each model's input, right is its output. The structure model already
     knows the geometry at its first layer — it is handed the coordinates, so there is nothing to
