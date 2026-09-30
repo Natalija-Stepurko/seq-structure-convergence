@@ -49,7 +49,6 @@ import numpy as np, torch
 
 warnings.filterwarnings("ignore")
 
-os.environ.setdefault("TORCH_HOME", "/scratch/.torch-hub")
 
 def _load_manifest_esm(structures_dir: Path) -> list[dict]:
     jsonl = structures_dir / "index.jsonl"
@@ -206,7 +205,9 @@ def _main_struct() -> None:
     ap = argparse.ArgumentParser(description="Structure-arm (ProteinMPNN) extraction")
     ap.add_argument("--structures-dir", default="structures")
     ap.add_argument("--results-dir", default="results/proteinmpnn")
-    ap.add_argument("--weights", default="/scratch/.torch-hub/proteinmpnn/v_48_020.pt")
+    ap.add_argument("--weights", default=str(Path(os.environ.get("TORCH_HOME", os.path.expanduser(
+        "~/.cache/torch"))) / "proteinmpnn" / "v_48_020.pt"),
+                    help="ProteinMPNN vanilla weights (default: $TORCH_HOME/proteinmpnn/v_48_020.pt)")
     ap.add_argument("--model-name", default="proteinmpnn_v_48_020")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--num-threads", type=int, default=None)

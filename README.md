@@ -68,6 +68,7 @@ REPLICATION.md  full setup and pipeline guide · DATA.md  sizes, sources, licenc
 Rebuild the results page, with every number re-derived and audited, from a fresh clone:
 
 ```bash
+python3 -m venv .venv && . .venv/bin/activate
 pip install numpy && site/build.sh
 ```
 
