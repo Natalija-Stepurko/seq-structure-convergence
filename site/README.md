@@ -10,7 +10,7 @@ site/build.sh --fresh-figures  # also re-renders the three map images (needs mat
 | Step | File | Does |
 |---|---|---|
 | 1 | `build_data.py` | reads `results/` into `build/data.json`: the ladder, calibration, width series, layer grids, stitching grid, probes, dataset counts |
-| 2 | `build.py` | renders `build/convergence.html` (the page body, for the claude.ai artifact) and `build/index.html` (a standalone document, for GitHub Pages); checks tag nesting and anchors |
+| 2 | `build.py` | renders `build/index.html`, the page GitHub Pages serves; checks tag nesting and anchors |
 | 3 | `audit.py` | re-derives each headline number from `results/`, checks it appears in the page, and fails on any mismatch or banned phrase |
 | — | `charts.py` | the hand-written SVG charts |
 | — | `make_figures.py` | renders the three map images from `results/umap6/coords.npz` into `build/figures.json` |
