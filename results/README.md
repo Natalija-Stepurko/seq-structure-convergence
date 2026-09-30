@@ -16,6 +16,7 @@ that produced it; older folders predate that convention and are described here i
 |---|---|---|
 | `ladder_ci/` | Every ladder pair, raw and with amino-acid identity subtracted; CKA, SVCCA, mutual k-NN; 50 whole-chain subsamples of 8,000 residues, 95% percentile intervals | **page** · headline numbers |
 | `ladder_ci_null/` | The same run with a scrambled-residue null on every subsample (`--with-null`); reproduces `ladder_ci/` on 70 of 72 rows exactly and within 0.001 on the other two (see its README) | **page** (calibration) |
+| `depth_ci/` | Every ESM-2 35M layer against ProteinMPNN's last layer, CKA raw and with amino-acid identity subtracted, on the ladder's 50 whole-chain subsamples of 8,000 residues | **page** (depth after the subtraction) |
 | `aa_control/` | Agreement before and after subtracting the per-amino-acid mean, all pairs | **page** |
 | `convergence_controls/` | SVCCA against its permutation null and at matched widths | **page** |
 | `convergence/` | Layer × layer grids, ESM-2 35M × ProteinMPNN, 30,000 residues; supervised (κ) grids; significance | **page** (heatmaps) |

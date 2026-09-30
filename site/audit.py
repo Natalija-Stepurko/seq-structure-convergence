@@ -85,6 +85,15 @@ ctl = stitch("carp_ridge")
 claim("CARP control connector R2, mean", sum(float(c["connector_r2_mean"]) for c in ctl) / len(ctl))
 claim("CARP control, no clear loss", count(ctl, "no clear difference"), "{} of " + str(3 * len(ctl)))
 
+print("depth profile before and after the subtraction (depth-ci)")
+dep = {(r["label"], r["mode"]): float(r["mean"]) for r in csv.DictReader(open(R / "depth_ci/depth_ci.csv"))}
+claim("lookup layer, as measured", dep[("emb", "raw")])
+claim("block 1, as measured", dep[("b1", "raw")])
+claim("block 1, answer key removed", dep[("b1", "partial")])
+top = max((k for k in dep if k[1] == "partial"), key=lambda k: dep[k])
+claim(f"peak after subtraction ({top[0]}), as measured", dep[(top[0], "raw")])
+claim(f"peak after subtraction ({top[0]}), answer key removed", dep[top])
+
 print("probes: best layer per property, 5 refits")
 def best(m):
     b = {}

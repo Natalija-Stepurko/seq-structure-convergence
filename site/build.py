@@ -23,11 +23,13 @@ FIGB, PNG = _OPT[0], [None, _OPT[1], _OPT[2]]
 
 sys.path.insert(0, str(HERE))
 from charts import (depth_bars, ladder_svg, null_strips, width_bars, layer_panels,
-                    stitch_bars, depth_verdicts, LADDER_ORDER, METRIC_LABEL)
+                    stitch_bars, depth_verdicts, depth_bars_partial, LADDER_ORDER, METRIC_LABEL)
 
 REPO = "https://github.com/Natalija-Stepurko/seq-structure-convergence"
 EP = D["every_pair"]
 MAIN = "ESM-2 35M x ProteinMPNN"
+DP = D["depth_partial"]
+DPTOP = max(DP, key=lambda r: r["partial"])
 ST = D["stitching"]
 # how many of the shallowest entry depths lose in every case
 LEAD = next((i for i, r in enumerate(ST["by_depth"])
@@ -406,6 +408,21 @@ def s_f1():
       <span>untrained sequence against trained structure — collapses</span></div>
     <div class="callout"><b>{v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}</b>
       <span>the main pair — about half of the strongest measure was the shared answer key</span></div>
+  </div>
+  <div class="stack prose">
+    <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's lookup layer
+    drops from {DP[0]['raw']:.3f} to nothing: it held only the letter code. The early blocks keep a
+    small part of their agreement ({DP[1]['raw']:.3f} → {DP[1]['partial']:.3f} at block 1), and what
+    remains grows with depth, highest at {DPTOP['label'].replace('b', 'block ')}
+    ({DPTOP['raw']:.3f} → {DPTOP['partial']:.3f}). Before the subtraction the input layer led; after
+    it, the agreement that is left sits where ESM-2 has done the most processing.</p>
+  </div>
+  <div class="figwrap">{depth_bars_partial(D)}
+    <p class="figcap">Solid bars: each layer of ESM-2 against ProteinMPNN's last encoder layer, with
+    every residue's amino-acid average subtracted from both; lines are 95% intervals. Outlines: the
+    same layers as measured. Both on the same {D['depth_partial_basis']['subsamples']} whole-chain
+    subsamples of {D['depth_partial_basis']['budget']:,} residues. The first chart in this section
+    is a single run on 30,000 residues, which is why its values differ slightly.</p>
   </div>
 </div>"""
 

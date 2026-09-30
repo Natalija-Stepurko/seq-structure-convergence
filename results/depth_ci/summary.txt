@@ -1,0 +1,30 @@
+CKA of every esm layer against proteinmpnn layer 2, raw and with amino-acid identity
+subtracted. Mean and 95% percentile interval over 50 whole-chain subsamples
+of 8,000 residues, the same subsamples for every layer and mode.
+
+  emb  raw      0.263 [0.245, 0.281]
+  emb  partial  0.000 [0.000, 0.000]  degenerate
+  b1   raw      0.257 [0.243, 0.268]
+  b1   partial  0.067 [0.054, 0.080]
+  b2   raw      0.252 [0.240, 0.261]
+  b2   partial  0.086 [0.078, 0.096]
+  b3   raw      0.230 [0.223, 0.237]
+  b3   partial  0.093 [0.085, 0.102]
+  b4   raw      0.221 [0.212, 0.229]
+  b4   partial  0.086 [0.079, 0.095]
+  b5   raw      0.145 [0.131, 0.157]
+  b5   partial  0.055 [0.044, 0.067]
+  b6   raw      0.137 [0.124, 0.150]
+  b6   partial  0.059 [0.047, 0.069]
+  b7   raw      0.112 [0.099, 0.125]
+  b7   partial  0.059 [0.048, 0.070]
+  b8   raw      0.119 [0.108, 0.133]
+  b8   partial  0.073 [0.064, 0.084]
+  b9   raw      0.134 [0.123, 0.149]
+  b9   partial  0.091 [0.081, 0.102]
+  b10  raw      0.199 [0.186, 0.210]
+  b10  partial  0.111 [0.100, 0.123]
+  b11  raw      0.257 [0.242, 0.274]
+  b11  partial  0.137 [0.123, 0.154]
+  b12  raw      0.198 [0.180, 0.221]
+  b12  partial  0.105 [0.090, 0.123]

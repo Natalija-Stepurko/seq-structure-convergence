@@ -1032,6 +1032,90 @@ def _main_ladderci() -> None:
     print(f"-> {out}")
 
 
+def _main_depthci() -> None:
+    """Agreement at every layer of one model against one fixed layer of the other, raw and with
+    amino-acid identity subtracted, with whole-chain intervals.
+
+    The layer grids in `grids` are single runs and raw only. This puts the depth profile on the
+    same basis as the ladder -- the same collection, subtraction and chain-level subsamples -- so
+    the profile before and after the subtraction can be read against each other. Every layer and
+    both modes are scored on the same subsamples. A layer whose residual is degenerate (a pure
+    amino-acid lookup) has nothing left after the subtraction and is reported as 0 with a flag.
+
+    Outputs (under --out-dir): depth_ci.csv, summary.txt
+    """
+    import argparse
+    import csv
+    import statistics
+
+    ap = argparse.ArgumentParser(description="Per-layer agreement, raw and amino-acid-subtracted")
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--results-root", default="/ssc/results")
+    ap.add_argument("--a", default="esm", help="model whose every layer is scored")
+    ap.add_argument("--b", default="proteinmpnn", help="model held at one layer")
+    ap.add_argument("--b-layer", type=int, default=-1, help="layer of --b (default: last)")
+    ap.add_argument("--max-residues", type=int, default=20000)
+    ap.add_argument("--n-resamples", type=int, default=50)
+    ap.add_argument("--resample-size", type=int, default=8000)
+    ap.add_argument("--out-dir", default="/ssc/results/depth_ci")
+    ap.add_argument("--seed", type=int, default=42)
+    args = ap.parse_args()
+
+    out = Path(args.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)
+    sdir = Path(args.structures_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    R = Path(args.results_root)
+    A, B, aa, grp = _aa_collect(ids, R / args.a, R / args.b, sdir / "proteins", args.max_residues,
+                                args.seed, return_groups=True)
+    j = args.b_layer % B.shape[0]
+    Bmode = {"raw": B[j].astype(np.float64), "partial": _aa_residualise(B[j], aa)}
+
+    # one set of whole-chain subsamples, shared by every layer and both modes (paired)
+    rng = np.random.default_rng(args.seed)
+    chains = np.unique(grp)
+    by_chain = {c: np.flatnonzero(grp == c) for c in chains}
+    draws = []
+    for _ in range(args.n_resamples):
+        take, n = [], 0
+        for c in rng.permutation(len(chains)):
+            take.append(by_chain[chains[c]]); n += take[-1].size
+            if n >= args.resample_size:
+                break
+        draws.append(np.concatenate(take)[:args.resample_size])
+
+    cka = lambda X, Y: qc.linear_cka(qc.column_center(X), qc.column_center(Y))
+    labels = ["emb"] + [f"b{i}" for i in range(1, A.shape[0])]
+    rows = []
+    for i in range(A.shape[0]):
+        for mode in ("raw", "partial"):
+            X = A[i].astype(np.float64) if mode == "raw" else _aa_residualise(A[i], aa)
+            degenerate = mode == "partial" and _aa_degenerate(X)
+            vals = [0.0] * len(draws) if degenerate else [cka(X[idx], Bmode[mode][idx]) for idx in draws]
+            m = statistics.fmean(vals)
+            rows.append({"a": args.a, "b": args.b, "layer": i, "label": labels[i], "b_layer": j,
+                         "mode": mode, "metric": "cka", "mean": round(m, 4),
+                         "lo": round(float(np.percentile(vals, 2.5)), 4),
+                         "hi": round(float(np.percentile(vals, 97.5)), 4),
+                         "sd": round(statistics.stdev(vals), 4), "n_resamples": len(vals),
+                         "n_residues_per_subsample": args.resample_size,
+                         "degenerate": int(degenerate)})
+            print(f"  {labels[i]:<4} {mode:<8} {m:.3f}" + ("  (nothing left: pure lookup)" if degenerate else ""),
+                  flush=True)
+    with (out / "depth_ci.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+    lines = [f"CKA of every {args.a} layer against {args.b} layer {j}, raw and with amino-acid identity",
+             f"subtracted. Mean and 95% percentile interval over {args.n_resamples} whole-chain subsamples",
+             f"of {args.resample_size:,} residues, the same subsamples for every layer and mode.", ""]
+    for r in rows:
+        lines.append(f"  {r['label']:<4} {r['mode']:<8} {r['mean']:.3f} [{r['lo']:.3f}, {r['hi']:.3f}]"
+                     + ("  degenerate" if r["degenerate"] else ""))
+    (out / "summary.txt").write_text("\n".join(lines) + "\n")
+    print(f"-> {out}")
+
+
 _SUBCOMMANDS = {
     "grids": _main_grids,
     "supervised": _main_supervised,
@@ -1040,6 +1124,7 @@ _SUBCOMMANDS = {
     "functional": _main_functional,
     "aa-control": _main_aacontrol,
     "ladder-ci": _main_ladderci,
+    "depth-ci": _main_depthci,
 }
 
 
