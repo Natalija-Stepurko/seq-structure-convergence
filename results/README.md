@@ -10,6 +10,13 @@ Folders marked **page** are the source of a number or figure on the results page
 has a `params.json`, it records the exact command, arguments, git commit and library versions
 that produced it; older folders predate that convention and are described here instead.
 
+## Datasets
+
+| Folder | What it holds | Status |
+|---|---|---|
+| `dataset/chains.csv` | The 4,898 CATH S35 domains the study uses | **page** |
+| `dataset/hf_chains.csv` | The 35 chains in the published embedding subsample on Hugging Face | **page** (dataset link) |
+
 ## Agreement between models (`scripts/04_convergence.py`)
 
 | Folder | What it holds | Status |

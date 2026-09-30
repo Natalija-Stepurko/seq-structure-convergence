@@ -122,6 +122,10 @@ for r in csv.DictReader(open(R / "depth_ci/depth_ci.csv")):
 D["depth_partial"] = [dep[k] for k in sorted(dep)]
 D["depth_partial_basis"] = {"subsamples": int(r["n_resamples"]), "budget": int(r["n_residues_per_subsample"])}
 
+# The published embedding subsample (scripts/export_benchmark.py): its size, for the link on the page.
+hf = list(csv.DictReader(open(R / "dataset/hf_chains.csv")))
+D["dataset_hf"] = {"residues": sum(int(r["length"]) for r in hf), "chains": len(hf)}
+
 OUT.mkdir(exist_ok=True)
 json.dump(D, open(OUT / "data.json", "w"), indent=1)
 print("DATA keys:", ", ".join(D))

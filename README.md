@@ -12,6 +12,11 @@ standard measurements report as agreement is the training target the two models 
 **[Read the results →](https://natalija-stepurko.github.io/seq-structure-convergence/)** A
 walkthrough written for biologists, with every figure and number built from this repository.
 
+**[The embeddings →](https://huggingface.co/datasets/NatalijaStepurko/seq-structure-convergence)**
+10,045 residues from 35 proteins, described by all nine models at every layer and aligned row for
+row, with residue labels and reference scores: a test bed for measures of representation
+similarity.
+
 ![Residue maps from ESM-2 and ProteinMPNN](results/umap6/residue_maps_web.png)
 
 *The same 8,000 residues as each model arranges them. The sequence model sorts residues into

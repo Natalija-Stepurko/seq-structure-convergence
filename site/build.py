@@ -26,6 +26,7 @@ from charts import (depth_bars, ladder_svg, null_strips, width_bars, layer_panel
                     stitch_bars, depth_verdicts, depth_bars_partial, LADDER_ORDER, METRIC_LABEL)
 
 REPO = "https://github.com/Natalija-Stepurko/seq-structure-convergence"
+DATASET = "https://huggingface.co/datasets/NatalijaStepurko/seq-structure-convergence"
 EP = D["every_pair"]
 MAIN = "ESM-2 35M x ProteinMPNN"
 DP = D["depth_partial"]
@@ -221,6 +222,17 @@ def header():
     <span><b>All the code is public.</b> Every number on this page is produced by the pipeline in
     this repository — extraction, the controls, and the figures.</span>
     <span class="repo-path">Natalija-Stepurko/seq-structure-convergence</span>
+  </a>
+  <a class="repo" href="{DATASET}">
+    <svg viewBox="0 0 16 16" aria-hidden="true" width="17" height="17"><g fill="none"
+      stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="3.5" rx="5.5" ry="2"/>
+      <path d="M2.5 3.5v9c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2v-9"/>
+      <path d="M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2"/></g></svg>
+    <span><b>The embeddings are public too.</b> {D['dataset_hf']['residues']:,} residues from
+    {D['dataset_hf']['chains']} proteins, described by all nine models at every layer and aligned row
+    for row, with residue labels and reference scores: a test bed for measures of representation
+    similarity.</span>
+    <span class="repo-path">Hugging Face dataset</span>
   </a>
 </header>"""
 
