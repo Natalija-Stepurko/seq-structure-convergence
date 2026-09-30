@@ -1,4 +1,4 @@
-"""Export a residue-aligned embedding benchmark: every model arm, every layer, one fixed subsample.
+"""Build the Hugging Face dataset: every model arm, every layer, one fixed subsample of proteins.
 
 The same residues are described by sequence models, structure models, two seeded copies of one
 model and untrained copies, all stored at every layer and aligned row for row. That makes the

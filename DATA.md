@@ -9,8 +9,8 @@
 | Archived page inputs: three map images and HTML fragments from the earlier page | `site/archive/` | 1.7 MB | yes |
 | Structures: per-chain sequence, backbone coordinates and per-residue labels | rebuilt by `scripts/01_dataset.py` | 3.6 GB | no |
 | Per-residue embeddings at every layer, nine model arms | rebuilt by `scripts/02_extract.py` | ~380 GB | no |
-| The same embeddings on one fixed subsample of 35 whole chains (10,045 residues), with labels and reference scores | [Hugging Face](https://huggingface.co/datasets/NatalijaStepurko/seq-structure-convergence), written by `scripts/export_benchmark.py`; chain list in `results/dataset/hf_chains.csv` | 2.8 GB | published separately |
-| One mean vector per protein for 4,894 proteins, every model and layer | same dataset (`export_benchmark.py --protein-level`); protein list in `results/dataset/hf_protein_ids.txt` | 1.4 GB | published separately |
+| The same embeddings on one fixed subsample of 35 whole chains (10,045 residues), with labels and reference scores | [Hugging Face](https://huggingface.co/datasets/NatalijaStepurko/seq-structure-convergence), written by `scripts/07_hf_dataset.py`; chain list in `results/dataset/hf_chains.csv` | 2.8 GB | published separately |
+| One mean vector per protein for 4,894 proteins, every model and layer | same dataset (`07_hf_dataset.py --protein-level`); protein list in `results/dataset/hf_protein_ids.txt` | 1.4 GB | published separately |
 
 The embeddings are the bulk: ESM-2 650M and the two ESM-1v checkpoints are ~112 GB each, ESM-2
 35M and its untrained copy 16 GB each, CARP 11 GB, ESM-IF1 1.4 GB, ProteinMPNN and its untrained
