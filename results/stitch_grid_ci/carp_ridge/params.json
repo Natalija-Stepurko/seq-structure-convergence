@@ -1,0 +1,49 @@
+{
+  "script": "06_stitching.py",
+  "timestamp_utc": "2026-09-29T19:53:04+00:00",
+  "command": "scripts/06_stitching.py --threads 3 --donor-dir results/carp --donor-name CARP --donor-layers 4 --out-dir results/stitch_grid_ci/carp_ridge",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "esm_dir": "/ssc/results/esm",
+    "donor_dir": "results/carp",
+    "donor_name": "CARP",
+    "esm_model": "esm2_t12_35M_UR50D",
+    "out_dir": "results/stitch_grid_ci/carp_ridge",
+    "n_chains": 400,
+    "per_chain": 25,
+    "alpha": 100.0,
+    "properties": [
+      "ss3",
+      "burial",
+      "rsa"
+    ],
+    "repeats": 5,
+    "seed0": 42,
+    "connector": "ridge",
+    "donor_layers": [
+      4
+    ],
+    "inject_layers": null,
+    "threads": 3
+  },
+  "git_commit": "1cb62f107b2d0c25598905910866d416bbd90e00",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "n_cells": 12,
+    "verdicts": {
+      "worse": 11,
+      "better": 1,
+      "no clear difference": 24
+    }
+  }
+}

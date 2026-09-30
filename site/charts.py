@@ -229,7 +229,8 @@ def stitch_bars(D):
         sv = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Stitching result for '
               f'{esc(p["label"])}.">',
               f'<text x="0" y="13" class="ctsm">{esc(p["label"])}</text>',
-              f'<text x="0" y="26" class="cs">best entry point · higher is better</text>']
+              f'<text x="0" y="26" class="cs">mean over all {D["stitching"]["cells"]} layer × entry-point '
+              f'combinations · higher is better</text>']
         for i, (k, lab, col) in enumerate(conds):
             y = pt + i * rowh
             v = p[k]
@@ -240,4 +241,40 @@ def stitch_bars(D):
             sv.append(f'<text x="{w-pr+6}" y="{y+16:.1f}" class="cval">{v:.3f}</text>')
         sv.append("</svg>")
         out.append(f'<div class="minipanel wide">{"".join(sv)}</div>')
+    return "".join(out)
+
+
+def depth_verdicts(D):
+    """Stitched vs the structure model alone, at each entry depth: worse / unclear / better."""
+    rows = D["stitching"]["by_depth"]
+    cols = [("worse", "structure model alone better", STR),
+            ("no clear difference", "no clear difference", NULL),
+            ("better", "stitched better", SEQ)]
+    w, pl, pr, pt, rowh = 760, 150, 20, 58, 22
+    iw = w - pl - pr
+    n = max(sum(r[k] for k, _, _ in cols) for r in rows)
+    h = pt + rowh * len(rows) + 24
+    out = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Stitching verdicts by entry depth.">',
+           '<text x="0" y="14" class="ct">The deeper the entry point, the less is lost</text>',
+           f'<text x="0" y="30" class="cs">each row: {n} cases (3 structure-model layers × 3 properties) '
+           f'· a case counts only when the interval across {D["stitching"]["repeats"]} repeats excludes zero</text>']
+    x = pl
+    for k, lab, col in cols:
+        out.append(f'<rect x="{x}" y="38" width="10" height="10" rx="2" fill="{col}"/>'
+                   f'<text x="{x+15}" y="47" class="cs">{esc(lab)}</text>')
+        x += 215
+    for i, r in enumerate(rows):
+        y = pt + i * rowh
+        out.append(f'<text x="0" y="{y+14:.1f}" class="clabsm">enters at layer {r["layer"]}</text>')
+        x = pl
+        for k, lab, col in cols:
+            v = r[k]
+            if v:
+                bw = iw * v / n
+                out.append(f'<rect x="{x:.1f}" y="{y+3}" width="{bw:.1f}" height="15" fill="{col}">'
+                           f'<title>layer {r["layer"]}: {v} {esc(lab)}</title></rect>')
+                if bw > 16:
+                    out.append(f'<text x="{x+bw/2:.1f}" y="{y+14.5:.1f}" class="aal" fill="#fff">{v}</text>')
+                x += bw
+    out.append("</svg>")
     return "".join(out)

@@ -1,0 +1,43 @@
+Stitching with intervals: ProteinMPNN -> esm2_t12_35M_UR50D, connector = ridge.
+5 repeats on independent samples of 400 chains; 25 residues per held-out chain.
+Per cell and property: stitched - donor-direct, paired within each repeat,
+mean +- 1.96 sd across repeats. A cell is worse or better only if that excludes zero.
+
+cells x properties: 108
+  worse                77
+  better               3
+  no clear difference  28
+
+by injection depth (worse / no clear difference / better):
+  L1     9 /   0 /   0
+  L2     9 /   0 /   0
+  L3     9 /   0 /   0
+  L4     9 /   0 /   0
+  L5     8 /   1 /   0
+  L6     7 /   2 /   0
+  L7     6 /   3 /   0
+  L8     7 /   2 /   0
+  L9     5 /   4 /   0
+  L10    5 /   4 /   0
+  L11    3 /   5 /   1
+  L12    0 /   7 /   2
+
+connector held-out R2: 0.024 to 0.173 (mean 0.067)
+
+ss3: mean over cells
+  stitched       0.786
+  native         0.680
+  stitched_rand  0.833
+  donor          0.828
+
+burial: mean over cells
+  stitched       0.830
+  native         0.740
+  stitched_rand  0.878
+  donor          0.879
+
+rsa: mean over cells
+  stitched       0.598
+  native         0.324
+  stitched_rand  0.766
+  donor          0.767

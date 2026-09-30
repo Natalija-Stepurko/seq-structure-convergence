@@ -1,0 +1,73 @@
+pair,type,mode,metric,full_sample,mean,lo,hi,sd,n_resamples,peak_at,n_chains,n_residues_per_subsample,bootstrap,null_mean,null_lo,null_hi,null_share
+CARP x ESM-2,within-sequence,raw,cka,0.6995,0.6934,0.6826,0.7031,0.0061,50,A0xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0035,0.0031,0.0039,0.005
+CARP x ESM-2,within-sequence,raw,svcca,0.6452,0.6736,0.6679,0.6819,0.0033,50,A1xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.3656,0.3624,0.3696,0.5427
+CARP x ESM-2,within-sequence,raw,mutual_knn,0.2437,0.2457,0.2348,0.255,0.0057,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.0029,0.01
+CARP x ESM-2,within-sequence,partial,cka,0.5948,0.605,0.592,0.6177,0.0076,50,A0xB3,78,8000,"chain-level subsample, no replacement, percentile CI",0.0167,0.016,0.0176,0.0276
+CARP x ESM-2,within-sequence,partial,svcca,0.6236,0.6267,0.6092,0.6408,0.008,50,A1xB7,78,8000,"chain-level subsample, no replacement, percentile CI",0.3715,0.3663,0.3769,0.5928
+CARP x ESM-2,within-sequence,partial,mutual_knn,0.4292,0.4712,0.4526,0.4905,0.0115,50,A1xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.0019,0.0029,0.0052
+ESM-IF1 x ProteinMPNN,within-structure,raw,cka,0.5183,0.5217,0.5136,0.5293,0.0046,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0079,0.0075,0.0083,0.0151
+ESM-IF1 x ProteinMPNN,within-structure,raw,svcca,0.6542,0.6571,0.6523,0.6603,0.0025,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2913,0.2895,0.2931,0.4433
+ESM-IF1 x ProteinMPNN,within-structure,raw,mutual_knn,0.1247,0.1312,0.1234,0.14,0.0047,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.003,0.019
+ESM-IF1 x ProteinMPNN,within-structure,partial,cka,0.4646,0.4683,0.4613,0.4793,0.0049,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.01,0.0097,0.0103,0.0214
+ESM-IF1 x ProteinMPNN,within-structure,partial,svcca,0.6455,0.6484,0.6447,0.6519,0.0021,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2926,0.2912,0.294,0.4513
+ESM-IF1 x ProteinMPNN,within-structure,partial,mutual_knn,0.0996,0.1069,0.1001,0.1162,0.0041,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.003,0.0233
+ESM-2 650M x ESM-IF1,cross-modality,raw,cka,0.2855,0.3041,0.262,0.3496,0.0234,50,A31xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0192,0.017,0.0213,0.063
+ESM-2 650M x ESM-IF1,cross-modality,raw,svcca,0.56,0.5699,0.5645,0.5754,0.003,50,A31xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.4636,0.4623,0.4649,0.8135
+ESM-2 650M x ESM-IF1,cross-modality,raw,mutual_knn,0.0465,0.0612,0.0539,0.068,0.0037,50,A33xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.0021,0.0032,0.0409
+ESM-2 650M x ESM-IF1,cross-modality,partial,cka,0.2111,0.2447,0.2024,0.2838,0.0213,50,A30xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0234,0.0202,0.0263,0.0955
+ESM-2 650M x ESM-IF1,cross-modality,partial,svcca,0.5546,0.5648,0.5593,0.5691,0.0028,50,A31xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.465,0.4638,0.4665,0.8234
+ESM-2 650M x ESM-IF1,cross-modality,partial,mutual_knn,0.0352,0.0588,0.0507,0.0653,0.0043,50,A33xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.003,0.0423
+ESM-2 35M x ProteinMPNN,cross-modality,raw,cka,0.2567,0.2576,0.2447,0.268,0.0071,50,A1xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0035,0.0032,0.0039,0.0136
+ESM-2 35M x ProteinMPNN,cross-modality,raw,svcca,0.4075,0.4152,0.406,0.4256,0.0056,50,A12xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2869,0.2844,0.2894,0.691
+ESM-2 35M x ProteinMPNN,cross-modality,raw,mutual_knn,0.0228,0.0292,0.0255,0.0335,0.0024,50,A12xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0024,0.0021,0.0028,0.0835
+ESM-2 35M x ProteinMPNN,cross-modality,partial,cka,0.1249,0.1309,0.117,0.1486,0.009,50,A11xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0083,0.0076,0.0091,0.0635
+ESM-2 35M x ProteinMPNN,cross-modality,partial,svcca,0.39,0.3965,0.3869,0.4046,0.0049,50,A12xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2887,0.2866,0.291,0.7281
+ESM-2 35M x ProteinMPNN,cross-modality,partial,mutual_knn,0.0248,0.0305,0.0258,0.0354,0.0027,50,A12xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.0021,0.0029,0.0814
+CARP x ESM-IF1,cross-modality,raw,cka,0.2509,0.2548,0.235,0.2723,0.0105,50,A0xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0078,0.0074,0.0081,0.0307
+CARP x ESM-IF1,cross-modality,raw,svcca,0.4421,0.446,0.4381,0.4536,0.0043,50,A3xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.362,0.358,0.3668,0.8117
+CARP x ESM-IF1,cross-modality,raw,mutual_knn,0.0367,0.048,0.0402,0.0525,0.0032,50,A2xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.0029,0.0511
+CARP x ESM-IF1,cross-modality,partial,cka,0.1402,0.1625,0.1484,0.1787,0.0083,50,A2xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0113,0.0107,0.0119,0.0697
+CARP x ESM-IF1,cross-modality,partial,svcca,0.4356,0.4405,0.4337,0.449,0.0041,50,A3xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.3645,0.3603,0.3683,0.8276
+CARP x ESM-IF1,cross-modality,partial,mutual_knn,0.0305,0.0472,0.0418,0.0544,0.0038,50,A2xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.0021,0.0029,0.053
+ESM-2 650M x ProteinMPNN,cross-modality,raw,cka,0.2536,0.2531,0.2221,0.2924,0.0218,50,A31xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0095,0.0084,0.0106,0.0374
+ESM-2 650M x ProteinMPNN,cross-modality,raw,svcca,0.6008,0.6051,0.5983,0.613,0.0042,50,A32xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.4781,0.4764,0.4803,0.7901
+ESM-2 650M x ProteinMPNN,cross-modality,raw,mutual_knn,0.0297,0.0358,0.0307,0.0421,0.003,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0026,0.0022,0.0031,0.0714
+ESM-2 650M x ProteinMPNN,cross-modality,partial,cka,0.1672,0.1762,0.1464,0.2126,0.0171,50,A31xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0113,0.01,0.0129,0.0642
+ESM-2 650M x ProteinMPNN,cross-modality,partial,svcca,0.59,0.5953,0.5872,0.6034,0.0048,50,A32xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.4799,0.478,0.4817,0.8061
+ESM-2 650M x ProteinMPNN,cross-modality,partial,mutual_knn,0.029,0.0334,0.029,0.0389,0.0027,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0024,0.0018,0.003,0.0731
+CARP x ProteinMPNN,cross-modality,raw,cka,0.2089,0.2131,0.1962,0.226,0.0077,50,A0xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.004,0.0037,0.0043,0.0186
+CARP x ProteinMPNN,cross-modality,raw,svcca,0.4851,0.4844,0.4771,0.4927,0.0045,50,A3xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.3833,0.3789,0.3881,0.7913
+CARP x ProteinMPNN,cross-modality,raw,mutual_knn,0.026,0.0293,0.0245,0.0334,0.0026,50,A2xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0024,0.002,0.0029,0.0832
+CARP x ProteinMPNN,cross-modality,partial,cka,0.1351,0.1373,0.1188,0.1595,0.0124,50,A2xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0042,0.0038,0.0047,0.0305
+CARP x ProteinMPNN,cross-modality,partial,svcca,0.4703,0.4704,0.4609,0.4827,0.0058,50,A3xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.385,0.3808,0.3899,0.8184
+CARP x ProteinMPNN,cross-modality,partial,mutual_knn,0.0217,0.0252,0.0213,0.0293,0.0023,50,A2xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.003,0.0994
+ESM-1v x ProteinMPNN,cross-modality,raw,cka,0.2246,0.2223,0.195,0.2638,0.0183,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.009,0.0083,0.0097,0.0403
+ESM-1v x ProteinMPNN,cross-modality,raw,svcca,0.5716,0.5717,0.5636,0.5783,0.0041,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.4649,0.462,0.4674,0.8132
+ESM-1v x ProteinMPNN,cross-modality,raw,mutual_knn,0.0192,0.026,0.0215,0.0306,0.0026,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.003,0.096
+ESM-1v x ProteinMPNN,cross-modality,partial,cka,0.1035,0.1106,0.0922,0.1366,0.0117,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0105,0.0095,0.0119,0.0951
+ESM-1v x ProteinMPNN,cross-modality,partial,svcca,0.5602,0.5597,0.5509,0.5672,0.0044,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.4676,0.4652,0.4702,0.8353
+ESM-1v x ProteinMPNN,cross-modality,partial,mutual_knn,0.0176,0.0229,0.0184,0.0282,0.003,50,A33xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.003,0.1098
+untrained x untrained,control,raw,cka,0.0394,0.0428,0.0368,0.0481,0.0031,50,A11xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0012,0.0009,0.0016,0.0284
+untrained x untrained,control,raw,svcca,0.1758,0.1815,0.1733,0.1888,0.0054,50,A3xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.1006,0.0963,0.1046,0.5541
+untrained x untrained,control,raw,mutual_knn,0.0045,0.0056,0.0044,0.0068,0.0006,50,A2xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.0031,0.4471
+untrained x untrained,control,partial,cka,0.0152,0.0216,0.0124,0.0351,0.0059,50,A10xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0008,0.0005,0.0011,0.0353
+untrained x untrained,control,partial,svcca,0.2654,0.2717,0.2622,0.2817,0.0059,50,A3xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2181,0.2123,0.224,0.8027
+untrained x untrained,control,partial,mutual_knn,0.0094,0.0088,0.0063,0.0111,0.0013,50,A12xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0024,0.0018,0.0029,0.2778
+trained seq x untrained str,control,raw,cka,0.1495,0.153,0.1309,0.1785,0.0127,50,A11xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0027,0.0023,0.0031,0.0174
+trained seq x untrained str,control,raw,svcca,0.3952,0.4101,0.3996,0.4212,0.0057,50,A11xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2914,0.2885,0.2951,0.7106
+trained seq x untrained str,control,raw,mutual_knn,0.0109,0.0161,0.0134,0.0198,0.0018,50,A8xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.0022,0.003,0.1566
+trained seq x untrained str,control,partial,cka,0.1136,0.1222,0.0944,0.1488,0.0157,50,A11xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.003,0.0026,0.0034,0.0243
+trained seq x untrained str,control,partial,svcca,0.3917,0.4055,0.395,0.4143,0.0053,50,A11xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.294,0.2909,0.2977,0.7252
+trained seq x untrained str,control,partial,mutual_knn,0.012,0.0174,0.0135,0.0207,0.002,50,A11xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.0029,0.1424
+untrained seq x trained str,control,raw,cka,0.2022,0.2047,0.186,0.2206,0.0084,50,A8xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0031,0.0028,0.0035,0.0152
+untrained seq x trained str,control,raw,svcca,0.3681,0.368,0.357,0.3794,0.006,50,A1xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.1481,0.1431,0.1518,0.4026
+untrained seq x trained str,control,raw,mutual_knn,0.0123,0.0145,0.0127,0.0161,0.001,50,A4xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.0031,0.1707
+untrained seq x trained str,control,partial,cka,0.0274,0.038,0.0211,0.0586,0.0098,50,A10xB1,78,8000,"chain-level subsample, no replacement, percentile CI",0.0021,0.0018,0.0025,0.0553
+untrained seq x trained str,control,partial,svcca,0.2361,0.2356,0.2292,0.2419,0.0034,50,A3xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.2114,0.2062,0.216,0.8973
+untrained seq x trained str,control,partial,mutual_knn,0.0096,0.0139,0.0112,0.0172,0.0017,50,A6xB2,78,8000,"chain-level subsample, no replacement, percentile CI",0.0024,0.0019,0.0029,0.1751
+ESM-1v s1 x ESM-1v s2,"same arch, diff seed",raw,cka,0.8316,0.8491,0.8121,0.8812,0.0202,50,A14xB14,78,8000,"chain-level subsample, no replacement, percentile CI",0.0052,0.0039,0.0067,0.0061
+ESM-1v s1 x ESM-1v s2,"same arch, diff seed",raw,svcca,0.891,0.8875,0.8676,0.9055,0.0092,50,A0xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.2457,0.2335,0.2571,0.2768
+ESM-1v s1 x ESM-1v s2,"same arch, diff seed",raw,mutual_knn,0.8477,0.8499,0.829,0.8733,0.0117,50,A0xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.002,0.0031,0.0029
+ESM-1v s1 x ESM-1v s2,"same arch, diff seed",partial,cka,0.8312,0.8485,0.8143,0.8748,0.0177,50,A14xB14,78,8000,"chain-level subsample, no replacement, percentile CI",0.005,0.0036,0.0069,0.0059
+ESM-1v s1 x ESM-1v s2,"same arch, diff seed",partial,svcca,0.8961,0.8926,0.8787,0.9056,0.0074,50,A0xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.2439,0.2306,0.2557,0.2733
+ESM-1v s1 x ESM-1v s2,"same arch, diff seed",partial,mutual_knn,0.7889,0.7961,0.7833,0.8077,0.007,50,A0xB0,78,8000,"chain-level subsample, no replacement, percentile CI",0.0025,0.0019,0.0029,0.0031

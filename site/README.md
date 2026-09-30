@@ -33,8 +33,8 @@ the earlier version of the page, in `archive/`:
   where they are headline figures.
 - `base_css.txt`: the page stylesheet.
 
-## Known gap
+## Sources
 
-One value has no tracked source: the mutual k-NN calibration on scrambled residues (0.025 against
-a null of 0.002, 15,148 residues, 20 scrambles). It came from a one-off script whose output was not
-kept. The audit lists it as unverified on every run.
+Every headline number has a file in `results/` behind it, and `audit.py` checks it on every build.
+The scrambled-data calibration and the stitching result come from the reruns in
+`results/ladder_ci_null/` and `results/stitch_grid_ci/`.

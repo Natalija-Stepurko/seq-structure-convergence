@@ -24,9 +24,9 @@ within each island. The structure model sorts the same residues by local shape a
 |---|---|
 | **About half the raw agreement is the shared training target.** Both families are trained to output amino-acid identity. Subtracting each residue's per-amino-acid mean removes it. | CKA 0.258 → 0.131. The control is checked both ways: two copies of ESM-1v that differ only by random seed stay at 0.849 → 0.849; an untrained sequence model drops from 0.205 → 0.038. |
 | **The two share some axes, not a map.** | Mutual k-NN, the fraction of each residue's nearest neighbours the two models agree on: 0.030, against 0.796 for the two seeded copies. |
-| **One standard measure is mostly its own null.** SVCCA finds shared directions between unrelated data, and more of them the wider the model. | SVCCA 0.408, of which 0.291 (71%) remains on scrambled residues. ESM-2 650M scores 0.598 and sits the same distance above its own null. |
+| **One standard measure is mostly its own null.** SVCCA finds shared directions between unrelated data, and more of them the wider the model. | SVCCA 0.415, of which 0.287 (69%) remains on scrambled residues; CKA and mutual k-NN keep 1% and 8%. In a width comparison, ESM-2 650M scores 0.598 against 0.408 for ESM-2 35M and sits the same distance above its own null. |
 | **Each model knows what it was shown.** Best-layer probes, five refits each. | Structure wins residue geometry: solvent accessibility R² 0.816 vs 0.420, burial 0.892 vs 0.761, local shape 0.887 vs 0.786. Sequence wins function and evolution: fold topology F1 0.685 vs 0.489, enzyme class 0.550 vs 0.318, kingdom 0.688 vs 0.387. |
-| **A linear connector cannot hand one model's description to the other.** ProteinMPNN's output, mapped into ESM-2 at each layer and passed through ESM-2's remaining layers, scored against ProteinMPNN alone. | Worse than ProteinMPNN alone in 95 of 108 entry point × property cases, including every entry point in the first seven of ESM-2's twelve layers. Untrained receiving layers pass the information through unchanged. |
+| **The structure model's description does not survive the sequence model's layers intact.** ProteinMPNN's output, mapped into ESM-2 at each layer and passed through ESM-2's remaining layers, scored against ProteinMPNN alone; 5 repeats per case. | Clearly worse in 77 of 108 cases, including every case entering in the first four layers; no clear difference in 28, better in 3. Untrained layers pass the information through unchanged. A neural-network connector changes nothing (10 of 12 worse); two sequence models (CARP → ESM-2) show no clear loss in 24 of 36. |
 
 All intervals, controls and caveats are on the [results page](https://natalija-stepurko.github.io/seq-structure-convergence/).
 
@@ -74,8 +74,8 @@ the licences of the upstream data and models, are in [DATA.md](DATA.md).
 
 - The structure models are inverse-folding encoders. No AlphaFold representation is measured, so
   nothing here speaks to how structure-prediction models encode proteins.
-- The stitching test uses a single linear connector. A non-linear connector or fine-tuning was not
-  tried.
+- The stitching connectors are a linear map and a one-hidden-layer network, fitted on frozen
+  models; fine-tuning either model to accept the other's input was not tried.
 - The chain set is CATH S35 domains with experimental structures; the scores are specific to that
   set and to the residue budgets stated with each number.
 
