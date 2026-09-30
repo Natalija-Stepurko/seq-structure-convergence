@@ -2,10 +2,7 @@
 
 Reads build/data.json (written by build_data.py), the chart helpers in charts.py and two archived
 inputs in archive/: the three map images (pngs_opt.json) and the HTML fragments carried over from
-the earlier page (fragments.json). Writes two files to build/:
-
-  convergence.html  the page body, for the claude.ai artifact (no <html>/<head> wrapper)
-  index.html        the same page as a standalone document, for GitHub Pages
+the earlier page (fragments.json). Writes build/index.html, the page GitHub Pages serves.
 """
 import json
 import re
@@ -881,7 +878,6 @@ STANDALONE = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">
               + PAGE.split("</style>", 1)[0] + "</style>\n</head>\n<body>\n"
               + PAGE.split("</style>", 1)[1] + "</body>\n</html>\n")
 BUILD.mkdir(exist_ok=True)
-(BUILD / "convergence.html").write_text(PAGE)
 (BUILD / "index.html").write_text(STANDALONE)
 
 
