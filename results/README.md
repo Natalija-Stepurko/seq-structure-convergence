@@ -36,7 +36,7 @@ directly comparable.
 
 | Folder | What it holds | Status |
 |---|---|---|
-| `umap6/` | 2-D maps of all six models, residue and chain level, with coordinates | **page** (maps) |
+| `umap6/` | 2-D maps of all six models, residue and chain level, with coordinates; `residue_maps_web.png` is the web-scale render used as the README figure | **page** (maps) |
 | `umap/` | The earlier three-model version | superseded by `umap6/` |
 | `analysis/`, `analysis650/` | Per-layer k-NN purity and local variance ratio by property (depth law) | supporting |
 | `geometry/` | Unsupervised cluster structure against CATH labels | supporting |

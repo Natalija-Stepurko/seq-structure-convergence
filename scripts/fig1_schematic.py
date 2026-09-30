@@ -7,7 +7,7 @@ colour-coded modalities, small inline mini-plots. Sequence-side and structure-si
 position and text, so identity is never colour-alone.
 
 Usage:
-    uv run python scripts/fig1_schematic.py --out docs/figures/study_design.png
+    uv run python scripts/fig1_schematic.py --out results/study_design.png
 """
 
 import argparse
@@ -54,7 +54,7 @@ def arrow(ax, x1, y1, x2, y2, color=MUT, lw=1.0, style="-|>"):
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="docs/figures/study_design.png")
+    ap.add_argument("--out", default="results/study_design.png")
     args = ap.parse_args()
 
     fig, ax = plt.subplots(figsize=(16.5, 7.6))

@@ -12,7 +12,7 @@ standard measurements report as agreement is the training target the two models 
 **[Read the results →](https://natalija-stepurko.github.io/seq-structure-convergence/)** A
 walkthrough written for biologists, with every figure and number built from this repository.
 
-![Residue maps from ESM-2 and ProteinMPNN](docs/figures/residue_maps.png)
+![Residue maps from ESM-2 and ProteinMPNN](results/umap6/residue_maps_web.png)
 
 *The same 8,000 residues as each model arranges them. The sequence model sorts residues into
 twenty islands, one per amino acid; colour the islands by anything structural and the colours mix
@@ -54,8 +54,8 @@ src/ssc/        shared metric library (CKA, SVCCA, mutual k-NN, k-NN purity, LVR
 tests/          tests for the metric library
 results/        every derived result the page uses (~30 MB); index in results/README.md
 site/           builds the results page from results/ and audits it
-docs/           replication guide and figures
 research/       literature review
+REPLICATION.md  full setup and pipeline guide · DATA.md  sizes, sources, licences
 ```
 
 ## Reproducing
@@ -67,7 +67,7 @@ pip install numpy && site/build.sh
 ```
 
 Recomputing the results from structures needs the full pipeline, three Python environments and
-~400 GB of disk: see **[docs/REPLICATION.md](docs/REPLICATION.md)**. What is and is not tracked, and
+~400 GB of disk: see **[REPLICATION.md](REPLICATION.md)**. What is and is not tracked, and
 the licences of the upstream data and models, are in [DATA.md](DATA.md).
 
 ## Limits
