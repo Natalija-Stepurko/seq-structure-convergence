@@ -74,6 +74,60 @@ def residualise(X, aa):
     return R
 
 
+CHAIN_ANNOT = ["uniprot", "kingdom", "enzyme", "ec_class", "protein_class", "localisation"]
+
+
+def export_protein_level(args):
+    """One vector per protein: the mean over its residues, at every layer of every arm.
+
+    Mean pooling is what the study's protein-level probes use. Chains are those every arm
+    describes in full, in index order; `proteins.csv` gives row order and labels.
+    """
+    sdir, R = Path(args.structures_dir), Path(args.results_root)
+    out = Path(args.out_dir); (out / "embeddings_protein").mkdir(parents=True, exist_ok=True)
+    index = [json.loads(l) for l in (sdir / "index.jsonl").open() if l.strip()]
+    annot = {json.loads(l)["id"]: json.loads(l) for l in (sdir / "annotations.jsonl").open() if l.strip()}
+    rows = [r for r in index if r.get("valid", True)]
+    keep, pooled = [], {a: [] for a in ARMS}
+    for n, r in enumerate(rows):
+        cid, L = r["id"], int(r["length"])
+        paths = {a: R / d / f"{cid}.pt" for a, (d, *_) in ARMS.items()}
+        if not all(p.exists() for p in paths.values()):
+            continue
+        means = {}
+        for a, p in paths.items():
+            X = torch.load(p, weights_only=False)["layers"]
+            if X.shape[1] != L:
+                break
+            means[a] = X.to(torch.float32).mean(dim=1).to(torch.float16)
+        else:
+            keep.append(r)
+            for a, m in means.items():
+                pooled[a].append(m)
+        if (n + 1) % 500 == 0:
+            print(f"  {n + 1:,} / {len(rows):,} chains read, {len(keep):,} kept", flush=True)
+    print(f"{len(keep):,} of {len(rows):,} chains described in full by every arm", flush=True)
+    meta = {}
+    for a, (d, name, reads, trained) in ARMS.items():
+        X = torch.stack(pooled[a], dim=1).contiguous()           # [n_layers, n_proteins, dim]
+        save_file({"layers": X}, out / "embeddings_protein" / f"{a}.safetensors",
+                  metadata={"model": name, "reads": reads, "trained": str(trained),
+                            "pooling": "mean over residues"})
+        meta[a] = {"n_layers": X.shape[0], "dim": X.shape[2], "mb": round(X.numel() * 2 / 1e6, 1)}
+        print(f"  {a:<24} {tuple(X.shape)}  {meta[a]['mb']:>7.1f} MB", flush=True)
+    json.dump(meta, open(out / "arms_protein.json", "w"), indent=1)
+    fields = ["chain_id", "pdb", "chain", "length", "cath_code", "cath_class", "cath_arch",
+              "cath_topol", "cath_homol"] + CHAIN_ANNOT
+    with (out / "proteins.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields); w.writeheader()
+        for r in keep:
+            a = annot.get(r["id"], {})
+            w.writerow({"chain_id": r["id"], "pdb": r["pdb"], "chain": r["chain"], "length": r["length"],
+                        **{k: r[k] for k in ("cath_code", "cath_class", "cath_arch", "cath_topol", "cath_homol")},
+                        **{k: a.get(k, "") for k in CHAIN_ANNOT}})
+    print(f"-> {out}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--structures-dir", default="/ssc/structures")
@@ -83,7 +137,12 @@ def main():
     ap.add_argument("--budget", type=int, default=10000, help="residues; whole chains until met")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--skip-scores", action="store_true")
+    ap.add_argument("--protein-level", action="store_true",
+                    help="write only the protein-level set: one mean vector per protein, every arm "
+                         "and layer, for every chain all arms describe in full")
     args = ap.parse_args()
+    if args.protein_level:
+        return export_protein_level(args)
 
     sdir, R = Path(args.structures_dir), Path(args.results_root)
     out = Path(args.out_dir); (out / "embeddings").mkdir(parents=True, exist_ok=True)
@@ -144,7 +203,6 @@ def main():
     with (out / "residues.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
 
-    CHAIN_ANNOT = ["uniprot", "kingdom", "enzyme", "ec_class", "protein_class", "localisation"]
     with (out / "chains.csv").open("w", newline="") as f:
         fields = ["chain_id", "pdb", "chain", "length", "cath_code", "cath_class", "cath_arch",
                   "cath_topol", "cath_homol"] + CHAIN_ANNOT
