@@ -1218,6 +1218,9 @@ def _main_gridci_reverse() -> None:
                                [e["idx"]].numpy() for e in ev]), Y, tr, te) for d in depths}
         stored = {c: torch.load(S_dir / f"{c}.pt", weights_only=False)["layers"].to(torch.float32)
                   for c in fit_c}
+        # a few chains have different residue counts in the two models; they cannot be aligned
+        fit_c = [c for c in fit_c if stored[c].shape[1] ==
+                 torch.load(E_dir / f"{c}.pt", weights_only=False)["layers"].shape[1]]
         for dl in donor_layers:
             A_fit = cat([torch.load(E_dir / f"{c}.pt", weights_only=False)["layers"][dl]
                          .to(torch.float32).numpy() for c in fit_c])
