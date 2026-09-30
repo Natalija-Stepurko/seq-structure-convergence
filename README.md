@@ -13,9 +13,9 @@ standard measurements report as agreement is the training target the two models 
 walkthrough written for biologists, with every figure and number built from this repository.
 
 **[The embeddings →](https://huggingface.co/datasets/NatalijaStepurko/seq-structure-convergence)**
-10,045 residues from 35 proteins, described by all nine models at every layer and aligned row for
-row, with residue labels and reference scores: a test bed for measures of representation
-similarity.
+All nine models at every layer: 10,045 residues from 35 proteins aligned row for row, and one
+averaged vector for each of 4,894 proteins, with labels and reference scores. A test bed for
+measures of representation similarity.
 
 ![Residue maps from ESM-2 and ProteinMPNN](results/umap6/residue_maps_web.png)
 

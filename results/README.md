@@ -16,6 +16,7 @@ that produced it; older folders predate that convention and are described here i
 |---|---|---|
 | `dataset/chains.csv` | The 4,898 CATH S35 domains the study uses | **page** |
 | `dataset/hf_chains.csv` | The 35 chains in the published embedding subsample on Hugging Face | **page** (dataset link) |
+| `dataset/hf_protein_ids.txt` | The 4,894 proteins in the published protein-level set on Hugging Face | **page** (dataset link) |
 
 ## Agreement between models (`scripts/04_convergence.py`)
 

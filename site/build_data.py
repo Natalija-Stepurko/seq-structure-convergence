@@ -124,7 +124,8 @@ D["depth_partial_basis"] = {"subsamples": int(r["n_resamples"]), "budget": int(r
 
 # The published embedding subsample (scripts/export_benchmark.py): its size, for the link on the page.
 hf = list(csv.DictReader(open(R / "dataset/hf_chains.csv")))
-D["dataset_hf"] = {"residues": sum(int(r["length"]) for r in hf), "chains": len(hf)}
+D["dataset_hf"] = {"residues": sum(int(r["length"]) for r in hf), "chains": len(hf),
+                   "proteins": sum(1 for l in open(R / "dataset/hf_protein_ids.txt") if l.strip())}
 
 OUT.mkdir(exist_ok=True)
 json.dump(D, open(OUT / "data.json", "w"), indent=1)

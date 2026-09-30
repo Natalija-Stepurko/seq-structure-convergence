@@ -228,10 +228,10 @@ def header():
       stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="3.5" rx="5.5" ry="2"/>
       <path d="M2.5 3.5v9c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2v-9"/>
       <path d="M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2"/></g></svg>
-    <span><b>The embeddings are public too.</b> {D['dataset_hf']['residues']:,} residues from
-    {D['dataset_hf']['chains']} proteins, described by all nine models at every layer and aligned row
-    for row, with residue labels and reference scores: a test bed for measures of representation
-    similarity.</span>
+    <span><b>The embeddings are public too.</b> All nine models at every layer: {D['dataset_hf']['residues']:,}
+    residues from {D['dataset_hf']['chains']} proteins aligned row for row, and one averaged vector for
+    each of {D['dataset_hf']['proteins']:,} proteins, with labels and reference scores. A test bed for
+    measures of representation similarity.</span>
     <span class="repo-path">Hugging Face dataset</span>
   </a>
 </header>"""
