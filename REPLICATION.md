@@ -165,8 +165,9 @@ exact command, the git commit, library versions and a UTC timestamp.
 | | `depth` | per-property stitching at each injection depth |
 | | `grid` | every donor layer × every injection depth, all four conditions |
 | | `grid-ci` | the same grid repeated on independent chain samples, with paired intervals on stitched − donor; `--connector mlp` for a non-linear connector, `--donor-dir` for any donor model |
+| **`07_hf_dataset.py`** | — | the Hugging Face dataset: every model at every layer on 35 whole proteins, with labels and reference scores; `--protein-level` adds one mean vector per protein for all proteins |
 
-`scripts/export_benchmark.py` writes the residue-aligned embedding benchmark published on Hugging Face: every model arm at every layer on one fixed subsample of whole chains, with labels and reference scores.
+`scripts/07_hf_dataset.py` builds the dataset published on Hugging Face: every model arm at every layer on one fixed subsample of whole chains, with labels and reference scores.
 
 Shared code lives in `src/ssc/metrics.py`: CKA, SVCCA (with the cached per-matrix split used for
 layer grids), mutual k-NN, k-NN purity, local variance ratio and the provenance recorder. It is
