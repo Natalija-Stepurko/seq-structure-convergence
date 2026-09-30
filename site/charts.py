@@ -59,6 +59,58 @@ def depth_bars(D):
     return "".join(out)
 
 
+def depth_bars_partial(D):
+    """The same depth profile after the amino-acid subtraction, raw shown as an outline behind."""
+    rows = D["depth_partial"]
+    w, h, pl, pr, pt, pb = 760, 318, 46, 18, 62, 52
+    iw, ih = w - pl - pr, h - pt - pb
+    vmax = 0.30
+    gap = iw / len(rows)
+    bw = gap * 0.74
+    top = max(rows, key=lambda r: r["partial"])
+    out = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Agreement with the structure model by '
+           f'depth of the sequence model, with the amino-acid average subtracted: nothing left at the '
+           f'first layer, highest near the output.">',
+           '<text x="0" y="14" class="ct">After the subtraction: agreement with the structure model, '
+           'by depth of the sequence model</text>',
+           '<text x="0" y="30" class="cs">same pattern of resemblance (CKA) against ProteinMPNN\'s last '
+           'encoder layer · amino-acid average subtracted</text>',
+           f'<rect x="{pl}" y="40" width="10" height="10" rx="2" fill="{SEQ}"/>'
+           f'<text x="{pl+15}" y="49" class="cs">answer key removed (95% interval)</text>'
+           f'<rect x="{pl+250}" y="40" width="10" height="10" rx="2" fill="none" stroke="{NULL}" '
+           f'stroke-dasharray="2 2"/><text x="{pl+265}" y="49" class="cs">as measured</text>']
+    for gv in (0, 0.1, 0.2, 0.3):
+        y = pt + (1 - gv / vmax) * ih
+        out.append(f'<line x1="{pl}" y1="{y:.1f}" x2="{pl+iw}" y2="{y:.1f}" stroke="{RULE2}"/>'
+                   f'<text x="{pl-7}" y="{y+3.5:.1f}" class="cax" text-anchor="end">{gv:.1f}</text>')
+    Y = lambda v: pt + ih - v / vmax * ih
+    for i, r in enumerate(rows):
+        x = pl + i * gap + (gap - bw) / 2
+        out.append(f'<rect x="{x:.1f}" y="{Y(r["raw"]):.1f}" width="{bw:.1f}" '
+                   f'height="{pt+ih-Y(r["raw"]):.1f}" rx="2" fill="none" stroke="{NULL}" '
+                   f'stroke-dasharray="2 2"><title>{esc(r["label"])} as measured: {r["raw"]:.3f}</title></rect>')
+        key = r["degenerate"] or r is top
+        if r["partial"] > 0:
+            out.append(f'<rect x="{x:.1f}" y="{Y(r["partial"]):.1f}" width="{bw:.1f}" '
+                       f'height="{pt+ih-Y(r["partial"]):.1f}" rx="2" fill="{SEQ}" '
+                       f'opacity="{1 if key else .62}"><title>{esc(r["label"])} answer key removed: '
+                       f'{r["partial"]:.3f} [{r["lo"]:.3f}, {r["hi"]:.3f}]</title></rect>')
+            xm = x + bw / 2
+            out.append(f'<line x1="{xm:.1f}" y1="{Y(r["hi"]):.1f}" x2="{xm:.1f}" y2="{Y(r["lo"]):.1f}" '
+                       f'stroke="{INK}" stroke-width="1.2"/>')
+        if r["degenerate"]:
+            out.append(f'<text x="{x+bw/2:.1f}" y="{Y(0)-6:.1f}" class="cval" text-anchor="middle">0</text>')
+        elif r is top:
+            out.append(f'<text x="{x+bw/2:.1f}" y="{Y(r["hi"])-5:.1f}" class="cval" '
+                       f'text-anchor="middle">{r["partial"]:.3f}</text>')
+        out.append(f'<text x="{x+bw/2:.1f}" y="{pt+ih+14:.1f}" class="cax" text-anchor="middle">'
+                   f'{esc(r["label"])}</text>')
+    out.append(f'<text x="{pl}" y="{h-8}" class="cax">input — nothing left after the subtraction</text>')
+    out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">output</text>')
+    out.append("</svg>")
+    return "".join(out)
+
+
 # ─────────────────────────────────────────────────────────── the ladder (interactive)
 LADDER_ORDER = [
     ("ESM-1v s1 x ESM-1v s2", "The same model trained twice (two seeds)", "ceiling"),

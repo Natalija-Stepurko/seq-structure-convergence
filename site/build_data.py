@@ -110,6 +110,18 @@ D["dataset"] = {"domains": len(chains), "residues": sum(int(c["length"]) for c i
                 "subsamples": int(lad0["n_resamples"]), "budget": int(lad0["n_residues_per_subsample"]),
                 "refits": refits.pop()}
 
+# Depth profile before and after the amino-acid subtraction, on the ladder's basis (depth-ci).
+dep = {}
+for r in csv.DictReader(open(R / "depth_ci/depth_ci.csv")):
+    e = dep.setdefault(int(r["layer"]), {"label": r["label"]})
+    if r["mode"] == "raw":
+        e["raw"] = float(r["mean"])
+    else:
+        e.update(partial=float(r["mean"]), lo=float(r["lo"]), hi=float(r["hi"]),
+                 degenerate=bool(int(r["degenerate"])))
+D["depth_partial"] = [dep[k] for k in sorted(dep)]
+D["depth_partial_basis"] = {"subsamples": int(r["n_resamples"]), "budget": int(r["n_residues_per_subsample"])}
+
 OUT.mkdir(exist_ok=True)
 json.dump(D, open(OUT / "data.json", "w"), indent=1)
 print("DATA keys:", ", ".join(D))

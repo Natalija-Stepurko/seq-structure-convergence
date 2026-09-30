@@ -1,0 +1,29 @@
+{
+  "script": "04_convergence.py",
+  "timestamp_utc": "2026-09-30T15:44:52+00:00",
+  "command": "scripts/04_convergence.py --out-dir results/depth_ci",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "a": "esm",
+    "b": "proteinmpnn",
+    "b_layer": -1,
+    "max_residues": 20000,
+    "n_resamples": 50,
+    "resample_size": 8000,
+    "out_dir": "results/depth_ci",
+    "seed": 42
+  },
+  "git_commit": "9514c5d8e94e8b66de9e80b74073eb7d291579e7",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  }
+}
