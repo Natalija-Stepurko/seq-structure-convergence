@@ -142,57 +142,67 @@ details > *:not(summary){margin:0 18px}
 def header():
     ds = D["dataset"]
     return f"""<header class="page">
-  <div class="kicker">Representation convergence · sequence vs structure ·
+  <div class="kicker">Two protein models, compared layer by layer ·
     {ds['domains']:,} protein domains · {ds['residues']:,} residues</div>
   <h1>Do two models given<br>opposite halves of a protein<br>learn the same biology?</h1>
   <p class="lede">A protein is a chain of amino acids that folds into a shape, and the shape is what
-  lets it work. One kind of model reads only the chain of letters; another reads only the 3-D
-  coordinates. If sequence and shape are two views of one biology, the two models should end up
-  describing proteins the same way. This page tests whether they do — and finds that about half of
-  what the standard measurements report as agreement between them is not biology but the training
-  target the two share.</p>
+  lets it work. This page compares two machine-learning models that were each shown only one half
+  of that: <b>ESM-2</b> reads the chain of letters and never sees a coordinate; <b>ProteinMPNN</b>
+  reads the 3-D backbone and never sees a letter. If sequence and shape are two views of one
+  biology, the two should end up describing proteins the same way. They do only partly — and about
+  half of what standard measurements report as agreement between them turns out to be the one
+  thing both were trained to output: the amino acid at each position.</p>
 
   <div class="resultbox">
-    <div class="rb"><h3>Shared axes</h3>
+    <div class="rb"><h3>Some shared directions, not many</h3>
       <span class="rbn">{v(MAIN,'partial'):.3f}</span>
-      <p>With the shared target removed, the two families still line up along some of the same
-      directions: {v(MAIN,'partial'):.3f} for the main pair, against
-      {v('untrained seq x trained str','partial'):.3f} for an untrained network and
-      {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} for the same model trained twice.</p></div>
-    <div class="rb"><h3>Not a shared map</h3>
+      <p>Each model turns every residue into a list of numbers. Lay out the same
+      {ds['residues']/1e6:.1f} million residues both ways and the two layouts share some of the same
+      axes. On this measure two copies of one model score
+      {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} and an untrained network scores
+      {v('untrained seq x trained str','partial'):.3f}; ESM-2 against ProteinMPNN scores
+      {v(MAIN,'partial'):.3f}.</p></div>
+    <div class="rb"><h3>Not the same map</h3>
       <span class="rbn">{v(MAIN,'partial','mutual_knn'):.3f}</span>
-      <p>They almost never agree on which residues sit next to which:
-      {v(MAIN,'partial','mutual_knn'):.3f}, against
-      {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for the same model trained twice.</p></div>
-    <div class="rb"><h3>No clean hand-off</h3>
+      <p>Ask each model which ten residues are most like a given one, and the two lists almost
+      never overlap: {v(MAIN,'partial','mutual_knn'):.3f} of neighbours in common, against
+      {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for two copies of one model. The two
+      arrange proteins by different principles — ESM-2 by chemical identity, ProteinMPNN by physical
+      environment.</p></div>
+    <div class="rb"><h3>Not interchangeable</h3>
       <span class="rbn">{ST['worse']} / {ST['total']}</span>
-      <p>Fed through the sequence model's trained layers, the structure model's description comes out
-      clearly worse in {ST['worse']} of {ST['total']} cases, including every case that enters in the
-      first {LEAD} layers. Untrained layers pass it through unchanged.</p></div>
-    <div class="rbfoot">Two artefacts inflate the raw scores: the amino-acid identity both models
-    are trained to output, worth about half of the strongest measure, and a scrambled-data floor
-    worth {share('svcca'):.0f}% of another.</div>
+      <p>Hand ProteinMPNN's description of a residue to ESM-2 and let ESM-2's later layers finish
+      the job. The result is clearly worse than ProteinMPNN alone in {ST['worse']} of {ST['total']}
+      tests, including every test that enters ESM-2's first {LEAD} layers. Untrained layers pass the
+      description through unchanged; trained ones lose part of it.</p></div>
+    <div class="rbfoot"><b>Why the raw scores overstate it.</b> Both models are trained to output the
+    amino acid at each position, so they agree that position 47 is a leucine before they agree on
+    anything else. That shared answer accounts for about half of the strongest raw agreement score,
+    and one common measure returns {share('svcca'):.0f}% of its value even on scrambled data. The
+    agreement scores above are read with the shared answer subtracted.</div>
   </div>
 
   <div class="whatsnew">
     <span class="eyebrow">What is new</span>
     <ol>
-      <li>The shared training target is identified as a source of agreement, located — the strongest
-      raw agreement is at the sequence model's lookup layer — and removed by a subtraction that is
-      validated against a ceiling and a floor.</li>
-      <li>Every score is read against a ladder — the same model trained twice, two models sharing an
-      input, untrained networks, and a scrambled-residue null per measure — which shows one standard
-      measure to be mostly null and to inflate with model width.</li>
-      <li>Convergence is tested by function as well as by geometry: the structure model's description
-      is stitched into the sequence model at every layer and scored against the structure model
-      alone.</li>
+      <li>Both models are trained to guess the amino acid at each position, so they agree on that
+      before they agree on anything else. This page finds where in the network that shared answer
+      sits — at ESM-2's very first layer — subtracts it, and checks the subtraction against two
+      references: two copies of one model, whose agreement is certainly real and must survive, and
+      an untrained network, whose agreement cannot be real and must vanish.</li>
+      <li>Every score is read against a ladder of reference points — the same model trained twice,
+      two models that share an input, untrained networks, and each measure's own score on scrambled
+      data. One standard measure turns out to be mostly its scrambled score, and to grow with the
+      size of the model.</li>
+      <li>Agreement is tested by use as well as by geometry: ProteinMPNN's description is fed into
+      ESM-2 at every layer and scored against ProteinMPNN alone.</li>
     </ol>
   </div>
 
   <nav class="toc" aria-label="Contents">
     <a href="#question">The question</a><a href="#models">Models</a><a href="#measures">Measures</a>
     <a href="#f1">1 The answer key</a><a href="#f2">2 What survives</a><a href="#f3">3 No shared map</a>
-    <a href="#f4">4 Layer by layer</a><a href="#f5">5 No clean hand-off</a><a href="#f6">6 Who knows what</a>
+    <a href="#f4">4 Layer by layer</a><a href="#f5">5 Not interchangeable</a><a href="#f6">6 Who knows what</a>
     <a href="#f7">7 Where it builds up</a><a href="#beyond">Beyond proteins</a><a href="#limits">Limits</a>
     <a href="#references">References</a>
   </nav>
@@ -548,7 +558,7 @@ def s_f5():
     better at these properties to begin with (Lenc &amp; Vedaldi, 2015; Bansal et al., 2021).</p>
     <p class="prose">Passing the structure model's work through the sequence model's trained layers
     loses part of it. In {st['worse']} of {st['total']} cases the stitched model is clearly worse than
-    the structure model alone, meaning the interval across repeats excludes zero; in {st['unclear']}
+    the structure model alone, a difference that holds up across all {st['repeats']} repeats; in {st['unclear']}
     there is no clear difference, and in {st['better']} it is better. The losses are not spread
     evenly: every case that enters in the first {LEAD} layers is worse, and the cases with no clear
     difference sit at the deep entry points, where few of the sequence model's layers are left to
