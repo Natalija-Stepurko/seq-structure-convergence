@@ -166,7 +166,7 @@ METRIC_LABEL = {"cka": "Same pattern of resemblance (CKA)",
 def ladder_svg(D, metric="cka", show="both", chart_id="ladder"):
     """Horizontal bars: answer-key-removed solid, as-measured as a ghost bar behind it."""
     rows = [(lab, tag, D["every_pair"][k]) for k, lab, tag in LADDER_ORDER if k in D["every_pair"]]
-    w, rowh, pl, pr, pt = 760, 26, 232, 54, 50
+    w, rowh, pl, pr, pt = 760, 34, 232, 54, 50
     ih = rowh * len(rows)
     h = pt + ih + 34
     iw = w - pl - pr
@@ -184,18 +184,17 @@ def ladder_svg(D, metric="cka", show="both", chart_id="ladder"):
     for i, (lab, tag, d) in enumerate(rows):
         y = pt + i * rowh
         raw, par = d["raw"][metric], d["partial"][metric]
-        out.append(f'<text x="0" y="{y+rowh/2+3.5:.1f}" class="clab">{esc(lab)}</text>')
-        out.append(f'<text x="{pl-8}" y="{y+rowh/2+3.5:.1f}" class="ctag" text-anchor="end">'
-                   f'{esc(tag)}</text>')
-        bh = rowh - 11
+        out.append(f'<text x="0" y="{y+14:.1f}" class="clab">{esc(lab)}</text>')
+        out.append(f'<text x="0" y="{y+27:.1f}" class="ctag">{esc(tag)}</text>')
+        bh = rowh - 16
         if show in ("both", "as measured"):
-            out.append(f'<rect x="{pl}" y="{y+5.5:.1f}" width="{X(raw["v"])-pl:.1f}" height="{bh}" '
+            out.append(f'<rect x="{pl}" y="{y+8:.1f}" width="{X(raw["v"])-pl:.1f}" height="{bh}" '
                        f'rx="2" fill="none" stroke="{NULL}" stroke-dasharray="3 2" opacity=".75">'
                        f'<title>{esc(lab)} — as measured {raw["v"]:.3f}</title></rect>')
         if show in ("both", "answer key removed"):
             col = CHROME if tag == "ceiling" else (NULL if tag == "floor" else
                                                    (SEQ if tag == "same input" else STR))
-            out.append(f'<rect x="{pl}" y="{y+5.5:.1f}" width="{X(par["v"])-pl:.1f}" height="{bh}" '
+            out.append(f'<rect x="{pl}" y="{y+8:.1f}" width="{X(par["v"])-pl:.1f}" height="{bh}" '
                        f'rx="2" fill="{col}" opacity=".88">'
                        f'<title>{esc(lab)} — answer key removed {par["v"]:.3f} '
                        f'[{par["lo"]:.3f}, {par["hi"]:.3f}]</title></rect>')
@@ -213,7 +212,7 @@ def null_strips(D):
     names = [("cka", "Same pattern of resemblance", "CKA"),
              ("svcca", "Same main directions", "SVCCA"),
              ("knn", "Same neighbours", "mutual k-NN")]
-    w, rowh, pl, pr, pt = 760, 44, 224, 96, 46
+    w, rowh, pl, pr, pt = 760, 44, 224, 124, 46
     h = pt + rowh * 3 + 16
     iw = w - pl - pr
     vmax = 0.45

@@ -29,6 +29,10 @@ jobs:
       # Rebuilds every number on the page from results/ and fails if any of them does not
       # match its source.
       - run: site/build.sh
+      # Opens the page in a browser and fails if any chart label overlaps another or runs off
+      # the chart.
+      - run: pip install playwright && playwright install --with-deps chromium
+      - run: python site/check_layout.py
       - run: mkdir -p _site && cp site/build/index.html _site/index.html
       - uses: actions/upload-pages-artifact@v5
         with:

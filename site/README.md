@@ -12,11 +12,12 @@ site/build.sh --fresh-figures  # also re-renders the three map images (needs mat
 | 1 | `build_data.py` | reads `results/` into `build/data.json`: the ladder, calibration, width series, layer grids, stitching grid, probes, dataset counts |
 | 2 | `build.py` | renders `build/index.html`, the page GitHub Pages serves; checks tag nesting and anchors |
 | 3 | `audit.py` | re-derives each headline number from `results/`, checks it appears in the page, and fails on any mismatch or banned phrase |
+| 4 | `check_layout.py` | opens the page in a headless browser at desktop and phone width and fails if any chart label overlaps another or runs off the chart (needs `playwright`) |
 | — | `charts.py` | the hand-written SVG charts |
 | — | `make_figures.py` | renders the three map images from `results/umap6/coords.npz` into `build/figures.json` |
 
 On every push to `main` that touches `site/` or `results/`, `.github/workflows/pages.yml` runs the
-build and the audit and deploys `index.html` to GitHub Pages.
+build, the audit and the layout check, and deploys `index.html` to GitHub Pages.
 
 ## What is archived
 
