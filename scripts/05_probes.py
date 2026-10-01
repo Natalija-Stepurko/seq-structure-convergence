@@ -514,13 +514,14 @@ def _boot_ci(yte, pred, n_boot=1000, seed=42):
     return (np.percentile(accs, [2.5, 97.5]), np.percentile(f1s, [2.5, 97.5]))
 
 # ---------------------------------------------------------------------------
-# Physicochemical descriptor baseline
+# Physicochemical descriptor baseline (the analogue of Magpie in materials ML)
 # ---------------------------------------------------------------------------
-# Plain amino-acid composition is the weakest defensible null: it counts letters and
-# ignores what they are. This baseline aggregates published amino-acid property scales
-# (hydropathy, charge, volume, polarity ...) over the sequence: mean, spread, min, max.
-# It is strictly stronger than composition, so a Delta measured against it is a far more
-# conservative claim of emergence.
+# Plain amino-acid composition is the weakest defensible null -- it is the protein
+# equivalent of bare element fractions. Magpie, the standard materials baseline, instead
+# aggregates *elemental property* statistics (mean, spread, range of electronegativity,
+# radius, valence ...). The equivalent here is to aggregate amino-acid property scales
+# over the sequence. It is strictly stronger than composition, so a Delta measured against
+# it is a far more conservative claim of emergence.
 #
 # Published scales, one row per property, in AA order ACDEFGHIKLMNPQRSTVWY:
 #   kd      Kyte & Doolittle (1982) hydropathy
@@ -547,7 +548,7 @@ _SCALES = {
 
 
 def _physchem_features(seq):
-    """Property-scale descriptor: per-property mean, sd, min, max over the sequence.
+    """Magpie-style descriptor: per-property mean, sd, min, max over the sequence.
 
     Returns composition (20) + 9 properties x 4 statistics (36) + log length = 57 features.
     """
@@ -585,7 +586,7 @@ def _main_composition() -> None:
     ap.add_argument("--features", choices=["composition", "physchem"], default="composition",
                     help="composition = 20-D amino-acid fractions (weak null). "
                          "physchem = + mean/sd/min/max of 9 published property scales, "
-                         "a much harder null.")
+                         "the analogue of Magpie in materials ML and a much harder null.")
     ap.add_argument("--max-chains", type=int, default=5000)
     ap.add_argument("--test-frac", type=float, default=0.25)
     ap.add_argument("--seed", type=int, default=42)
