@@ -1,0 +1,26 @@
+Stitching ESM-2 into ProteinMPNN, connector = ridge.
+5 repeats on independent samples of 600 chains; all residues per held-out chain.
+Verdicts count the properties where ESM-2 is the better model: binding_site, active_site, ptm_site.
+A cell is worse or better only if the paired interval across repeats excludes zero.
+
+stitched vs ESM-2 alone (does ProteinMPNN's processing keep ESM-2's description?)
+  worse                27
+  better               6
+  no clear difference  84
+by injection depth (worse / no clear difference / better):
+  depth 1    7 /  29 /   3
+  depth 2    9 /  27 /   3
+  depth 3   11 /  28 /   0
+
+stitched vs geometry alone (does the injected description add anything?)
+  worse                2
+  better               42
+  no clear difference  73
+
+connector held-out R2: mean 0.183
+binding_site: stitched 0.568  stitched_rand 0.559  donor 0.602  native 0.595  blank 0.531
+active_site: stitched 0.545  stitched_rand 0.528  donor 0.541  native 0.580  blank 0.469
+ptm_site: stitched 0.504  stitched_rand 0.507  donor 0.507  native 0.500  blank 0.500
+ss3: stitched 0.766  stitched_rand 0.712  donor 0.654  native 0.844  blank 0.615
+burial: stitched 0.843  stitched_rand 0.826  donor 0.724  native 0.900  blank 0.701
+rsa: stitched 0.676  stitched_rand 0.630  donor 0.329  native 0.835  blank 0.549

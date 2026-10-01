@@ -67,6 +67,7 @@ directly comparable.
 |---|---|---|
 | `stitch_grid_ci/proteinmpnn_ridge/` | Every ProteinMPNN layer fed into every ESM-2 layer through a linear connector, 5 repeats on independent chain samples; per-cell intervals on stitched − donor and a verdict | **page** |
 | `stitch_grid_ci/carp_ridge/` | The same test from CARP's last layer: a within-sequence positive control | **page** |
+| `stitch_grid_ci/esm_to_proteinmpnn/` | The other direction: every ESM-2 layer fed into ProteinMPNN after encoder layer 1, 2 or 3, 5 repeats on 600 chains, every held-out residue; scored against ESM-2 alone and against the geometry alone (`grid-ci-reverse`) | **page** |
 | `stitch_grid_ci/proteinmpnn_mlp/` | ProteinMPNN's last layer at four entry depths through a one-hidden-layer network, 3 repeats | **page** |
 | `stitch_grid/` | The original single run of the grid | superseded by `stitch_grid_ci/` |
 | `depth_stitch/` | Per-property stitching at each injection depth | supporting |

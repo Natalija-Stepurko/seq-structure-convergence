@@ -108,6 +108,35 @@ def depth_bars_partial(D):
     out.append(f'<text x="{pl}" y="{h-8}" class="cax">input — nothing left after the subtraction</text>')
     out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">output</text>')
     out.append("</svg>")
+def stitch_bars_reverse(D, keys):
+    """The other direction: ESM-2's description through ProteinMPNN's layers, per property."""
+    conds = [("donor", "sequence model alone", SEQ),
+             ("rand", "→ untrained structure layers", NULL),
+             ("trained", "→ trained structure layers", STR),
+             ("blank", "structure layers, geometry only", "#E3C4AA"),
+             ("native", "structure model alone", "#B9C2C7")]
+    rv = {p["key"]: p for p in D["stitching_reverse"]["props"]}
+    out = []
+    for key in keys:
+        p = rv[key]
+        w, rowh, pl, pr, pt = 380, 28, 196, 44, 42
+        h = pt + rowh * len(conds) + 10
+        iw = w - pl - pr
+        sv = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Reverse stitching result for '
+              f'{esc(p["label"])}.">',
+              f'<text x="0" y="13" class="ctsm">{esc(p["label"])}</text>',
+              f'<text x="0" y="26" class="cs">mean over all {D["stitching_reverse"]["cells"]} layer × '
+              f'entry-point combinations</text>']
+        for i, (k, lab, col) in enumerate(conds):
+            y = pt + i * rowh
+            v = max(p[k], 0.0)
+            sv.append(f'<text x="0" y="{y+15:.1f}" class="clabsm">{esc(lab)}</text>')
+            sv.append(f'<rect x="{pl}" y="{y+4}" width="{iw}" height="16" rx="2" fill="{RULE2}"/>')
+            sv.append(f'<rect x="{pl}" y="{y+4}" width="{v*iw:.1f}" height="16" rx="2" fill="{col}">'
+                      f'<title>{esc(lab)}: {p[k]:.3f}</title></rect>')
+            sv.append(f'<text x="{w-pr+6}" y="{y+15:.1f}" class="cval">{p[k]:.3f}</text>')
+        sv.append("</svg>")
+        out.append(f'<div class="minipanel wide">{"".join(sv)}</div>')
     return "".join(out)
 
 

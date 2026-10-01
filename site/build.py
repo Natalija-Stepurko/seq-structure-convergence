@@ -23,7 +23,8 @@ FIGB, PNG = _OPT[0], [None, _OPT[1], _OPT[2]]
 
 sys.path.insert(0, str(HERE))
 from charts import (depth_bars, ladder_svg, null_strips, width_bars, layer_panels,
-                    stitch_bars, depth_verdicts, depth_bars_partial, LADDER_ORDER, METRIC_LABEL)
+                    stitch_bars, depth_verdicts, depth_bars_partial, stitch_bars_reverse, LADDER_ORDER,
+                    METRIC_LABEL)
 
 REPO = "https://github.com/Natalija-Stepurko/seq-structure-convergence"
 DATASET = "https://huggingface.co/datasets/NatalijaStepurko/seq-structure-convergence"
@@ -177,7 +178,8 @@ def header():
       <p>Hand ProteinMPNN's description of a residue to ESM-2 and let ESM-2's later layers finish
       the job. The result is clearly worse than ProteinMPNN alone in {ST['worse']} of {ST['total']}
       tests, including every test that enters ESM-2's first {LEAD} layers. Untrained layers pass the
-      description through unchanged; trained ones lose part of it.</p></div>
+      description through unchanged; trained ones lose part of it. Fed the other way, into
+      ProteinMPNN, ESM-2's description loses part of itself too.</p></div>
     <div class="rbfoot"><b>Why the raw scores overstate it.</b> Both models are trained to output the
     amino acid at each position, so they agree that position 47 is a leucine before they agree on
     anything else. That shared answer accounts for about half of the strongest raw agreement score,
@@ -571,6 +573,9 @@ def s_f4():
 def s_f5():
     st, ctl, mlp = D["stitching"], D["stitching_control"], D["stitching_mlp"]
     p = {x["key"]: x for x in st["props"]}
+    rv = D["stitching_reverse"]
+    rp = {x["key"]: x for x in rv["props"]}
+    rb, rr, pb = rp["binding_site"], rp["rsa"], rv["per_prop"]["binding_site"]
     return f"""<div class="page sec" id="f5">
   <div class="stack prose">
     <span class="eyebrow">Not interchangeable · stitching</span>
@@ -616,6 +621,34 @@ def s_f5():
   <p class="figcap">Each panel averages the {st['cells']} combinations of structure-model layer and
   entry point, over {st['repeats']} repeats.</p>
   <div class="figwrap">{depth_verdicts(D)}</div>
+  <div class="stack prose">
+    <h3 class="subhead">The other direction: ESM-2 into ProteinMPNN</h3>
+    <p class="prose">The test also runs the other way. ESM-2's description of each residue, through
+    the same kind of translation step, replaces ProteinMPNN's own after its first, second or third
+    encoder layer, and ProteinMPNN's remaining layers finish the job: {rv['cells']} combinations of
+    ESM-2 layer and entry point, each repeated on {rv['repeats']} independent samples of proteins.
+    One thing differs from the first direction. ProteinMPNN passes messages between each residue and
+    its nearest neighbours in space, and that neighbour graph comes from the coordinates, so its
+    remaining layers always have the geometry whatever is fed in. Two references are therefore
+    needed: ESM-2 on its own, and ProteinMPNN's remaining layers given nothing but the geometry.</p>
+    <p class="prose">A fair test needs a property ESM-2 reads at least as well as ProteinMPNN. At the
+    level of single residues only one qualifies here: whether a residue contacts a ligand, which ESM-2
+    alone scores {rb['donor']:.3f} and ProteinMPNN alone {rb['native']:.3f}. Passed through
+    ProteinMPNN's layers, ESM-2's description of it scores {rb['trained']:.3f}: clearly below ESM-2
+    alone in {pb['donor']['worse']} of {rv['cells']} cases, and clearly above the geometry on its own
+    ({rb['blank']:.3f}) in {pb['blank']['better']} of {rv['cells']}. Part of what ESM-2 knows
+    survives and part is lost — the same in-between result as in the first direction.</p>
+    <p class="prose">The structural properties show how the two sources combine. For solvent
+    accessibility the stitched model scores {rr['trained']:.3f}: above ESM-2 alone
+    ({rr['donor']:.3f}) and above the geometry alone ({rr['blank']:.3f}), so ESM-2's description adds
+    to what the coordinates give, but below ProteinMPNN alone ({rr['native']:.3f}). Active sites and
+    sites of chemical modification are too rare among residues to score here — the modification
+    sites sit at chance level in every condition — so their cases are not counted either way.</p>
+  </div>
+  <div class="minirow">{stitch_bars_reverse(D, ["binding_site", "rsa"])}</div>
+  <p class="figcap">Each panel averages the {rv['cells']} combinations of ESM-2 layer and
+  ProteinMPNN entry point, over {rv['repeats']} repeats, scored on every residue of the held-out
+  proteins. "Geometry only" is ProteinMPNN's remaining layers with an empty description fed in.</p>
 </div>"""
 
 
