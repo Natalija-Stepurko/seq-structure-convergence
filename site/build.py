@@ -144,7 +144,7 @@ details > *:not(summary){margin:0 18px}
 # ════════════════════════════════════════════════════════════════════ sections
 def header():
     ds = D["dataset"]
-    return f"""<header class="page">
+    return f"""<header class="page" id="top">
   <div class="kicker">Two protein models, compared layer by layer ·
     {ds['domains']:,} protein domains · {ds['residues']:,} residues</div>
   <h1>Do two models given<br>opposite halves of a protein<br>learn the same biology?</h1>
@@ -202,13 +202,6 @@ def header():
     </ol>
   </div>
 
-  <nav class="toc" aria-label="Contents">
-    <a href="#question">The question</a><a href="#models">Models</a><a href="#measures">Measures</a>
-    <a href="#f1">The answer key</a><a href="#f2">What survives</a><a href="#f3">No shared map</a>
-    <a href="#f4">Layer by layer</a><a href="#f5">Not interchangeable</a><a href="#f6">Who knows what</a>
-    <a href="#f7">Where it builds up</a><a href="#beyond">Beyond proteins</a><a href="#limits">Limits</a>
-    <a href="#references">References</a>
-  </nav>
 
   <a class="repo" href="{REPO}">
     <svg viewBox="0 0 16 16" aria-hidden="true" width="17" height="17"><path fill="currentColor"
@@ -900,13 +893,99 @@ const LADDER_CAPS = {json.dumps(caps)};
 </script>"""
 
 
+SECTIONS = [("question", "The question"), ("models", "Models"), ("measures", "Measures"),
+            ("f1", "The answer key"), ("f2", "What survives"), ("f3", "No shared map"),
+            ("f4", "Layer by layer"), ("f5", "Not interchangeable"), ("f6", "Who knows what"),
+            ("f7", "Where it builds up"), ("beyond", "Beyond proteins"), ("limits", "Limits"),
+            ("references", "References")]
+
+
+def topnav():
+    import html
+    links = "".join(f'<a href="#{i}">{html.escape(lab)}</a>' for i, lab in SECTIONS)
+    return (f'<nav class="topnav" aria-label="Sections">'
+            f'<a class="brand" href="#top">Sequence vs structure</a>'
+            f'<div class="navlinks">{links}</div>'
+            f'<div class="navext"><a href="{REPO}">Code</a><a href="{DATASET}">Data</a></div>'
+            f'</nav>')
+
+
+NAV_JS = """<script>
+(function () {
+  // highlight the section being read: the last one whose top has passed under the bar.
+  // Only the link strip is scrolled to follow it; the page's own scroll is never touched.
+  const bar = document.querySelector('.topnav .navlinks');
+  const links = [...document.querySelectorAll('.topnav .navlinks a')];
+  const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const secs = Object.keys(byId).map(id => document.getElementById(id)).filter(Boolean);
+  if (!bar || !secs.length) return;
+  let current;
+  const set = id => {
+    if (id === current) return;
+    current = id;
+    links.forEach(a => a.classList.toggle('on', a === byId[id]));
+    const a = byId[id];
+    if (a) {
+      const x = a.getBoundingClientRect().left - bar.getBoundingClientRect().left + bar.scrollLeft;
+      bar.scrollTo({left: x - bar.clientWidth / 2 + a.offsetWidth / 2});
+    }
+  };
+  const update = () => {
+    let id = null;
+    for (const s of secs) if (s.getBoundingClientRect().top <= 90) id = s.id;
+    // at the very bottom the last sections cannot reach the bar; highlight the last one
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) id = secs[secs.length - 1].id;
+    set(id);
+  };
+  let queued = false;
+  addEventListener('scroll', () => {
+    if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; update(); }); }
+  }, {passive: true});
+  addEventListener('resize', update);
+  update();
+})();
+</script>"""
+
+FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,"
+           "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
+           "%3Ccircle cx='12' cy='16' r='9' fill='%232D5BD1'/%3E"
+           "%3Ccircle cx='20' cy='16' r='9' fill='%23C06014' fill-opacity='.85'/%3E%3C/svg%3E\">\n")
+
+NAV_CSS = """
+/* sticky section navbar */
+html{scroll-padding-top:58px}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+.topnav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:18px;
+        padding:0 max(16px,calc((100% - 1140px)/2 + 36px));height:48px;
+        background:rgba(246,248,249,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+        border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:.7rem}
+.topnav a{color:var(--ink-3);text-decoration:none;white-space:nowrap}
+.topnav a:hover,.topnav a:focus-visible{color:var(--chrome)}
+.topnav .brand{color:var(--ink);font-weight:600;flex:none}
+.navlinks{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0;
+          mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 24px),transparent);
+          -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 24px),transparent);
+          padding:0 12px}
+.navlinks::-webkit-scrollbar{display:none}
+.navlinks a{padding:14px 0 12px;border-bottom:2px solid transparent}
+.navlinks a.on{color:var(--ink);border-bottom-color:var(--chrome)}
+.navext{display:flex;gap:14px;flex:none}
+.navext a{color:var(--chrome);font-weight:600}
+@media(max-width:640px){.topnav .brand{display:none}.topnav{gap:10px}}
+/* the win/loss chart's header row did not fit a phone screen and widened the page */
+@media(max-width:640px){.dhead,.drow{grid-template-columns:minmax(6.5rem,9rem) minmax(0,1fr) 2.6rem;gap:10px}
+  .dhead{letter-spacing:.02em}.dhead div{flex-wrap:wrap;column-gap:8px}}
+"""
+
+
 # ═══════════════════════════════════════════════════════════════════ assemble
 BASE_CSS = open(ARCHIVE / "base_css.txt").read()
 PAGE = ("<title>Do a sequence model and a structure model learn the same biology?</title>\n"
-        f"<style>{BASE_CSS}{CSS_EXTRA}</style>\n\n"
+        f"<style>{BASE_CSS}{CSS_EXTRA}{NAV_CSS}</style>\n\n"
+        + topnav() + "\n\n"
         + "\n\n".join([header(), s_question(), s_models(), s_measures(), s_f1(), s_f2(), s_f3(),
                        s_f4(), s_f5(), s_f6(), s_f7(), s_beyond(), s_limits(), s_data()])
-        + "\n\n" + script() + "\n")
+        + "\n\n" + script() + "\n" + NAV_JS + "\n")
 
 TITLE = "Do a sequence model and a structure model learn the same biology?"
 STANDALONE = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
@@ -914,6 +993,7 @@ STANDALONE = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">
               '<meta name="description" content="Do a protein sequence model and a protein structure '
               'model learn the same biology? A layer-resolved comparison of ESM-2 and ProteinMPNN '
               'with controls for shared training targets and metric nulls.">\n'
+              + FAVICON
               + PAGE.split("</style>", 1)[0] + "</style>\n</head>\n<body>\n"
               + PAGE.split("</style>", 1)[1] + "</body>\n</html>\n")
 BUILD.mkdir(exist_ok=True)
