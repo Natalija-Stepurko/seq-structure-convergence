@@ -1043,6 +1043,9 @@ def check(p):
             bad.append("nesting negative"); break
     if depth:
         bad.append(f"unbalanced: {depth:+d}")
+    # a chart function that returns nothing renders as the literal text "None"
+    if re.search(r">\s*None\s*<", body):
+        bad.append("a block rendered as None")
     for a in re.findall(r'href="#([\w-]+)"', p):
         if f'id="{a}"' not in p:
             bad.append(f"dangling anchor #{a}")
