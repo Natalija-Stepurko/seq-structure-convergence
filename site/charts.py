@@ -166,7 +166,7 @@ METRIC_LABEL = {"cka": "Same pattern of resemblance (CKA)",
 def ladder_svg(D, metric="cka", show="both", chart_id="ladder"):
     """Horizontal bars: answer-key-removed solid, as-measured as a ghost bar behind it."""
     rows = [(lab, tag, D["every_pair"][k]) for k, lab, tag in LADDER_ORDER if k in D["every_pair"]]
-    w, rowh, pl, pr, pt = 760, 34, 232, 54, 50
+    w, rowh, pl, pr, pt = 760, 34, 256, 54, 50
     ih = rowh * len(rows)
     h = pt + ih + 34
     iw = w - pl - pr
