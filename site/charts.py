@@ -108,6 +108,9 @@ def depth_bars_partial(D):
     out.append(f'<text x="{pl}" y="{h-8}" class="cax">input — nothing left after the subtraction</text>')
     out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">output</text>')
     out.append("</svg>")
+    return "".join(out)
+
+
 def stitch_bars_reverse(D, keys):
     """The other direction: ESM-2's description through ProteinMPNN's layers, per property."""
     conds = [("donor", "sequence model alone", SEQ),
