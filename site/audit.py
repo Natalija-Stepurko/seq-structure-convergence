@@ -94,6 +94,17 @@ top = max((k for k in dep if k[1] == "partial"), key=lambda k: dep[k])
 claim(f"peak after subtraction ({top[0]}), as measured", dep[(top[0], "raw")])
 claim(f"peak after subtraction ({top[0]}), answer key removed", dep[top])
 
+print("stitching in the other direction, ESM-2 into ProteinMPNN")
+rev = list(csv.DictReader(open(R / "stitch_grid_ci/esm_to_proteinmpnn/cells.csv")))
+rmean = lambda col: sum(float(c[col]) for c in rev) / len(rev)
+for k in ("binding_site", "rsa"):
+    for cond, name in (("donor", "ESM-2 alone"), ("stitched", "stitched"), ("blank", "geometry only"),
+                       ("native", "ProteinMPNN alone")):
+        claim(f"{k}, {name}", rmean(f"{k}_{cond}_mean"))
+rcount = lambda col, v: sum(1 for c in rev if c[col] == v)
+claim("binding site, worse than ESM-2 alone", rcount("binding_site_vs_donor_verdict", "worse"), "{} of " + str(len(rev)))
+claim("binding site, better than geometry alone", rcount("binding_site_vs_blank_verdict", "better"), "{} of " + str(len(rev)))
+
 print("probes: best layer per property, 5 refits")
 def best(m):
     b = {}

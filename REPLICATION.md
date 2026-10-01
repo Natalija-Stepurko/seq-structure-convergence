@@ -26,6 +26,7 @@ from structures) takes days on a CPU machine and a few hundred GB of disk.
 ```bash
 git clone https://github.com/Natalija-Stepurko/seq-structure-convergence.git
 cd seq-structure-convergence
+python3 -m venv .venv && . .venv/bin/activate
 pip install numpy          # the page builder needs nothing else
 site/build.sh              # -> site/build/index.html, then audits every headline number
 ```
@@ -69,6 +70,8 @@ All models are public; none needs a token or a licence acceptance.
   curl -L -o "$TORCH_HOME/proteinmpnn/v_48_020.pt" \
     https://raw.githubusercontent.com/dauparas/ProteinMPNN/main/vanilla_model_weights/v_48_020.pt
   ```
+  `02_extract.py struct` and the stitching commands read the weights from there by default;
+  pass `--weights` (or `--mpnn-weights`) if they live elsewhere.
 - **CARP-38M** downloads through the `sequence-models` package.
 
 ### 3. Model environments
@@ -114,18 +117,22 @@ uv run python scripts/01_dataset.py annotate   --structures-dir $S
 uv run python scripts/01_dataset.py targets    --structures-dir $S
 uv run python scripts/02_extract.py esm        --structures-dir $S --results-dir $R/esm
 uv run python scripts/02_extract.py struct     --structures-dir $S --results-dir $R/proteinmpnn
-uv run python scripts/03_geometry.py depth-law --results-dir $R
+uv run python scripts/03_geometry.py depth-law --results-dir $R/esm --model-name esm \
+    --structures-dir $S --out-dir $R/analysis/esm
 uv run python scripts/04_convergence.py ladder-ci --results-root $R --structures-dir $S \
     --n-resamples 50 --resample-size 8000 --max-residues 20000 --out-dir $R/ladder_ci
 uv run python scripts/05_probes.py repeats     --n-repeats 5 --seed0 42 --out-dir $R/probes_ci/esm \
     --passthrough --results-dir $R/esm --model-name esm --structures-dir $S
-uv run python scripts/06_stitching.py grid     --n-chains 400 --per-chain 25 --properties ss3 burial rsa \
-    --structures-dir $S --esm-dir $R/esm --struct-dir $R/proteinmpnn --out-dir $R/stitch_grid
+uv run python scripts/06_stitching.py grid-ci  --structures-dir $S --esm-dir $R/esm \
+    --donor-dir $R/proteinmpnn --out-dir $R/stitch_grid_ci/proteinmpnn_ridge
+uv run python scripts/06_stitching.py grid-ci-reverse --structures-dir $S --esm-dir $R/esm \
+    --struct-dir $R/proteinmpnn --out-dir $R/stitch_grid_ci/esm_to_proteinmpnn
 ```
 
 Every subcommand lists its flags with `--help`. Where an output folder in `results/` has a
 `params.json`, it records the exact command that produced it; `results/README.md` describes the
-rest. For a quick end-to-end check, run stage 01 with `--limit 6` into a scratch directory first.
+rest. For a quick end-to-end check, run stage 01 with `--limit 16` into a scratch directory first
+(the probe stage needs at least 12 chains; the stitching commands take a smaller `--n-chains`).
 
 ## Pipeline reference
 
@@ -164,6 +171,7 @@ exact command, the git commit, library versions and a UTC timestamp.
 | | `matrix` | linear predictivity across every pair |
 | | `depth` | per-property stitching at each injection depth |
 | | `grid` | every donor layer × every injection depth, all four conditions |
+| | `grid-ci-reverse` | the other direction: ESM-2's description fed into ProteinMPNN's remaining encoder layers, on ProteinMPNN's own neighbour graph; scored against ESM-2 alone and against the geometry alone |
 | | `grid-ci` | the same grid repeated on independent chain samples, with paired intervals on stitched − donor; `--connector mlp` for a non-linear connector, `--donor-dir` for any donor model |
 | **`07_hf_dataset.py`** | — | the Hugging Face dataset: every model at every layer on 35 whole proteins, with labels and reference scores; `--protein-level` adds one mean vector per protein for all proteins |
 

@@ -1,0 +1,60 @@
+{
+  "script": "06_stitching.py",
+  "timestamp_utc": "2026-09-30T23:16:33+00:00",
+  "command": "scripts/06_stitching.py --threads 3 --out-dir results/stitch_grid_ci/esm_to_proteinmpnn",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "esm_dir": "/ssc/results/esm",
+    "struct_dir": "/ssc/results/proteinmpnn",
+    "mpnn_weights": "/scratch/.torch-hub/proteinmpnn/v_48_020.pt",
+    "out_dir": "results/stitch_grid_ci/esm_to_proteinmpnn",
+    "n_chains": 600,
+    "per_chain": 0,
+    "alpha": 100.0,
+    "properties": [
+      "binding_site",
+      "active_site",
+      "ptm_site",
+      "ss3",
+      "burial",
+      "rsa"
+    ],
+    "repeats": 5,
+    "seed0": 42,
+    "connector": "ridge",
+    "donor_layers": null,
+    "inject_layers": [
+      1,
+      2,
+      3
+    ],
+    "threads": 3
+  },
+  "git_commit": "3dacb1cfa87555a5032da9e40419388d3ef1c2ce",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "n_cells": 39,
+    "verdicts": {
+      "donor": {
+        "worse": 27,
+        "better": 6,
+        "no clear difference": 84
+      },
+      "blank": {
+        "worse": 2,
+        "better": 42,
+        "no clear difference": 73
+      }
+    }
+  }
+}

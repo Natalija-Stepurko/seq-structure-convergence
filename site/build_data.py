@@ -76,7 +76,42 @@ def stitch_run(name):
         "r2_mean": round(sum(r2) / len(r2), 3), "r2_min": round(min(r2), 3), "r2_max": round(max(r2), 3)}
 
 
+REV_MAIN = ("binding_site", "active_site", "ptm_site")
+REV_LABEL = {"binding_site": "binding site", "active_site": "active site", "ptm_site": "PTM site",
+             "ss3": "local shape", "burial": "buried or exposed", "rsa": "solvent accessibility"}
+
+
+def stitch_reverse(name):
+    """grid-ci-reverse: ESM-2 fed into ProteinMPNN. Verdicts count the site properties."""
+    cells = list(csv.DictReader(open(R / "stitch_grid_ci" / name / "cells.csv")))
+    props = [k for k in REV_LABEL if f"{k}_stitched_mean" in cells[0]]
+    blank_v = lambda: {"worse": 0, "no clear difference": 0, "better": 0}
+    vs = {"donor": blank_v(), "blank": blank_v()}
+    depth = {}
+    for c in cells:
+        for k in REV_MAIN:
+            for cmp in vs:
+                vs[cmp][c[f"{k}_vs_{cmp}_verdict"]] += 1
+            depth.setdefault(int(c["inject_layer"]), blank_v())[c[f"{k}_vs_donor_verdict"]] += 1
+    mean = lambda k: round(sum(float(c[k]) for c in cells) / len(cells), 3)
+    per = {k: {cmp: blank_v() for cmp in ("donor", "blank")} for k in props}
+    for c in cells:
+        for k in props:
+            for cmp in ("donor", "blank"):
+                per[k][cmp][c[f"{k}_vs_{cmp}_verdict"]] += 1
+    return {
+        "per_prop": per,
+        "props": [{"key": k, "label": REV_LABEL[k], "donor": mean(f"{k}_donor_mean"),
+                   "trained": mean(f"{k}_stitched_mean"), "rand": mean(f"{k}_stitched_rand_mean"),
+                   "blank": mean(f"{k}_blank_mean"), "native": mean(f"{k}_native_mean")} for k in props],
+        "vs_donor": vs["donor"], "vs_blank": vs["blank"], "total": len(cells) * len(REV_MAIN),
+        "cells": len(cells), "repeats": int(cells[0]["n_repeats"]),
+        "by_depth": [{"layer": d, **v} for d, v in sorted(depth.items())],
+        "r2_mean": round(sum(float(c["connector_r2_mean"]) for c in cells) / len(cells), 3)}
+
+
 D["stitching"] = stitch_run("proteinmpnn_ridge")
+D["stitching_reverse"] = stitch_reverse("esm_to_proteinmpnn")
 D["stitching_control"] = stitch_run("carp_ridge")
 D["stitching_mlp"] = stitch_run("proteinmpnn_mlp")
 

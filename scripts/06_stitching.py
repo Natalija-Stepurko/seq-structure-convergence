@@ -258,7 +258,7 @@ def _main_stitch() -> None:
     ap.add_argument("--rand-esm-dir", default=None)
     ap.add_argument("--rand-struct-dir", default=None)
     ap.add_argument("--esm-model", default="esm2_t12_35M_UR50D")
-    ap.add_argument("--mpnn-weights", default="/scratch/.torch-hub/proteinmpnn/v_48_020.pt")
+    ap.add_argument("--mpnn-weights", default=_default_mpnn_weights())
     ap.add_argument("--out-dir", default="results/stitching")
     ap.add_argument("--n-chains", type=int, default=400)
     ap.add_argument("--test-frac", type=float, default=0.3)
@@ -490,11 +490,15 @@ def _score(X, y, tr, te, kind):
         return round(float(r2_score(y[te], m.predict(X[te]))), 4), 0.0, int(tr.sum())
     kw = {}
     cls, cnt = np.unique(y[tr], return_counts=True)
+    if len(cls) < 2:                       # a split with one class cannot be fitted
+        return float("nan"), float("nan"), 0
     if len(cls) == 2:
         kw["scale_pos_weight"] = float(cnt[0] / max(1, cnt[1]))
+    # XGBoost needs classes numbered 0..n-1; a small split can lack a class (e.g. no sheet),
+    # so the classes present are renumbered and predictions mapped back.
     m = XGBClassifier(n_estimators=80, max_depth=4, tree_method="hist",
-                      n_jobs=2, verbosity=0, **kw).fit(X[tr], y[tr])
-    p = m.predict(X[te])
+                      n_jobs=2, verbosity=0, **kw).fit(X[tr], np.searchsorted(cls, y[tr]))
+    p = cls[m.predict(X[te])]
     maj = np.full(te.sum(), cls[np.argmax(cnt)])
     base = float(f1_score(y[te], maj, average="macro"))
     return (round(float(f1_score(y[te], p, average="macro")), 4),
@@ -622,6 +626,66 @@ def _main_depth() -> None:
 # ==========================================================================================
 # grid  --  stitching across donor layer x injection depth
 # ==========================================================================================
+
+def _default_mpnn_weights():
+    """ProteinMPNN's vanilla weights, where the replication guide downloads them."""
+    import os
+    home = os.environ.get("TORCH_HOME", os.path.expanduser("~/.cache/torch"))
+    return str(Path(home) / "proteinmpnn" / "v_48_020.pt")
+
+
+def _mpnn_model(weights=None, seed=0):
+    """The ProteinMPNN encoder: trained from `weights`, or untrained with seeded random weights."""
+    sys.path.insert(0, str(Path(__file__).parent / "vendor" / "proteinmpnn"))
+    from protein_mpnn_utils import ProteinMPNN
+    ck = torch.load(weights, map_location="cpu", weights_only=False) if weights else None
+    if ck is None:
+        torch.manual_seed(seed)
+    m = ProteinMPNN(num_letters=21, node_features=128, edge_features=128, hidden_dim=128,
+                    num_encoder_layers=3, num_decoder_layers=3,
+                    k_neighbors=ck["num_edges"] if ck else 48, augment_eps=0.0)
+    if ck is not None:
+        m.load_state_dict(ck["model_state_dict"])
+    return m.eval()
+
+
+def _mpnn_graph(model, coords_bb):
+    """Run the encoder on one chain and keep what injection needs: the neighbour graph and the
+    edge state at every depth. Preprocessing is identical to 02_extract.py struct."""
+    from protein_mpnn_utils import gather_nodes
+    L = coords_bb.shape[0]
+    ca = coords_bb[:, 1, :]
+    ca_ok = np.isfinite(ca).all(axis=1)
+    filled = coords_bb.copy()
+    for k in range(4):
+        miss = ~np.isfinite(filled[:, k, :]).all(axis=1)
+        filled[miss, k, :] = np.where(ca_ok[miss, None], ca[miss], 0.0)
+    filled = np.nan_to_num(filled, nan=0.0).astype(np.float32)
+    X = torch.from_numpy(filled)[None]
+    mask = torch.from_numpy(ca_ok.astype(np.float32))[None]
+    with torch.no_grad():
+        E, E_idx = model.features(X, mask, torch.arange(L)[None], torch.ones(1, L))
+        h_V = torch.zeros((1, L, E.shape[-1]))
+        h_E = model.W_e(E)
+        att = gather_nodes(mask.unsqueeze(-1), E_idx).squeeze(-1)
+        att = mask.unsqueeze(-1) * att
+        edges, nodes = [h_E], []
+        for layer in model.encoder_layers:
+            h_V, h_E = layer(h_V, h_E, E_idx, mask, att)
+            edges.append(h_E)
+            nodes.append(h_V[0])
+    return {"E_idx": E_idx, "mask": mask, "att": att, "edges": edges, "nodes": nodes}
+
+
+def _mpnn_from(model, g, h_V, depth):
+    """Replace the per-residue state after `depth` encoder layers with `h_V` [L, D] and run the
+    remaining layers. The neighbour graph and edge state stay the structure's own."""
+    x, h_E = h_V[None], g["edges"][depth]
+    with torch.no_grad():
+        for layer in model.encoder_layers[depth:]:
+            x, h_E = layer(x, h_E, g["E_idx"], g["mask"], g["att"])
+    return x[0]
+
 
 def _fit_connector(A, B, kind, alpha, seed):
     """The map from donor states to receiver states: ridge, or a small MLP to test whether a
@@ -1018,6 +1082,232 @@ def _main_gridci() -> None:
     print(f"-> {out}")
 
 
+REV_LABELS = ("binding_site", "active_site", "ptm_site", "ss3", "burial", "rsa")
+
+
+def _residue_labels(prot, rest, cid):
+    """Per-residue labels for one chain; -1 / nan where unknown."""
+    z = np.load(prot / f"{cid}.npz", allow_pickle=True)
+    r = z["rsa"].astype(np.float64)
+    lab = {"ss3": np.array([SS3_IDX.get(x, 2) for x in z["ss3"]]),
+           "burial": np.where(np.isfinite(r), (r < BURIAL_RSA).astype(int), -1),
+           "rsa": np.where(np.isfinite(r), r, np.nan)}
+    tp = rest / f"{cid}.npz"
+    if tp.exists():
+        s = np.load(tp)
+        for k in ("binding_site", "active_site", "ptm_site"):
+            lab[k] = s[k].astype(int)
+    else:
+        for k in ("binding_site", "active_site", "ptm_site"):
+            lab[k] = np.full(len(r), -1)
+    return z["coords_bb"], lab
+
+
+def _main_gridci_reverse() -> None:
+    """Stitching in the other direction: ESM-2's description fed into ProteinMPNN's layers.
+
+    ProteinMPNN starts from an empty per-residue state and learns through messages along a
+    neighbour graph built from the coordinates. ESM-2's description of each residue, mapped by a
+    connector, replaces that state after encoder layer d, and the remaining layers run on the
+    structure's own graph. So the receiver always keeps the geometry, whatever is injected, and
+    two comparisons are needed:
+
+        stitched - donor   does passing ESM-2's description through ProteinMPNN's layers lose it?
+        stitched - blank   does the injected description add anything to what the geometry gives?
+
+    Conditions: stitched (trained receiver), stitched_rand (untrained receiver, its own graph),
+    donor (ESM-2 layer alone), native (ProteinMPNN alone), blank (the remaining trained layers
+    with an empty state injected, i.e. the geometry alone). Scored on properties where ESM-2 is
+    the better model (binding, active and PTM sites; the mirror of the forward test, which
+    uses properties where ProteinMPNN is better) and on three structural properties as context.
+
+    Every condition in a repeat uses the same residues and the same train/test split, so all
+    comparisons are paired; conditions that do not depend on the entry depth or the donor layer
+    are scored once per repeat. Intervals are mean +- 1.96 sd across repeats.
+
+    Outputs (under --out-dir): repeats.csv, cells.csv, summary.txt. Resumes from repeats.csv.
+    """
+    ap = argparse.ArgumentParser(description="Stitching ESM-2 into ProteinMPNN, with intervals")
+    ap.add_argument("--structures-dir", default="/ssc/structures")
+    ap.add_argument("--esm-dir", default="/ssc/results/esm")
+    ap.add_argument("--struct-dir", default="/ssc/results/proteinmpnn")
+    ap.add_argument("--mpnn-weights", default=_default_mpnn_weights())
+    ap.add_argument("--out-dir", default="/ssc/results/stitch_grid_ci/esm_to_proteinmpnn")
+    ap.add_argument("--n-chains", type=int, default=600)
+    ap.add_argument("--per-chain", type=int, default=0, help="residues per held-out chain (0: all)")
+    ap.add_argument("--alpha", type=float, default=100.0)
+    ap.add_argument("--properties", nargs="+", default=list(REV_LABELS))
+    ap.add_argument("--repeats", type=int, default=5)
+    ap.add_argument("--seed0", type=int, default=42)
+    ap.add_argument("--connector", choices=["ridge", "mlp"], default="ridge")
+    ap.add_argument("--donor-layers", type=int, nargs="+", default=None,
+                    help="ESM-2 layers, 0 = input embedding (default: all)")
+    ap.add_argument("--inject-layers", type=int, nargs="+", default=[1, 2, 3],
+                    help="ProteinMPNN depths: replace the state after this many encoder layers")
+    ap.add_argument("--threads", type=int, default=4)
+    args = ap.parse_args()
+    warnings.filterwarnings("ignore")
+    torch.set_num_threads(args.threads)
+    out = Path(args.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    qc.record_params(out, args)
+
+    sdir = Path(args.structures_dir)
+    prot, rest = sdir / "proteins", sdir / "residue_targets"
+    E_dir, S_dir = Path(args.esm_dir), Path(args.struct_dir)
+    ids = [json.loads(l)["id"] for l in (sdir / "index.jsonl").open()
+           if l.strip() and json.loads(l).get("valid", True)]
+    eligible = [c for c in ids if (E_dir / f"{c}.pt").exists() and (S_dir / f"{c}.pt").exists()]
+    trained = _mpnn_model(args.mpnn_weights)
+    n_esm = torch.load(E_dir / f"{eligible[0]}.pt", weights_only=False)["layers"].shape[0]
+    donor_layers = args.donor_layers if args.donor_layers is not None else list(range(n_esm))
+    depths = args.inject_layers
+    props = args.properties
+
+    rep_path = out / "repeats.csv"
+    done_rows = list(csv.DictReader(rep_path.open())) if rep_path.exists() else []
+    ints = ("repeat", "donor_layer", "inject_layer", "n_eval_residues")
+    all_rows = [{k: (int(v) if k in ints else float(v)) for k, v in r.items()} for r in done_rows]
+    done = {r["repeat"] for r in all_rows}
+    print(f"ESM-2 -> ProteinMPNN: {len(eligible)} eligible chains; {args.repeats} repeats x "
+          f"{len(donor_layers)} ESM-2 layers x depths {depths}; connector={args.connector}; "
+          f"repeats already done: {sorted(done)}", flush=True)
+
+    def score(F, Y, tr, te):
+        res = {}
+        for k in props:
+            kind = "reg" if k == "rsa" else "clf"
+            m = np.isfinite(Y[k]) if kind == "reg" else (Y[k] >= 0)
+            sc = _score(F, Y[k], tr & m, te & m, kind)
+            res[k] = sc[0] if isinstance(sc, tuple) else sc
+        return res
+
+    for r in range(args.repeats):
+        if r in done:
+            continue
+        seed = args.seed0 + r
+        rng = np.random.default_rng(seed)
+        pick = rng.choice(len(eligible), min(args.n_chains, len(eligible)), replace=False)
+        use = [eligible[i] for i in pick]
+        n_fit = int(len(use) * 0.6)
+        fit_c, ev_c = use[:n_fit], use[n_fit:]
+        untrained = _mpnn_model(None, seed=seed)
+
+        # held-out chains: ESM-2 layers, both receivers' graphs, labels, residue subsample
+        ev = []
+        for c in ev_c:
+            esm_l = torch.load(E_dir / f"{c}.pt", weights_only=False)["layers"].to(torch.float32)
+            coords, lab = _residue_labels(prot, rest, c)
+            L = coords.shape[0]
+            if esm_l.shape[1] != L:
+                continue
+            idx = (np.arange(L) if args.per_chain <= 0 or L <= args.per_chain
+                   else np.sort(rng.choice(L, args.per_chain, replace=False)))
+            ev.append({"esm": esm_l, "g": _mpnn_graph(trained, coords),
+                       "gr": _mpnn_graph(untrained, coords), "idx": idx,
+                       "lab": {k: v[idx] for k, v in lab.items()}})
+        Y = {k: np.concatenate([e["lab"][k] for e in ev]) for k in props}
+        n = len(Y[props[0]])
+        te = np.zeros(n, bool)
+        te[rng.choice(n, n // 3, replace=False)] = True
+        tr = ~te
+        cat = lambda xs: np.concatenate(xs)
+
+        native = score(cat([e["g"]["nodes"][-1][e["idx"]].numpy() for e in ev]), Y, tr, te)
+        blank = {d: score(cat([_mpnn_from(trained, e["g"], torch.zeros_like(e["g"]["nodes"][0]), d)
+                               [e["idx"]].numpy() for e in ev]), Y, tr, te) for d in depths}
+        stored = {c: torch.load(S_dir / f"{c}.pt", weights_only=False)["layers"].to(torch.float32)
+                  for c in fit_c}
+        # a few chains have different residue counts in the two models; they cannot be aligned
+        fit_c = [c for c in fit_c if stored[c].shape[1] ==
+                 torch.load(E_dir / f"{c}.pt", weights_only=False)["layers"].shape[1]]
+        for dl in donor_layers:
+            A_fit = cat([torch.load(E_dir / f"{c}.pt", weights_only=False)["layers"][dl]
+                         .to(torch.float32).numpy() for c in fit_c])
+            donor = score(cat([e["esm"][dl][e["idx"]].numpy() for e in ev]), Y, tr, te)
+            for d in depths:
+                B_fit = cat([stored[c][d - 1].numpy() for c in fit_c])
+                ok = len(A_fit) == len(B_fit)
+                if not ok:
+                    raise RuntimeError("ESM-2 and ProteinMPNN residue counts differ on fit chains")
+                W = _fit_connector(A_fit, B_fit, args.connector, args.alpha, seed)
+                held_t, held_p, st, sr = [], [], [], []
+                for e in ev:
+                    mapped = torch.from_numpy(W.predict(e["esm"][dl].numpy()).astype(np.float32))
+                    held_t.append(e["g"]["nodes"][d - 1].numpy()); held_p.append(mapped.numpy())
+                    st.append(_mpnn_from(trained, e["g"], mapped, d)[e["idx"]].numpy())
+                    sr.append(_mpnn_from(untrained, e["gr"], mapped, d)[e["idx"]].numpy())
+                r2 = float(r2_score(cat(held_t), cat(held_p), multioutput="variance_weighted"))
+                s_tr, s_rn = score(cat(st), Y, tr, te), score(cat(sr), Y, tr, te)
+                row = {"repeat": r, "donor_layer": dl, "inject_layer": d,
+                       "connector_r2_heldout": round(r2, 4), "n_eval_residues": int(n)}
+                for k in props:
+                    row.update({f"{k}_stitched": s_tr[k], f"{k}_stitched_rand": s_rn[k],
+                                f"{k}_donor": donor[k], f"{k}_native": native[k],
+                                f"{k}_blank": blank[d][k]})
+                all_rows.append(row)
+                print(f"  rep{r} ESM L{dl:<2d} -> MPNN depth {d}  connector R2={r2:+.3f}  "
+                      + "  ".join(f"{k} {s_tr[k]:.3f}/{donor[k]:.3f}" for k in props[:3]), flush=True)
+            with rep_path.open("w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=list(all_rows[0].keys()))
+                w.writeheader(); w.writerows(all_rows)
+
+    # ---- aggregate: paired differences per cell, mean +- 1.96 sd across repeats
+    conds = ("stitched", "stitched_rand", "donor", "native", "blank")
+    cells = []
+    counts = {cmp: {"worse": 0, "better": 0, "no clear difference": 0} for cmp in ("donor", "blank")}
+    by_depth = {}
+    for dl in donor_layers:
+        for d in depths:
+            reps = [x for x in all_rows if x["donor_layer"] == dl and x["inject_layer"] == d]
+            if not reps:
+                continue
+            r2 = [x["connector_r2_heldout"] for x in reps]
+            rec = {"donor_layer": dl, "inject_layer": d, "n_repeats": len(reps),
+                   "connector_r2_mean": round(statistics.fmean(r2), 4)}
+            for k in props:
+                for c in conds:
+                    v = [x[f"{k}_{c}"] for x in reps]
+                    rec[f"{k}_{c}_mean"] = round(statistics.fmean(v), 4)
+                for cmp in ("donor", "blank"):
+                    dv = [x[f"{k}_stitched"] - x[f"{k}_{cmp}"] for x in reps]
+                    m = statistics.fmean(dv)
+                    h = 1.96 * statistics.stdev(dv) if len(dv) > 1 else 0.0
+                    lo, hi = m - h, m + h
+                    v = "worse" if hi < 0 else "better" if lo > 0 else "no clear difference"
+                    rec.update({f"{k}_vs_{cmp}_mean": round(m, 4), f"{k}_vs_{cmp}_lo": round(lo, 4),
+                                f"{k}_vs_{cmp}_hi": round(hi, 4), f"{k}_vs_{cmp}_verdict": v})
+                    counts[cmp][v] += k in REV_LABELS[:3]
+                    if cmp == "donor" and k in REV_LABELS[:3]:
+                        by_depth.setdefault(d, {"worse": 0, "better": 0, "no clear difference": 0})[v] += 1
+            cells.append(rec)
+    if not cells:
+        return
+    with (out / "cells.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(cells[0].keys())); w.writeheader(); w.writerows(cells)
+    main = [k for k in props if k in REV_LABELS[:3]]
+    lines = [f"Stitching ESM-2 into ProteinMPNN, connector = {args.connector}.",
+             f"{cells[0]['n_repeats']} repeats on independent samples of {args.n_chains} chains; "
+             f"{'all' if args.per_chain <= 0 else args.per_chain} residues per held-out chain.",
+             "Verdicts count the properties where ESM-2 is the better model: " + ", ".join(main) + ".",
+             "A cell is worse or better only if the paired interval across repeats excludes zero.", "",
+             "stitched vs ESM-2 alone (does ProteinMPNN's processing keep ESM-2's description?)",
+             *(f"  {k:<20} {v}" for k, v in counts["donor"].items()),
+             "by injection depth (worse / no clear difference / better):",
+             *(f"  depth {d}  {c['worse']:>3} / {c['no clear difference']:>3} / {c['better']:>3}"
+               for d, c in sorted(by_depth.items())), "",
+             "stitched vs geometry alone (does the injected description add anything?)",
+             *(f"  {k:<20} {v}" for k, v in counts["blank"].items()), "",
+             f"connector held-out R2: mean {statistics.fmean(c['connector_r2_mean'] for c in cells):.3f}"]
+    for k in props:
+        lines.append(f"{k}: " + "  ".join(
+            f"{c} {statistics.fmean(x[f'{k}_{c}_mean'] for x in cells):.3f}" for c in conds))
+    (out / "summary.txt").write_text("\n".join(lines) + "\n")
+    qc.record_params(out, args, extra={"n_cells": len(cells), "verdicts": counts})
+    print("\n".join(lines))
+    print(f"-> {out}")
+
+
 _SUBCOMMANDS = {
     "predictivity": _main_predictivity,
     "stitch": _main_stitch,
@@ -1025,6 +1315,7 @@ _SUBCOMMANDS = {
     "depth": _main_depth,
     "grid": _main_grid,
     "grid-ci": _main_gridci,
+    "grid-ci-reverse": _main_gridci_reverse,
 }
 
 
