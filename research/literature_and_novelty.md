@@ -75,8 +75,6 @@ This is the "local→global depth split" question.
 
 ### 2.3 Cross-architecture convergence — the "Platonic" analogue
 
-The same convergence claim, established outside biology: independently built interatomic potentials are reported to arrive at a shared representation.
-
 - **Huh, Cheung, Wang, Isola (2024).** *The Platonic Representation Hypothesis.* **ICML 2024.** arXiv:2405.07987.
   → The general claim that independently trained networks converge to a shared representation, measurable by **CKA / mutual-kNN** — the metrics used throughout this review. Provides the theoretical frame for an ESM-vs-structure-model convergence test, and the counter-literature (e.g. *Back into Plato's Cave*, arXiv:2604.18572) supplies the honest caveats.
 
