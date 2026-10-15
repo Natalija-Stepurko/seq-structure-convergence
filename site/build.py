@@ -846,6 +846,12 @@ def s_data():
 </div>"""
 
 
+def s_footer():
+    return """<div class="page"><footer>
+  <p>More of what I am working on is at <a href="https://natalija-stepurko.com">natalija-stepurko.com</a>.</p>
+</footer></div>"""
+
+
 # ═══════════════════════════════════════════════════════════════════════ JS
 def script():
     ladders = {m: {s: ladder_svg(D, m, s) for s in ("both", "as measured", "answer key removed")}
@@ -1017,7 +1023,7 @@ PAGE = ("<title>Do a sequence model and a structure model learn the same biology
         f"<style>{BASE_CSS}{CSS_EXTRA}{NAV_CSS}</style>\n\n"
         + topnav() + "\n\n"
         + "\n\n".join([header(), s_question(), s_models(), s_measures(), s_f1(), s_f2(), s_f3(),
-                       s_f4(), s_f5(), s_f6(), s_f7(), s_beyond(), s_limits(), s_data()])
+                       s_f4(), s_f5(), s_f6(), s_f7(), s_beyond(), s_limits(), s_data(), s_footer()])
         + "\n\n" + script() + "\n" + NAV_JS + "\n")
 
 TITLE = "Do a sequence model and a structure model learn the same biology?"
