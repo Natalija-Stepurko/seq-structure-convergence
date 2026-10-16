@@ -120,6 +120,15 @@ p.prose a{color:var(--chrome);text-decoration:underline;text-underline-offset:2p
 .dgroup{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
         font-weight:600;margin:16px 0 8px}
 .dgrid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.limits{background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:4px 26px}
+.lim{display:grid;grid-template-columns:minmax(11rem,14rem) 1fr;gap:6px 30px;padding:18px 0;
+     border-top:1px solid var(--rule-2)}
+.lim:first-child{border-top:0}
+.lim-h{font-weight:600;color:var(--ink);font-size:1.02rem;line-height:1.35}
+.lim-n{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+       color:var(--chrome);margin-bottom:5px;font-weight:600}
+.lim p{font-size:.93rem;color:var(--ink-2);line-height:1.6;margin:0}
+@media(max-width:640px){.limits{padding:4px 18px}.lim{grid-template-columns:1fr}}
 /* dataset coverage panel */
 .gblock h4{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
            color:var(--ink-3);font-weight:600;margin:0}
@@ -931,24 +940,24 @@ def s_limits():
     <span class="eyebrow">Limits</span>
     <h2>What this does not show</h2>
   </div>
-  <div class="cards">
-    <div class="card"><span class="tag">these are not AlphaFold</span>
+  <div class="limits">
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 1</span>These are not AlphaFold</div>
       <p>The structure models here are ProteinMPNN and ESM-IF1, built to design sequences for a given
       backbone. No structure-prediction model is measured anywhere in this work, so nothing here says
       how AlphaFold-style models encode biology.</p></div>
-    <div class="card"><span class="tag">unequal sizes</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 2</span>Unequal sizes</div>
       <p>ProteinMPNN's encoder is small — 3 layers against ESM-2's 12. Part of the property-prediction
       gap is size, not sequence versus shape. ESM-IF1, the larger structure model, narrows it without
       closing it.</p></div>
-    <div class="card"><span class="tag">one kind of protein</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 3</span>One kind of protein</div>
       <p>4,898 chains with experimentally solved structures, each chosen for a classified CATH
       domain. Everything here is crystallisable and folded; disordered and membrane proteins are
       under-represented.</p></div>
-    <div class="card"><span class="tag">scores depend on sample size</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 4</span>Scores depend on sample size</div>
       <p>All three measures inflate on smaller samples, unequally — halving the sample raises the
       neighbour measure by about a quarter. Every number here is quoted at a stated sample size, and
       SVCCA is computed on at most 5,000 rows.</p></div>
-    <div class="card"><span class="tag">the subtraction is linear</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 5</span>The subtraction is linear</div>
       <p>Removing each amino acid's mean description removes the part of the answer key that is the
       same for every leucine. Anything the models encode about amino-acid identity in a non-linear
       way is not removed, so the “answer key removed” numbers are an upper bound on genuine
