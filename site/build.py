@@ -78,7 +78,9 @@ text.cgood{font-family:var(--mono);font-size:10px;fill:var(--chrome);font-weight
 .rb:last-child{border-right:0}
 .rb h3{font-size:1.06rem;font-weight:600;margin:0 0 8px}
 .rb .rbn{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.5rem;
-         font-weight:500;letter-spacing:-.02em;display:block;margin-bottom:6px}
+         font-weight:500;letter-spacing:-.02em;display:block;margin-bottom:2px}
+.rb .rbm{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+         color:var(--chrome);display:block;margin-bottom:8px}
 .rb p{font-size:.86rem;color:var(--ink-2);line-height:1.5}
 .rbfoot{grid-column:1/-1;border-top:1px solid var(--rule);padding:14px 22px;font-size:.86rem;
         color:var(--ink-2);line-height:1.5;background:var(--ground)}
@@ -164,6 +166,7 @@ def header():
   <div class="resultbox">
     <div class="rb"><h3>Some shared directions, not many</h3>
       <span class="rbn">{v(MAIN,'partial'):.3f}</span>
+      <span class="rbm">CKA · centred kernel alignment</span>
       <p>Each model turns every residue into a list of numbers. Lay out the same
       {ds['residues']/1e6:.1f} million residues both ways and the two layouts share some of the same
       axes. On this measure two copies of one model score
@@ -172,6 +175,7 @@ def header():
       {v(MAIN,'partial'):.3f}.</p></div>
     <div class="rb"><h3>Not the same map</h3>
       <span class="rbn">{v(MAIN,'partial','mutual_knn'):.3f}</span>
+      <span class="rbm">Mutual k-NN · 10 nearest neighbours</span>
       <p>Ask each model which ten residues are most like a given one, and the two lists almost
       never overlap: {v(MAIN,'partial','mutual_knn'):.3f} of neighbours in common, against
       {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for two copies of one model. The two
@@ -179,6 +183,7 @@ def header():
       environment.</p></div>
     <div class="rb"><h3>Not interchangeable</h3>
       <span class="rbn">{ST['worse']} / {ST['total']}</span>
+      <span class="rbm">Model stitching</span>
       <p>Hand ProteinMPNN's description of a residue to ESM-2 and let ESM-2's later layers finish
       the job. The result is clearly worse than ProteinMPNN alone in {ST['worse']} of {ST['total']}
       tests, including every test that enters ESM-2's first {LEAD} layers. Untrained layers pass the
@@ -186,8 +191,9 @@ def header():
       ProteinMPNN, ESM-2's description loses part of itself too.</p></div>
     <div class="rbfoot"><b>Why the raw scores overstate it.</b> Both models are trained to output the
     amino acid at each position, so they agree that position 47 is a leucine before they agree on
-    anything else. That shared answer accounts for about half of the strongest raw agreement score,
-    and one common measure returns {share('svcca'):.0f}% of its value even on scrambled data. The
+    anything else. That shared answer accounts for about half of the raw CKA score
+    ({v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}), and another common measure, SVCCA (singular-vector
+    canonical correlation analysis), returns {share('svcca'):.0f}% of its value even on scrambled data. The
     agreement scores above are read with the shared answer subtracted.</div>
   </div>
 
