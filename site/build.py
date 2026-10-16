@@ -450,12 +450,12 @@ def s_f1():
     would fold into a given backbone. So two models can look like they agree simply by both knowing
     that position 47 holds a leucine, without sharing any understanding of proteins at all.</p>
     <p class="prose">This is not hypothetical. Measured by CKA against ProteinMPNN's last encoder
-    layer, ESM-2 agrees with the structure model most at its very first layer: the lookup that turns
-    each amino acid into a fixed vector, before any learned processing. That layer is nothing but the
-    amino-acid code. Compared with a bare label naming the amino acid, it scores
+    layer, ESM-2 agrees with the structure model most at its very first layer, the embedding
+    layer: a lookup table that gives each amino acid a fixed vector, before any context or learned
+    processing. That layer is nothing but the amino-acid code. Compared with a bare label naming the amino acid, it scores
     {a['esm_svcca']:.3f} by SVCCA and {a['esm_knn']:.3f} by mutual k-NN, so agreement measured there
     is the shared training target, not shared biology. Deeper in the model, where the learned
-    biology should be, CKA with the structure model falls, from {dp['emb']:.3f} at the lookup to
+    biology should be, CKA with the structure model falls, from {dp['emb']:.3f} at the embedding layer to
     {dp['b7']:.3f} at block 7, and rises again toward the output, {dp['b12']:.3f} at block 12, where
     the model returns to predicting amino acids. The layers doing real work agree with the structure
     model less than the bare amino-acid code does.</p>
@@ -463,8 +463,8 @@ def s_f1():
   <details><summary>The layers of each model, in one table</summary>
     <div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Model</th><th>Layers</th>
       <th>What they do</th></tr></thead><tbody>
-      <tr><td>ESM-2 35M</td><td data-label="Layers">emb</td><td data-label="What they do">The lookup:
-        one fixed vector per amino acid, no context yet.</td></tr>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">emb</td><td data-label="What they do">Embedding
+        layer: a lookup table, one fixed vector per amino acid, no context yet.</td></tr>
       <tr><td>ESM-2 35M</td><td data-label="Layers">b1–b12</td><td data-label="What they do">Transformer
         blocks: each residue looks at every other; 480 numbers per residue.</td></tr>
       <tr><td>ESM-2 35M</td><td data-label="Layers">output head</td><td data-label="What they do">Predicts
@@ -478,10 +478,11 @@ def s_f1():
     </tbody></table></div>
   </details>
   <div class="figwrap">{depth_bars(D)}
-    <p class="figcap">One bar per ESM-2 layer, from the amino-acid lookup (emb) to the last
+    <p class="figcap">One bar per ESM-2 layer, from the embedding layer (emb) to the last
     transformer block (b12). Bar height is the CKA between that layer and ProteinMPNN's last encoder
-    layer, over the same residues. The coloured bars are the three values in the text: the lookup
-    (teal, highest), block 7 (orange, lowest) and block 12 (dark blue, the last layer).</p>
+    layer, over the same residues. The coloured bars are the three values in the text: the
+    embedding layer (teal, highest), block 7 (orange, lowest) and block 12 (dark blue, the last
+    layer).</p>
   </div>
   <figure class="bigfig">
     <img src="{FIGB}" alt="Residue maps for the sequence and structure models, coloured by amino
@@ -527,7 +528,7 @@ def s_f1():
       <span>the main pair — about half of the strongest measure was the shared answer key</span></div>
   </div>
   <div class="stack prose">
-    <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's lookup layer
+    <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's embedding layer
     drops from {DP[0]['raw']:.3f} to nothing: it held only the amino-acid code. The early blocks keep a
     small part of their agreement ({DP[1]['raw']:.3f} → {DP[1]['partial']:.3f} at block 1), and what
     remains grows with depth, highest at {DPTOP['label'].replace('b', 'block ')}
