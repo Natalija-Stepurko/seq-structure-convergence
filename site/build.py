@@ -449,17 +449,16 @@ def s_f1():
     sequence model by filling in masked residues, the structure model by saying which amino acids
     would fold into a given backbone. So two models can look like they agree simply by both knowing
     that position 47 holds a leucine, without sharing any understanding of proteins at all.</p>
-    <p class="prose">This is not hypothetical. The single strongest agreement measured between a
-    sequence model and a structure model sits at the sequence model's very first layer — the step
-    that looks each letter up in a table, before any learned processing has happened. Against a bare
-    label naming the amino acid, that layer scores {a['esm_svcca']:.3f} on same main directions and
-    {a['esm_knn']:.3f} on same neighbours: at that depth the representation is nothing but the
-    amino-acid code, so agreement measured there is the shared training target, not shared biology.
-    Deeper in the model, where the learned biology should be, raw agreement with the structure model
-    falls — from {dp['emb']:.3f} at the first layer to {dp['b7']:.3f} in the middle — and only rises
-    again toward the output, {dp['b12']:.3f} at the last layer, where the model returns to predicting
-    amino acids. The layers doing real work agree with the structure model less than the raw letter
-    code does.</p>
+    <p class="prose">This is not hypothetical. Measured by CKA against ProteinMPNN's last encoder
+    layer, ESM-2 agrees with the structure model most at its very first layer: the lookup that turns
+    each letter into a fixed vector, before any learned processing. That layer is nothing but the
+    amino-acid code. Compared with a bare one-hot label of the amino acid, it scores
+    {a['esm_svcca']:.3f} by SVCCA and {a['esm_knn']:.3f} by mutual k-NN, so agreement measured there
+    is the shared training target, not shared biology. Deeper in the model, where the learned
+    biology should be, CKA with the structure model falls, from {dp['emb']:.3f} at the lookup to
+    {dp['b7']:.3f} at block 7, and rises again toward the output, {dp['b12']:.3f} at block 12, where
+    the model returns to predicting amino acids. The layers doing real work agree with the structure
+    model less than the raw letter code does.</p>
   </div>
   <details><summary>The layers of each model, in one table</summary>
     <div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Model</th><th>Layers</th>
