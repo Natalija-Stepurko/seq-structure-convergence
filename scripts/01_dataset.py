@@ -6,6 +6,8 @@ Subcommands (each keeps the exact flags it had as a standalone script):
     fetch            CATH S35 chains + structures -> npz (seq, coords, SSE, RSA) + manifest
     annotate         UniProt chain labels via the SIFTS flatfile -> annotations.jsonl
     targets          per-residue binding/active/PTM sites and B-factor
+    diversity        what the chain set covers (folds, kingdoms, lengths, secondary structure)
+                     -> results/dataset/diversity.json, which the results page plots
 
 The subcommand token is removed from argv before the original parser runs, so every command
 line that worked before still works, with the subcommand inserted after the script name:
@@ -612,6 +614,66 @@ def _main_targets() -> None:
 
 
 # ==========================================================================================
+# diversity  --  what the chain set covers, for the results page
+# ==========================================================================================
+
+CATH_CLASS = {"1": "Mainly α", "2": "Mainly β", "3": "α/β", "4": "Few secondary structures",
+              "6": "Special"}
+LENGTH_BINS = (40, 100, 200, 300, 400, 600, 1000)
+SS3 = {"a": "helix", "b": "strand", "c": "coil"}
+
+
+def _main_diversity() -> None:
+    ap = argparse.ArgumentParser(description="Summarise what the chain set covers")
+    ap.add_argument("--structures-dir", default="structures")
+    ap.add_argument("--out", default="results/dataset/diversity.json")
+    args = ap.parse_args()
+
+    sdir, out = Path(args.structures_dir), Path(args.out)
+    recs = [json.loads(l) for l in (sdir / "index.jsonl").open() if l.strip()]
+    recs = [r for r in recs if r.get("valid", True)]
+    ann = {}
+    if (sdir / "annotations.jsonl").exists():
+        ann = {a["id"]: a for a in map(json.loads, (sdir / "annotations.jsonl").open()) if a}
+
+    classes, kingdoms, ss = {}, {}, {k: 0 for k in SS3.values()}
+    lengths = []
+    for r in recs:
+        c = CATH_CLASS[str(r["cath_class"])]
+        classes[c] = classes.get(c, 0) + 1
+        k = ann.get(r["id"], {}).get("kingdom", "other")
+        k = k if k != "other" else "No UniProt match"
+        kingdoms[k] = kingdoms.get(k, 0) + 1
+        ss3 = np.load(sdir / "proteins" / f"{r['id']}.npz", allow_pickle=True)["ss3"]
+        lengths.append(len(ss3))
+        for code, name in SS3.items():
+            ss[name] += int((ss3 == code).sum())
+    ss["unassigned"] = int(sum(lengths)) - sum(ss.values())     # residues P-SEA leaves unlabelled
+    L = np.array(lengths)
+    edges = list(LENGTH_BINS)
+    assert L.min() >= edges[0] and L.max() <= edges[-1], (L.min(), L.max())
+    hist = np.histogram(L, bins=edges)[0]
+    codes = [str(r["cath_code"]).split(".") for r in recs]
+    summary = {
+        "chains": len(recs), "residues": int(L.sum()),
+        "cath_class": dict(sorted(classes.items(), key=lambda kv: -kv[1])),
+        "cath_architectures": len({tuple(c[:2]) for c in codes}),
+        "cath_topologies": len({tuple(c[:3]) for c in codes}),
+        "cath_superfamilies": len({tuple(c[:4]) for c in codes}),
+        "kingdom": dict(sorted(kingdoms.items(), key=lambda kv: (kv[0] == "No UniProt match", -kv[1]))),
+        "length": {"median": float(np.median(L)), "min": int(L.min()), "max": int(L.max()),
+                   "bins": [{"lo": lo, "hi": hi, "n": int(n)}
+                            for lo, hi, n in zip(edges[:-1], edges[1:], hist)]},
+        "secondary_structure": ss,
+        "secondary_structure_method": "P-SEA (biotite annotate_sse) on the deposited coordinates",
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(summary, indent=1, ensure_ascii=False) + "\n")
+    qc.record_params(out.parent, args, filename="params_diversity.json")
+    print(json.dumps(summary, indent=1, ensure_ascii=False))
+
+
+# ==========================================================================================
 # dispatch
 # ==========================================================================================
 
@@ -619,6 +681,7 @@ _SUBCOMMANDS = {
     "fetch": _main_fetch,
     "annotate": _main_annotate,
     "targets": _main_targets,
+    "diversity": _main_diversity,
 }
 
 
