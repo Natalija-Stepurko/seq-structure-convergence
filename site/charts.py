@@ -115,11 +115,11 @@ def depth_bars_partial(D):
 
 def stitch_bars_reverse(D, keys):
     """The other direction: ESM-2's description through ProteinMPNN's layers, per property."""
-    conds = [("donor", "sequence model alone", SEQ),
-             ("rand", "→ untrained structure layers", NULL),
-             ("trained", "→ trained structure layers", STR),
-             ("blank", "structure layers, geometry only", "#E3C4AA"),
-             ("native", "structure model alone", "#B9C2C7")]
+    conds = [("donor", "ESM-2 alone", SEQ),
+             ("rand", "→ untrained ProteinMPNN layers", NULL),
+             ("trained", "→ trained ProteinMPNN layers", STR),
+             ("blank", "ProteinMPNN layers, geometry only", "#E3C4AA"),
+             ("native", "ProteinMPNN alone", "#B9C2C7")]
     rv = {p["key"]: p for p in D["stitching_reverse"]["props"]}
     out = []
     for key in keys:
@@ -156,9 +156,9 @@ LADDER_ORDER = [
     ("ESM-2 35M x ProteinMPNN", "ESM-2 35M × ProteinMPNN", "opposite inputs"),
     ("CARP x ProteinMPNN", "CARP-38M × ProteinMPNN", "opposite inputs"),
     ("ESM-1v x ProteinMPNN", "ESM-1v × ProteinMPNN", "opposite inputs"),
-    ("untrained seq x trained str", "Untrained sequence × trained structure", "floor"),
-    ("trained seq x untrained str", "Trained sequence × untrained structure", "floor"),
-    ("untrained x untrained", "Two untrained networks", "floor"),
+    ("untrained seq x trained str", "Untrained ESM-2 35M × ProteinMPNN", "floor"),
+    ("trained seq x untrained str", "ESM-2 35M × untrained ProteinMPNN", "floor"),
+    ("untrained x untrained", "Untrained ESM-2 35M × untrained ProteinMPNN", "floor"),
 ]
 METRIC_LABEL = {"cka": "Same pattern of resemblance (CKA)",
                 "svcca": "Same main directions (SVCCA)",
@@ -168,7 +168,7 @@ METRIC_LABEL = {"cka": "Same pattern of resemblance (CKA)",
 def ladder_svg(D, metric="cka", show="both", chart_id="ladder"):
     """Horizontal bars: answer-key-removed solid, as-measured as a ghost bar behind it."""
     rows = [(lab, tag, D["every_pair"][k]) for k, lab, tag in LADDER_ORDER if k in D["every_pair"]]
-    w, rowh, pl, pr, pt = 760, 34, 232, 54, 50
+    w, rowh, pl, pr, pt = 760, 34, 262, 54, 50
     ih = rowh * len(rows)
     h = pt + ih + 34
     iw = w - pl - pr
@@ -302,10 +302,10 @@ def layer_panels(D):
 
 # ──────────────────────────────────────────────────────────────────── stitching
 def stitch_bars(D):
-    conds = [("donor", "structure model alone", STR),
-             ("rand", "→ untrained sequence layers", NULL),
-             ("trained", "→ trained sequence layers", SEQ),
-             ("native", "sequence model alone", "#B9C2C7")]
+    conds = [("donor", "ProteinMPNN alone", STR),
+             ("rand", "→ untrained ESM-2 layers", NULL),
+             ("trained", "→ trained ESM-2 layers", SEQ),
+             ("native", "ESM-2 alone", "#B9C2C7")]
     out = []
     for p in D["stitching"]["props"]:
         w, rowh, pl, pr, pt = 380, 30, 176, 44, 42
