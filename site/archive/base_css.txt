@@ -133,7 +133,7 @@ td.drop{color:var(--str);font-weight:600}
 blockquote{margin:0;padding:16px 20px;background:var(--panel);border-left:3px solid var(--chrome);
            border-radius:0 3px 3px 0;font-size:1.08rem;color:var(--ink-2);max-width:none}
 footer{border-top:1px solid var(--rule);padding:36px 0 60px;font-size:.86rem;color:var(--ink-3)}
-@media(max-width:640px){.metric{grid-template-columns:1fr}.val{text-align:left}.page{padding:0 20px}}
+@media(max-width:640px){.metric{grid-template-columns:1fr}.val{text-align:left}.page{padding-left:20px;padding-right:20px}}
 
 
 .pb{display:grid;grid-template-columns:minmax(9rem,13rem) minmax(0,1fr) 3.4rem;gap:14px;
