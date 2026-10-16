@@ -133,6 +133,55 @@ D["probe_res"] = {m: {k: probes(m, "metrics_ci.csv", k) for k in ("xgb_acc", "xg
 D["physchem"] = {r["target"]: round(float(r["comp_xgb_f1"]), 4)
                  for r in csv.DictReader(open(R / "probes_physchem/composition_metrics.csv"))}
 
+# Every property by depth, both models, from the five-refit probes (boosted trees): the full set
+# behind "Where it builds up". Residue targets carry their own metric; protein-level targets are
+# macro-F1, with the best counting baseline (composition alone, or composition plus length and
+# physicochemical scales; linear or boosted trees) for reference.
+DEPTH_RES = [("ss3", "secondary structure", "ss3_xgb_acc", "accuracy"),
+             ("burial", "burial", "burial_xgb_acc", "accuracy"),
+             ("rsa", "solvent accessibility", "rsa_xgb_r2", "R²"),
+             ("bfactor", "B-factor (flexibility)", "bfactor_xgb_r2", "R²"),
+             ("binding_site", "binding site", "binding_site_xgb_f1", "F1"),
+             ("active_site", "active site", "active_site_xgb_f1", "F1"),
+             ("ptm_site", "PTM site", "ptm_site_xgb_f1", "F1")]
+DEPTH_CHAIN = [("cath_class", "fold class (CATH)"), ("cath_arch", "fold architecture"),
+               ("cath_topol", "fold topology"), ("enzyme", "is it an enzyme"),
+               ("ec_class", "enzyme class (EC)"), ("protein_class", "protein class"),
+               ("is_kinase", "kinase"), ("is_transport", "transporter"),
+               ("is_dna_binding", "DNA-binding"), ("is_rna_binding", "RNA-binding"),
+               ("is_ribosomal", "ribosomal"), ("is_structural", "structural protein"),
+               ("is_immune", "immune protein"), ("is_membrane_protein", "membrane protein"),
+               ("is_phospho", "phosphorylated"), ("is_glyco", "glycosylated"),
+               ("localisation", "where in the cell"), ("kingdom", "kingdom of life")]
+ESM_ORDER = ["emb"] + [f"L{i}" for i in range(1, 13)]
+MPNN_ORDER = ["enc1", "enc2", "enc3"]
+
+
+def depth_series(m, fn, key, metric, order):
+    rows = {r["layer"]: r for r in csv.DictReader(open(R / "probes_ci" / m / fn))
+            if r["metric"] == metric and (key is None or r["target"] == key)}
+    return [{"layer": l, "v": round(float(rows[l]["mean"]), 4), "lo": round(float(rows[l]["lo"]), 4),
+             "hi": round(float(rows[l]["hi"]), 4)} for l in order if l in rows]
+
+
+baseline = {}
+for src in ("probes_comp_rerun", "probes_physchem"):
+    for r in csv.DictReader(open(R / src / "composition_metrics.csv")):
+        for col in ("comp_lin_f1", "comp_xgb_f1"):
+            baseline[r["target"]] = max(baseline.get(r["target"], 0.0), float(r[col]))
+D["depth_probes"] = (
+    [{"key": k, "label": lab, "level": "residue", "metric": unit,
+      "esm": depth_series("esm", "metrics_ci.csv", None, met, ESM_ORDER),
+      "mpnn": depth_series("proteinmpnn", "metrics_ci.csv", None, met, MPNN_ORDER), "baseline": None}
+     for k, lab, met, unit in DEPTH_RES]
+    + [{"key": k, "label": lab, "level": "protein", "metric": "F1",
+        "esm": depth_series("esm", "chain_metrics_ci.csv", k, "xgb_f1", ESM_ORDER),
+        "mpnn": depth_series("proteinmpnn", "chain_metrics_ci.csv", k, "xgb_f1", MPNN_ORDER),
+        "baseline": round(baseline[k], 4) if k in baseline else None}
+       for k, lab in DEPTH_CHAIN])
+for d in D["depth_probes"]:
+    assert len(d["esm"]) == 13 and len(d["mpnn"]) == 3, (d["key"], len(d["esm"]), len(d["mpnn"]))
+
 # The sequence model's lookup layer against a bare label naming the amino acid.
 aa = json.load(open(R / "aa_control/aa_control.json"))["esm_vs_aa"]
 D["aa_lookup"] = {"esm_svcca": round(aa["svcca"][0], 3), "esm_knn": round(aa["mutual_knn"][0], 3)}

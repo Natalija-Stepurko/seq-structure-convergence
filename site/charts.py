@@ -365,3 +365,68 @@ def depth_verdicts(D):
                 x += bw
     out.append("</svg>")
     return "".join(out)
+
+
+# ──────────────────────────────────────────────────────────── every property by depth
+DEPTH_GROUPS = [("Local physical properties", ["ss3", "burial", "rsa", "bfactor"]),
+                ("Functional sites on single residues", ["binding_site", "active_site", "ptm_site"]),
+                ("Fold", ["cath_class", "cath_arch", "cath_topol"]),
+                ("Function", ["enzyme", "ec_class", "protein_class", "is_kinase", "is_transport",
+                              "is_dna_binding", "is_rna_binding", "is_ribosomal", "is_structural",
+                              "is_immune", "is_membrane_protein", "is_phospho", "is_glyco"]),
+                ("Where it lives", ["localisation", "kingdom"])]
+
+
+def depth_panel(d):
+    """One property: ESM-2 by layer (line, 95% band) and ProteinMPNN by layer (dots), both on a
+    shared input-to-output axis; dashed line = best counting baseline for protein-level targets."""
+    w, h, pl, pr, pt, pb = 250, 150, 30, 8, 34, 22
+    iw, ih = w - pl - pr, h - pt - pb
+    vals = [p[k] for s in ("esm", "mpnn") for p in d[s] for k in ("v", "hi")] + [d["baseline"] or 0]
+    vmax = 1.0 if d["metric"] != "R²" else max(0.5, round(max(vals) + 0.05, 1))
+    X = lambda i, n: pl + (i / (n - 1)) * iw
+    Y = lambda v: pt + (1 - max(min(v, vmax), 0) / vmax) * ih
+    e, m = d["esm"], d["mpnn"]
+    out = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="{esc(d["label"])} by depth: ESM-2 from '
+           f'{e[0]["v"]:.3f} to {max(p["v"] for p in e):.3f} at best, ProteinMPNN {min(p["v"] for p in m):.3f}'
+           f'–{max(p["v"] for p in m):.3f}.">',
+           f'<text x="0" y="12" class="ctsm">{esc(d["label"])}</text>',
+           f'<text x="0" y="24" class="cs">{esc(d["metric"])} · {d["level"]} level</text>']
+    for gv in (0, vmax / 2, vmax):
+        out.append(f'<line x1="{pl}" y1="{Y(gv):.1f}" x2="{pl+iw}" y2="{Y(gv):.1f}" stroke="{RULE2}"/>'
+                   f'<text x="{pl-4}" y="{Y(gv)+3:.1f}" class="cax" text-anchor="end">{gv:g}</text>')
+    if d["baseline"] is not None:
+        out.append(f'<line x1="{pl}" y1="{Y(d["baseline"]):.1f}" x2="{pl+iw}" y2="{Y(d["baseline"]):.1f}" '
+                   f'stroke="{NULL}" stroke-dasharray="3 3"><title>counting baseline: '
+                   f'{d["baseline"]:.3f}</title></line>')
+    band = (" ".join(f"{X(i, 13):.1f},{Y(p['hi']):.1f}" for i, p in enumerate(e)) + " "
+            + " ".join(f"{X(i, 13):.1f},{Y(p['lo']):.1f}" for i, p in reversed(list(enumerate(e)))))
+    out.append(f'<polygon points="{band}" fill="{SEQ}" opacity=".15"/>')
+    out.append(f'<polyline points="{" ".join(f"{X(i, 13):.1f},{Y(p["v"]):.1f}" for i, p in enumerate(e))}" '
+               f'fill="none" stroke="{SEQ}" stroke-width="1.8"/>')
+    for i, p in enumerate(e):
+        out.append(f'<circle cx="{X(i, 13):.1f}" cy="{Y(p["v"]):.1f}" r="1.9" fill="{SEQ}">'
+                   f'<title>ESM-2 {p["layer"]}: {p["v"]:.3f}</title></circle>')
+    out.append(f'<polyline points="{" ".join(f"{X(j, 3):.1f},{Y(p["v"]):.1f}" for j, p in enumerate(m))}" '
+               f'fill="none" stroke="{STR}" stroke-width="1.6" stroke-dasharray="1 0"/>')
+    for j, p in enumerate(m):
+        out.append(f'<line x1="{X(j, 3):.1f}" y1="{Y(p["lo"]):.1f}" x2="{X(j, 3):.1f}" y2="{Y(p["hi"]):.1f}" '
+                   f'stroke="{STR}" stroke-width="1.2"/>'
+                   f'<circle cx="{X(j, 3):.1f}" cy="{Y(p["v"]):.1f}" r="3" fill="{STR}">'
+                   f'<title>ProteinMPNN {p["layer"]}: {p["v"]:.3f}</title></circle>')
+    out.append(f'<text x="{pl}" y="{h-6}" class="cax">input</text>'
+               f'<text x="{pl+iw}" y="{h-6}" class="cax" text-anchor="end">output</text>')
+    out.append("</svg>")
+    return f'<div class="minipanel">{"".join(out)}</div>'
+
+
+def depth_all(D):
+    by = {d["key"]: d for d in D["depth_probes"]}
+    legend = (f'<div class="dlegend"><span><i style="background:{SEQ}"></i>ESM-2, 13 layers (band: 95% '
+              f'interval over refits)</span><span><i style="background:{STR}"></i>ProteinMPNN, 3 encoder '
+              f'layers</span><span><i class="dash"></i>counting baseline (protein-level only)</span></div>')
+    parts = [legend]
+    for title, keys in DEPTH_GROUPS:
+        parts.append(f'<h4 class="dgroup">{esc(title)}</h4><div class="minirow dgrid">'
+                     + "".join(depth_panel(by[k]) for k in keys if k in by) + "</div>")
+    return "".join(parts)
