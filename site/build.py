@@ -177,7 +177,7 @@ def header():
       <p>Each model turns every residue into a list of numbers. Lay out the same
       {ds['residues']/1e6:.1f} million residues both ways and the two layouts share some of the same
       axes. On this measure ESM-1v checkpoint 1 × checkpoint 2 scores
-      {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} and an untrained network scores
+      {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} and untrained ESM-2 35M against ProteinMPNN scores
       {v('untrained seq x trained str','partial'):.3f}; ESM-2 against ProteinMPNN scores
       {v(MAIN,'partial'):.3f}.</p></div>
     <div class="rb"><h3>Not the same map</h3>
@@ -212,9 +212,10 @@ def header():
       sits — at ESM-2's very first layer — subtracts it, and checks the subtraction against two
       references: ESM-1v checkpoint 1 × checkpoint 2, the same model from two random seeds, whose agreement is certainly real
       and must survive, and
-      an untrained network, whose agreement cannot be real and must vanish.</li>
+      untrained ESM-2 35M against trained ProteinMPNN, whose agreement cannot be real and must
+      vanish.</li>
       <li>Every score is read against a ladder of reference points — ESM-1v checkpoint 1 × checkpoint 2,
-      two models that share an input, untrained networks, and each measure's own score on scrambled
+      two models that share an input, untrained copies of ESM-2 35M and ProteinMPNN, and each measure's own score on scrambled
       data. One standard measure turns out to be mostly its scrambled score, and to grow with the
       size of the model.</li>
       <li>Agreement is tested by use as well as by geometry: ProteinMPNN's description is fed into
@@ -329,7 +330,9 @@ REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thea
       differ <em>only</em> by random start. That gives the one honest answer to “how alike can two
       models even be?”</td></tr>
     <tr><td>Untrained copies of both</td><td data-label="Reads">—</td><td data-label="Architecture">ESM-2 35M transformer and ProteinMPNN GNN, randomly initialised</td>
-      <td data-label="Why it is here">Same wiring, no learning. The floor.</td></tr>
+      <td data-label="Why it is here">Same wiring, no learning. The floor. Built here, not
+      downloaded: each architecture with fresh random weights (ESM-2 with PyTorch's default
+      initialisation, ProteinMPNN with its own Xavier-uniform initialisation; seed 0).</td></tr>
   </tbody></table></div>"""
 
 
@@ -520,8 +523,8 @@ def s_f1():
   <div class="stack prose">
     <p class="prose">Two checks show the subtraction does what it should. ESM-1v checkpoint 1 × checkpoint 2, the
     same model from two random seeds — agreement that is certainly real — barely moves:
-    {v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}. An untrained
-    sequence network against a trained structure model — agreement that cannot be about biology,
+    {v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}. Untrained
+    ESM-2 35M against trained ProteinMPNN — agreement that cannot be about biology,
     because one side has learned nothing — scores a respectable-looking
     {v('untrained seq x trained str','raw'):.3f} as measured and collapses to
     {v('untrained seq x trained str','partial'):.3f} once the answer key is gone. Real agreement is
@@ -589,9 +592,9 @@ def s_f2():
     sharing an input: two sequence models (CARP-38M × ESM-2 35M) {v('CARP x ESM-2','partial'):.3f}
     and two structure models (ESM-IF1 × ProteinMPNN) {v('ESM-IF1 x ProteinMPNN','partial'):.3f} after
     the subtraction ({v('CARP x ESM-2','raw'):.3f} and {v('ESM-IF1 x ProteinMPNN','raw'):.3f} as
-    measured). At the bottom, the floors: an untrained sequence network against a trained structure
-    model {v('untrained seq x trained str','partial'):.3f}, the reverse
-    {v('trained seq x untrained str','partial'):.3f}, two untrained networks
+    measured). At the bottom, the floors: untrained ESM-2 35M against trained ProteinMPNN
+    {v('untrained seq x trained str','partial'):.3f}, ESM-2 35M against untrained ProteinMPNN
+    {v('trained seq x untrained str','partial'):.3f}, and both untrained
     {v('untrained x untrained','partial'):.3f}.</p>
     <p class="prose">Every sequence-against-structure pair lands between those rungs. The main pair,
     ESM-2 35M against ProteinMPNN, goes from {v(MAIN,'raw'):.3f} as measured to {v(MAIN,'partial'):.3f} with the answer key removed;
@@ -876,7 +879,8 @@ def s_beyond():
     <h2>Three artefacts, each on its own large enough to manufacture a convergence result</h2>
     <p class="prose">Of the headline agreement between a sequence and a structure model, {share('svcca'):.0f}% of one
     measure is what it reports on scrambled data; roughly half of another is the training target both
-    models share; and an untrained network scores {v('untrained seq x trained str','raw'):.3f} — a
+    models share; and untrained ESM-2 35M scores {v('untrained seq x trained str','raw'):.3f} against
+    ProteinMPNN — a
     respectable-looking number — until that target is removed, whereupon it collapses to
     {v('untrained seq x trained str','partial'):.3f}. Any one of the three would be enough to produce
     a convergence result where there is none.</p>
