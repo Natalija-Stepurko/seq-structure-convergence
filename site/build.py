@@ -801,7 +801,13 @@ def s_f6():
   <p class="figcap">Which model reads each property better, and by how much (sequence minus
   structure). Bars left of centre: the structure model reads it better.</p>
   <details><summary>The headline tables with intervals</summary>
-    {block("Each model wins at what it was shown", '<div class="twocol">').replace("Local shape (helix/sheet/coil)", "Secondary structure (helix/strand/coil)")}
+    {block("Each model wins at what it was shown", '<div class="twocol">').replace("Local shape (helix/sheet/coil)", "Secondary structure (helix/strand/coil)")
+     .replace("<th>Best null</th>", "<th>Counting baseline</th>")
+     .replace("Macro-F1; intervals are the spread across five\n  independent refits.",
+              "Macro-F1; intervals are the spread across five\n  independent refits. Counting baseline: the "
+              "best of four predictors (linear and boosted trees) that see no protein model, only each "
+              "protein's amino-acid composition, the mean, spread and range of nine physicochemical scales "
+              "over its sequence (hydropathy, charge, volume, polarity and others), and its length.")}
   </details>
   <details id="battery-details"><summary>All twenty-five properties, against an amino-acid-counting baseline</summary>
     <p class="figcap">The grey tick is what you score by counting amino acids alone; a model sitting
