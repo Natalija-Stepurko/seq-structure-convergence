@@ -22,7 +22,7 @@ _OPT = json.load(open(_FIG))
 FIGB, PNG = _OPT[0], [None, _OPT[1], _OPT[2]]
 
 sys.path.insert(0, str(HERE))
-from charts import (depth_bars, ladder_svg, null_strips, width_bars, layer_panels,
+from charts import (depth_bars, depth_all, ladder_svg, null_strips, width_bars, layer_panels,
                     stitch_bars, depth_verdicts, depth_bars_partial, stitch_bars_reverse, LADDER_ORDER,
                     METRIC_LABEL)
 
@@ -114,6 +114,12 @@ table.models-ref td:nth-child(3){min-width:13rem;font-size:.86rem;color:var(--in
 }
 p.prose a{color:var(--chrome);text-decoration:underline;text-underline-offset:2px}
 .sepblock{border-top:1px solid var(--rule);padding-top:26px;margin-top:6px}
+.dlegend{display:flex;flex-wrap:wrap;gap:6px 20px;font-family:var(--mono);font-size:.7rem;color:var(--ink-2);margin-bottom:6px}
+.dlegend i{display:inline-block;width:14px;height:3px;border-radius:1px;vertical-align:middle;margin-right:6px}
+.dlegend i.dash{background:repeating-linear-gradient(90deg,#6E7880 0 3px,transparent 3px 6px)}
+.dgroup{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+        font-weight:600;margin:16px 0 8px}
+.dgrid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
 /* dataset coverage panel */
 .gblock h4{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
            color:var(--ink-3);font-weight:600;margin:0}
@@ -872,21 +878,33 @@ def s_f6():
 
 
 def s_f7():
+    by = {d["key"]: d for d in D["depth_probes"]}
+    best = lambda d: max(d["esm"], key=lambda p: p["v"])
+    lab = lambda l: "the embedding layer" if l == "emb" else f"block {l[1:]}"
+    ss, ft = by["ss3"], by["cath_topol"]
+    mp = [p["v"] for p in ft["mpnn"]]
     return f"""<div class="page sec" id="f7">
   <div class="stack prose">
     <span class="eyebrow">Where it builds up · depth</span>
     <h2>Geometry is handed to the structure model; the sequence model has to build it</h2>
-    <p class="prose">Left is each model's input, right is its output. The structure model already
-    knows the geometry at its first layer — it is handed the coordinates, so there is nothing to
-    build — and reaches its ceiling almost immediately (secondary structure 0.887 at the first encoder
-    layer). The sequence model has to construct that knowledge, climbing steadily through twelve
-    blocks and never quite arriving (secondary structure 0.556 at the embedding layer to 0.778 at block 11).
-    For function it is the reverse: the sequence model rises far above the amino-acid-counting
-    baseline — fold topology from 0.239 at the input to 0.700 at block 8, against a baseline of 0.23
-    — while the structure model stays near it (0.400–0.481). This is also why the sequence model gets
-    more chances to pick a best layer.</p>
+    <p class="prose">Each panel follows one property from each model's input (left) to its output
+    (right), for all {len(D["depth_probes"])} properties tested. ProteinMPNN already knows the geometry
+    at its first encoder layer, because it is handed the coordinates, and is at its ceiling almost
+    immediately: secondary structure {ss['mpnn'][0]['v']:.3f} at enc1. ESM-2 has to construct that
+    knowledge, climbing through its blocks and never quite arriving: {ss['esm'][0]['v']:.3f} at the
+    embedding layer to {best(ss)['v']:.3f} at {lab(best(ss)['layer'])}. For function it is the reverse.
+    ESM-2 rises far above the counting baseline (fold topology from {ft['esm'][0]['v']:.3f} at the
+    input to {best(ft)['v']:.3f} at {lab(best(ft)['layer'])}, against a baseline of
+    {ft['baseline']:.3f}), while ProteinMPNN rises only modestly above it
+    ({min(mp):.3f}–{max(mp):.3f}). ESM-2 also
+    has more layers to pick a best one from, which favours it slightly.</p>
   </div>
-  {block("How each property builds up", '<div class="legend">')}
+  <div class="figwrap">{depth_all(D)}
+    <p class="figcap">Boosted-tree probes on each layer, mean of {D['dataset']['refits']} refits on
+    independent chain-level splits; the ESM-2 band and the ProteinMPNN whiskers are 95% intervals.
+    Residue-level targets are scored by accuracy, R² or F1 as marked; protein-level targets by
+    macro-F1. ESM-2's 13 layers and ProteinMPNN's 3 share one input-to-output axis.</p>
+  </div>
 </div>"""
 
 
