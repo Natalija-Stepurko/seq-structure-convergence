@@ -186,7 +186,7 @@ def grid_with_legends(rows, cols, title, figsize, dpi, labels_src, rotate_wide=F
 
 
 RES_COLS = [("amino acid", "cat", aa_cmap, 20, "which of the 20 amino acids"),
-            ("secondary structure", "cat", ss_cmap, 3, "local shape"),
+            ("secondary structure", "cat", ss_cmap, 3, "helix, strand or coil"),
             ("burial", "cat", bu_cmap, 2, "buried or on the surface"),
             ("RSA", "num", plt.get_cmap("viridis"), None, "how solvent-exposed"),
             ("B-factor", "num", plt.get_cmap("viridis"), None, "flexibility within the chain"),
@@ -242,7 +242,7 @@ fullchain_uri, fullchain_bytes = grid_with_legends(
 # "colour the islands by anything structural and the colours are mixed within each island" and
 # the reader can check it. One property alone cannot carry that sentence.
 FB_COLS = [("amino acid", "cat", aa_cmap, 20, "which of the 20 amino acids"),
-           ("secondary structure", "cat", ss_cmap, 3, "local shape"),
+           ("secondary structure", "cat", ss_cmap, 3, "helix, strand or coil"),
            ("burial", "cat", bu_cmap, 2, "buried or exposed"),
            ("RSA", "num", plt.get_cmap("viridis"), None, "solvent accessibility")]
 FB_ROWS = [("res_esm", "ESM-2 35M\nsequence only"), ("res_mpnn", "ProteinMPNN\nshape only")]
