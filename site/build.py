@@ -260,6 +260,19 @@ def header():
 </header>"""
 
 
+def winner_coloured(html):
+    """Colour each property name in the win/loss chart like its bar, so the side that wins it reads
+    from the label alone; the two direction labels in the header take the same colours."""
+    html = re.sub(r'<span class="dn">([^<]*)</span>(\s*<div class="dt">.*?</div>\s*)'
+                  r'<span class="dv" style="color:(#[0-9A-Fa-f]{6})">',
+                  r'<span class="dn" style="color:\3">\1</span>\2<span class="dv" style="color:\3">',
+                  html, flags=re.S)
+    return (html.replace("<span>◀ structure model better</span>",
+                         '<span style="color:#C06014">◀ structure model better</span>')
+                .replace("<span>sequence model better ▶</span>",
+                         '<span style="color:#2D5BD1">sequence model better ▶</span>'))
+
+
 def s_question():
     return f"""<div class="page sec" id="question">
   <div class="stack prose">
@@ -797,7 +810,7 @@ def s_f6():
     claims because their intervals overlap or their baselines do nothing but guess the commonest
     answer; they are shown in the full battery below.</p>
   </div>
-  {block("Which model wins, and by how much", '<div class="dv-wrap">')}
+  {winner_coloured(block("Which model wins, and by how much", '<div class="dv-wrap">'))}
   <p class="figcap">Which model reads each property better, and by how much (sequence minus
   structure). Bars left of centre: the structure model reads it better.</p>
   <details><summary>The headline tables with intervals</summary>
