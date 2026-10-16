@@ -176,7 +176,7 @@ def header():
       <span class="rbm">CKA · centred kernel alignment</span>
       <p>Each model turns every residue into a list of numbers. Lay out the same
       {ds['residues']/1e6:.1f} million residues both ways and the two layouts share some of the same
-      axes. On this measure two copies of one model score
+      axes. On this measure ESM-1v checkpoint 1 × checkpoint 2 scores
       {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} and an untrained network scores
       {v('untrained seq x trained str','partial'):.3f}; ESM-2 against ProteinMPNN scores
       {v(MAIN,'partial'):.3f}.</p></div>
@@ -185,7 +185,7 @@ def header():
       <span class="rbm">Mutual k-NN · 10 nearest neighbours</span>
       <p>Ask each model which ten residues are most like a given one, and the two lists almost
       never overlap: {v(MAIN,'partial','mutual_knn'):.3f} of neighbours in common, against
-      {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for two copies of one model. The two
+      {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for ESM-1v checkpoint 1 × checkpoint 2. The two
       arrange proteins by different principles — ESM-2 by chemical identity, ProteinMPNN by physical
       environment.</p></div>
     <div class="rb"><h3>Not interchangeable</h3>
@@ -210,9 +210,10 @@ def header():
       <li>Both models are trained to guess the amino acid at each position, so they agree on that
       before they agree on anything else. This page finds where in the network that shared answer
       sits — at ESM-2's very first layer — subtracts it, and checks the subtraction against two
-      references: two copies of one model, whose agreement is certainly real and must survive, and
+      references: ESM-1v checkpoint 1 × checkpoint 2, the same model from two random seeds, whose agreement is certainly real
+      and must survive, and
       an untrained network, whose agreement cannot be real and must vanish.</li>
-      <li>Every score is read against a ladder of reference points — the same model trained twice,
+      <li>Every score is read against a ladder of reference points — ESM-1v checkpoint 1 × checkpoint 2,
       two models that share an input, untrained networks, and each measure's own score on scrambled
       data. One standard measure turns out to be mostly its scrambled score, and to grow with the
       size of the model.</li>
@@ -315,7 +316,7 @@ REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thea
     <tr><td>ESM-2 650M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
       <td data-label="Why it is here">The same model, 18× larger. Used only to ask whether agreement grows with size — it is not
       the main evidence.</td></tr>
-    <tr><td>ESM-1v, two copies</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
+    <tr><td>ESM-1v, checkpoint 1 × checkpoint 2</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
       <td data-label="Why it is here"><b>The ceiling.</b> Not part of the main comparison: ESM-1v is used because it is the one
       protein language model released as several independently seeded checkpoints, so two copies
       differ <em>only</em> by random start. That gives the one honest answer to “how alike can two
@@ -510,8 +511,8 @@ def s_f1():
   </div>
   {block("What we subtract", '<div class="subfigs">', '<div class="steps">')}
   <div class="stack prose">
-    <p class="prose">Two checks show the subtraction does what it should. The same model trained
-    twice — agreement that is certainly real — barely moves:
+    <p class="prose">Two checks show the subtraction does what it should. ESM-1v checkpoint 1 × checkpoint 2, the
+    same model from two random seeds — agreement that is certainly real — barely moves:
     {v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}. An untrained
     sequence network against a trained structure model — agreement that cannot be about biology,
     because one side has learned nothing — scores a respectable-looking
@@ -522,7 +523,7 @@ def s_f1():
   </div>
   <div class="callouts">
     <div class="callout"><b>{v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}</b>
-      <span>ESM-1v trained twice, CKA — unchanged</span></div>
+      <span>ESM-1v, checkpoint 1 × checkpoint 2, CKA — unchanged</span></div>
     <div class="callout"><b>{v('untrained seq x trained str','raw'):.3f} → {v('untrained seq x trained str','partial'):.3f}</b>
       <span>Untrained ESM-2 35M against trained ProteinMPNN, CKA — collapses</span></div>
     <div class="callout"><b>{v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}</b>
@@ -576,7 +577,7 @@ def s_f2():
     and well below two models that share an input</h2>
     <p class="prose">A score of 0.13 means nothing on its own until you know what the same
     measurement gives for two models that certainly agree and for two that certainly do not. So every
-    pair is read against a ladder. At the top, the same model trained twice:
+    pair is read against a ladder. At the top, ESM-1v checkpoint 1 × checkpoint 2:
     {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}, unchanged by the subtraction. Next, two models
     sharing an input: two sequence models (CARP-38M × ESM-2 35M) {v('CARP x ESM-2','partial'):.3f}
     and two structure models (ESM-IF1 × ProteinMPNN) {v('ESM-IF1 x ProteinMPNN','partial'):.3f} after
@@ -626,7 +627,7 @@ def s_f3():
     <h2>They do not arrange proteins the same way</h2>
     <p class="prose">Sharing axes is weaker than sharing a map. The neighbour measure asks, for each
     residue, how many of its ten closest neighbours in one model are also among its ten closest in
-    the other. Two copies of the same model agree on
+    the other. ESM-1v checkpoint 1 × checkpoint 2 agree on
     {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} of each other's neighbours after the
     subtraction ({v('ESM-1v s1 x ESM-1v s2','raw','mutual_knn'):.3f} as measured); two sequence
     models on {v('CARP x ESM-2','partial','mutual_knn'):.3f}; two structure models on
@@ -875,7 +876,7 @@ def s_beyond():
     <p class="prose">The controls that catch them are cheap. A scrambled-residue null for every
     measure, so a score is read as its distance above chance, not as a bare number (Gröger et al.,
     2026, make the same argument for vision and language). Dimension matching before comparing models
-    of different widths. A ceiling from the same model trained twice, so “high” has a reference. And,
+    of different widths. A ceiling from ESM-1v checkpoint 1 × checkpoint 2, so “high” has a reference. And,
     wherever two models are trained toward the same target, a residualisation of that target before
     agreement is measured — the target-side counterpart of the input-side deconfounding proposed by
     Cui et al. (2022). The last of these is the one this study adds, and it changed the answer.</p>
