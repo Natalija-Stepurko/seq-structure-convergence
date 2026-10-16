@@ -452,7 +452,7 @@ def s_f1():
     <p class="prose">This is not hypothetical. Measured by CKA against ProteinMPNN's last encoder
     layer, ESM-2 agrees with the structure model most at its very first layer: the lookup that turns
     each letter into a fixed vector, before any learned processing. That layer is nothing but the
-    amino-acid code. Compared with a bare one-hot label of the amino acid, it scores
+    amino-acid code. Compared with a bare label naming the amino acid, it scores
     {a['esm_svcca']:.3f} by SVCCA and {a['esm_knn']:.3f} by mutual k-NN, so agreement measured there
     is the shared training target, not shared biology. Deeper in the model, where the learned
     biology should be, CKA with the structure model falls, from {dp['emb']:.3f} at the lookup to
@@ -478,8 +478,10 @@ def s_f1():
     </tbody></table></div>
   </details>
   <div class="figwrap">{depth_bars(D)}
-    <p class="figcap">Each bar is one layer of the sequence model, scored against the structure
-    model's last encoder layer. Teal marks the lookup layer, orange the middle minimum.</p>
+    <p class="figcap">One bar per ESM-2 layer, from the amino-acid lookup (emb) to the last
+    transformer block (b12). Bar height is the CKA between that layer and ProteinMPNN's last encoder
+    layer, over the same residues. The coloured bars are the three values in the text: the lookup
+    (teal, highest), block 7 (orange, lowest) and block 12 (dark blue, the last layer).</p>
   </div>
   <figure class="bigfig">
     <img src="{FIGB}" alt="Residue maps for the sequence and structure models, coloured by amino
