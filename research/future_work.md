@@ -98,6 +98,50 @@ for both models, the amino-acid subtraction (`_aa_residualise` in `scripts/04_co
 chain-grouped train/test splits and the residue targets in
 `scripts/05_probes.py`. The table at the top of this file is the single-model baseline.
 
+**Novelty check (October 2026).** Each ingredient exists; the combination does not, as far as a
+search of the protein-ML and multimodal-learning literature found.
+
+| Prior work | What it does | How close |
+|---|---|---|
+| [PLM-eXplain](https://arxiv.org/abs/2504.07156) (van Eck et al., *Bioinformatics* 2026) | Splits ESM-2 embeddings into an interpretable subspace (amino-acid type, secondary structure, solvent accessibility) and a residual; downstream performance is maintained, not improved | Closest: separates amino-acid identity from the rest, but in one model and with no fusion |
+| [SPURS](https://www.nature.com/articles/s41467-025-67609-4) (Nature Communications 2025) | Wires ProteinMPNN's per-residue representations into ESM-2 through an adapter to predict ΔΔG | Fuses the same two models; no removal of shared information |
+| [ESM-GearNet](https://arxiv.org/abs/2303.06275) (Zhang et al., 2023) | ESM-2 plus structure encoders under serial, parallel and cross fusion | Fusion strategies compared; redundancy not examined |
+| [When does structure help?](https://arxiv.org/abs/2606.04228) (Chauhan, 2026) | Linear "information bonus" of AlphaFold2 representations over ESM-2; structure helps for allosteric sites, not binding or flexibility | Asks when structure adds information; nothing removed before comparing |
+| [MISA](https://github.com/declare-lab/MISA) (Hazarika et al., ACM MM 2020) | Learns modality-invariant and modality-specific subspaces before fusing | Shared/private separation before fusion, in multimodal sentiment analysis |
+| [Partial information decomposition](https://arxiv.org/abs/2302.12247) (Liang et al., NeurIPS 2023) | Estimates redundancy, unique information and synergy between modalities for a task | A direct way to measure whether residualising makes the two more complementary |
+| [LEACE](https://arxiv.org/abs/2306.03819) (Belrose et al., NeurIPS 2023) | Closed-form linear concept erasure; a concept is linearly undetectable exactly when every class has the same mean | Subtracting each amino acid's mean is this condition met by construction: a simple linear erasure of amino-acid identity |
+
+Verdict: fusing a sequence model with a structure model is established, and so is separating
+shared from modality-specific information before fusion. No work found removes the **shared
+training target** of the two models before fusing them and asks whether that makes them more
+complementary. The framing is new; the expected effect is uncertain, because of the linear
+equivalence noted above. A null result is still informative here: it would say the redundancy
+inflates similarity scores without hurting fusion.
+
+**Proposed design.**
+
+- *Representations:* ESM-2 35M at its best probe layer and the ProteinMPNN encoder's last layer,
+  on the 4,898 chains, with the chain-grouped splits and 5 refits of `05_probes.py`.
+- *Arms:* each model alone; one-hot amino acid alone; raw fusion; raw fusion plus one-hot (the
+  control the hybrid must be compared against, since the two are linearly equivalent); residual
+  fusion; hybrid fusion. Size controls: ESM-2 fused with an *untrained* ProteinMPNN (same
+  dimensions, no learned structure) and ESM-2 650M alone (more parameters, one model).
+- *Predictors:* ridge or logistic regression with cross-validated penalty, gradient-boosted trees
+  and a small MLP. The linear predictor doubles as a check: hybrid and raw-plus-one-hot should tie.
+- *Training size:* 1%, 10% and 100% of training chains; if residualising helps, it is most likely
+  to show at small sizes.
+- *Tasks:* the residue targets already built (solvent accessibility, burial, secondary structure,
+  B-factor, binding, active and PTM sites); mutation effects on a ProteinGym subset as a second
+  phase, since it needs both models run on every substitution.
+- *Measures:* score per arm with chain-level intervals; fusion gain over the better single model;
+  and the redundancy and unique-information estimates of Liang et al. before and after
+  residualising, which measure "more complementary" directly.
+- *Decision rule, set before running:* residual or hybrid fusion counts as better if its gain over
+  raw-plus-one-hot exceeds both arms' refit intervals on at least three of the seven tasks for the
+  same predictor.
+
+Cost: no new extraction for phase 1; CPU probes on existing embeddings, roughly a day.
+
 ---
 
 ## 3. Can ESM-2 improve the sequences ProteinMPNN generates?
