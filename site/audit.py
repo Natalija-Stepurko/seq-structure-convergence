@@ -34,7 +34,7 @@ def claim(desc, value, fmt="{:.3f}"):
 
 print("dataset")
 chains = list(csv.DictReader(open(R / "dataset/chains.csv")))
-claim("protein domains", len(chains), "{:,}")
+claim("protein chains", len(chains), "{:,}")
 claim("residues", sum(int(c["length"]) for c in chains), "{:,}")
 div = json.load(open(R / "dataset/diversity.json"))
 for k, n in div["cath_class"].items():

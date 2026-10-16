@@ -160,7 +160,7 @@ def header():
     ds = D["dataset"]
     return f"""<header class="page" id="top">
   <div class="kicker">Two protein models, compared layer by layer ·
-    {ds['domains']:,} protein domains · {ds['residues']:,} residues</div>
+    {ds['chains']:,} protein chains · {ds['residues']:,} residues</div>
   <h1>Do two models given<br>opposite halves of a protein<br>learn the same biology?</h1>
   <p class="lede">A protein is a chain of amino acids that folds into a shape, and the shape is what
   lets it work. This page compares two machine-learning models that were each shown only one half
@@ -345,7 +345,8 @@ def coverage_panel():
     blocks = [
         ("Fold class (CATH)", lanes(list(dv["cath_class"].items())),
          f"{dv['cath_architectures']} architectures · {dv['cath_topologies']:,} topologies · "
-         f"{dv['cath_superfamilies']:,} homologous superfamilies"),
+         f"{dv['cath_superfamilies']:,} homologous superfamilies. Class of the CATH domain each chain "
+         "was chosen for."),
         ("Organism", lanes(list(dv["kingdom"].items())),
          "Kingdom of the UniProt entry each chain maps to."),
         ("Length (residues per chain)", lanes(length),
@@ -371,8 +372,8 @@ def s_models():
     for the same residues, and they read opposite halves of a protein.</p>
   </div>
   {MAIN_CARDS}
-  <p class="prose">All comparisons use one fixed set of {ds['domains']:,} non-redundant protein
-  domains with experimentally solved structures (CATH S35), {ds['residues']:,} residues in total.
+  <p class="prose">All comparisons use one fixed set of {ds['chains']:,} protein chains with
+  experimentally solved structures, one for each CATH S35 cluster, {ds['residues']:,} residues in total.
   Both models describe every one of those residues, so each comparison is residue-for-residue. Every
   agreement score on this page is an estimate over {ds['subsamples']} independent subsamples of
   {ds['budget']:,} residues, drawn whole chain at a time, with a 95% interval, because residues
@@ -878,8 +879,9 @@ def s_limits():
       gap is size, not sequence versus shape. ESM-IF1, the larger structure model, narrows it without
       closing it.</p></div>
     <div class="card"><span class="tag">one kind of protein</span>
-      <p>4,898 domains with experimentally solved structures. Everything here is crystallisable and
-      domain-shaped; disordered and membrane proteins are under-represented.</p></div>
+      <p>4,898 chains with experimentally solved structures, each chosen for a classified CATH
+      domain. Everything here is crystallisable and folded; disordered and membrane proteins are
+      under-represented.</p></div>
     <div class="card"><span class="tag">scores depend on sample size</span>
       <p>All three measures inflate on smaller samples, unequally — halving the sample raises the
       neighbour measure by about a quarter. Every number here is quoted at a stated sample size, and

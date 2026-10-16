@@ -5,7 +5,7 @@
 | What | Where | Size | Tracked |
 |---|---|---|---|
 | Derived results: every agreement score, interval, probe score, stitching grid and map coordinate the results page uses | `results/` (index: [`results/README.md`](results/README.md)) | ~30 MB | yes |
-| The chain set: 4,898 CATH S35 domains with PDB ID, chain, CATH code and length | `results/dataset/chains.csv` | 0.2 MB | yes |
+| The chain set: 4,898 protein chains, one per CATH S35 cluster, with PDB ID, chain, CATH code and length | `results/dataset/chains.csv` | 0.2 MB | yes |
 | What the chain set covers: CATH classes and fold counts, kingdoms, lengths, secondary structure | `results/dataset/diversity.json` | 1 kB | yes |
 | Archived page inputs: three map images and HTML fragments from the earlier page | `site/archive/` | 1.7 MB | yes |
 | Structures: per-chain sequence, backbone coordinates and per-residue labels | rebuilt by `scripts/01_dataset.py` | 3.6 GB | no |
