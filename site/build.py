@@ -461,6 +461,23 @@ def s_f1():
     amino acids. The layers doing real work agree with the structure model less than the raw letter
     code does.</p>
   </div>
+  <details><summary>The layers of each model, in one table</summary>
+    <div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Model</th><th>Layers</th>
+      <th>What they do</th></tr></thead><tbody>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">emb</td><td data-label="What they do">The lookup:
+        one fixed vector per amino acid, no context yet.</td></tr>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">b1–b12</td><td data-label="What they do">Transformer
+        blocks: each residue looks at every other; 480 numbers per residue.</td></tr>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">output head</td><td data-label="What they do">Predicts
+        the amino acid at each position. Not read here.</td></tr>
+      <tr><td>ProteinMPNN</td><td data-label="Layers">input</td><td data-label="What they do">Distances
+        between the backbone atoms of each residue and its 48 nearest neighbours in space.</td></tr>
+      <tr><td>ProteinMPNN</td><td data-label="Layers">enc1–enc3</td><td data-label="What they do">Encoder:
+        neighbours exchange messages; 128 numbers per residue. Read on this page.</td></tr>
+      <tr><td>ProteinMPNN</td><td data-label="Layers">dec1–dec3</td><td data-label="What they do">Decoder:
+        predicts the amino acids one position at a time. Not read here.</td></tr>
+    </tbody></table></div>
+  </details>
   <div class="figwrap">{depth_bars(D)}
     <p class="figcap">Each bar is one layer of the sequence model, scored against the structure
     model's last encoder layer. Teal marks the lookup layer, orange the middle minimum.</p>
