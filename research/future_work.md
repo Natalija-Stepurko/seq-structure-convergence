@@ -118,29 +118,50 @@ complementary. The framing is new; the expected effect is uncertain, because of 
 equivalence noted above. A null result is still informative here: it would say the redundancy
 inflates similarity scores without hurting fusion.
 
-**Proposed design.**
+**Design, fixed before any fusion run (16 October 2026).**
 
-- *Representations:* ESM-2 35M at its best probe layer and the ProteinMPNN encoder's last layer,
-  on the 4,898 chains, with the chain-grouped splits and 5 refits of `05_probes.py`.
-- *Arms:* each model alone; one-hot amino acid alone; raw fusion; raw fusion plus one-hot (the
-  control the hybrid must be compared against, since the two are linearly equivalent); residual
-  fusion; hybrid fusion. Size controls: ESM-2 fused with an *untrained* ProteinMPNN (same
-  dimensions, no learned structure) and ESM-2 650M alone (more parameters, one model).
-- *Predictors:* ridge or logistic regression with cross-validated penalty, gradient-boosted trees
-  and a small MLP. The linear predictor doubles as a check: hybrid and raw-plus-one-hot should tie.
-- *Training size:* 1%, 10% and 100% of training chains; if residualising helps, it is most likely
-  to show at small sizes.
-- *Tasks:* the residue targets already built (solvent accessibility, burial, secondary structure,
-  B-factor, binding, active and PTM sites); mutation effects on a ProteinGym subset as a second
-  phase, since it needs both models run on every substitution.
-- *Measures:* score per arm with chain-level intervals; fusion gain over the better single model;
-  and the redundancy and unique-information estimates of Liang et al. before and after
-  residualising, which measure "more complementary" directly.
-- *Decision rule, set before running:* residual or hybrid fusion counts as better if its gain over
-  raw-plus-one-hot exceeds both arms' refit intervals on at least three of the seven tasks for the
-  same predictor.
+- *Representations.* One layer per model, chosen by a rule applied to the probe results already
+  published (`results/probes_ci`, `results/probes650`): the layer that scores best on the most of
+  the seven residue targets. ESM-2 35M layer 11 (best on 4 of 7), ProteinMPNN encoder layer 3
+  (6 of 7), the untrained ProteinMPNN at the same layer, ESM-2 650M layer 32 (4 of 7). The rule
+  uses earlier results on the same chains, so it flatters every arm alike, single and fused.
+- *Residues and splits.* Exactly as `05_probes.py`: 8 residues per chain plus every binding-,
+  active- and PTM-site residue, 25% of chains held out, five refits with seeds 42–46, each drawing
+  new residues and a new chain-level split. Every arm in a refit sees the same residues and split.
+- *Residualising.* Each amino acid's mean vector is computed on the training residues only and
+  subtracted from training and test residues alike, so nothing about the test set leaks into it.
+- *Arms.* ESM-2 alone; ProteinMPNN alone; one-hot amino acid alone; raw fusion [ESM-2,
+  ProteinMPNN]; raw fusion plus one-hot, the control the hybrid has to beat; residual fusion
+  [ESM-2 residual, ProteinMPNN residual]; hybrid fusion [one-hot, both residuals]. Size controls:
+  ESM-2 fused with the untrained ProteinMPNN (same dimensions, no learned structure) and
+  ESM-2 650M alone (about 19 times the parameters, one model).
+- *Predictors.* Linear: ridge regression and logistic regression with the penalty chosen by
+  3-fold cross-validation on the training chains. Gradient-boosted trees: XGBoost, 80 trees of
+  depth 4, as in `05_probes.py`. A one-hidden-layer MLP of 256 units with early stopping. Features
+  are standardised for the linear model and the MLP. The linear predictor doubles as a check:
+  hybrid and raw-plus-one-hot hold the same information and should tie.
+- *Training size.* 1%, 10% and 100% of the training chains, against the same test chains. A target
+  is skipped at a size where the training residues hold fewer than 10 positives, and the skip is
+  recorded.
+- *Tasks and scores.* The seven residue targets: solvent accessibility and B-factor (R²), burial
+  and three-state secondary structure (accuracy), binding, active and PTM sites (macro F1, with
+  balanced class weights).
+- *Measures.* For every fused arm, its gain over **ESM-2 alone** and its gain over **ProteinMPNN
+  alone**, each reported separately, plus its gain over raw-plus-one-hot. Gains are paired: the
+  difference is taken within each refit, where both arms see the same residues and split, and
+  reported as the mean over the five refits with a 95% t-interval. Redundancy is measured by
+  variance partitioning of the linear held-out scores: unique to ESM-2 = score(fused) −
+  score(ProteinMPNN), unique to ProteinMPNN = score(fused) − score(ESM-2), shared =
+  score(ESM-2) + score(ProteinMPNN) − score(fused), computed for raw and for residual fusion. It is
+  the linear counterpart of the redundancy and unique-information terms of Liang et al.; their
+  neural estimators are left for later.
+- *Decision rule.* Residual or hybrid fusion counts as better than raw-plus-one-hot for a predictor
+  if the paired 95% interval of its gain lies above zero on at least three of the seven targets at
+  full training size. The same rule, applied at 1% and 10%, answers whether residualising helps
+  when data is scarce. Any other comparison reported is descriptive.
 
-Cost: no new extraction for phase 1; CPU probes on existing embeddings, roughly a day.
+Cost: no new extraction for phase 1. Loading one layer per model and about 2,800 probe fits take
+a few hours of CPU.
 
 ---
 
@@ -203,3 +224,58 @@ structures or proteins? Test whether the improvement depends on structural confi
 accessibility, secondary structure or evolutionary conservation.
 
 **What would be new.** A study of the limits of complementarity, not another combined model.
+
+---
+
+## Literature search notes (16 October 2026)
+
+**How the search was done.** Web searches over the protein machine-learning literature (arXiv,
+bioRxiv, journals) and the general multimodal-learning literature, reading abstracts and, where
+needed, methods. Only papers whose existence was confirmed are cited. This is a targeted search,
+not a systematic review: a paper outside these search terms may exist. A first pass by a
+delegated search agent returned only one confirmed paper (PLM-eXplain) before its report was
+withheld, so the searches were repeated by hand.
+
+**Coverage by idea.**
+
+| Idea | Searched | What already exists | Not found |
+|---|---|---|---|
+| 1. Disagreement as a mutation-effect signal | Not yet | — | — |
+| 2. Fusing amino-acid-centred representations | Yes, in depth (see idea 2) | Sequence–structure fusion; shared/specific separation before fusion; splitting amino-acid identity out of one model's embeddings; linear concept erasure | Removing the two models' shared training target before fusing them |
+| 3. ESM-2 re-ranking of ProteinMPNN designs | Precedent confirmed only | Hybrid ESM-2 / ProteinMPNN scores for stability ([Nature Communications 2025](https://www.nature.com/articles/s41467-025-66526-w)) | Not searched further |
+| 4. Disagreement at functional sites | Not yet | — | — |
+| 5. When combining the two is needed | Precedent confirmed only | ESM-2 + ProteinMPNN fusion for ΔΔG ([SPURS](https://www.nature.com/articles/s41467-025-67609-4)); when AlphaFold2 representations add to ESM-2 ([Chauhan 2026](https://arxiv.org/abs/2606.04228)) | Not searched further |
+
+**Idea 2, area by area.**
+
+- *Fusing a protein language model with a structure model* is established. SPURS adapts
+  ProteinMPNN's per-residue representations into ESM-2 for stability change
+  ([Nature Communications 2025](https://www.nature.com/articles/s41467-025-67609-4); code at
+  [luo-group/SPURS](https://github.com/luo-group/SPURS)). ESM-GearNet compares serial, parallel and
+  cross fusion of ESM-2 with structure encoders ([Zhang et al. 2023](https://arxiv.org/abs/2303.06275)).
+  S-PLM aligns ESM-2 with a structure encoder by contrastive learning
+  ([bioRxiv 2023](https://www.biorxiv.org/content/10.1101/2023.08.06.552203)). None removes
+  information the two share before fusing.
+- *Asking when structure adds to sequence.* Chauhan measures the linear "information bonus" of
+  frozen AlphaFold2 representations over frozen ESM-2: it is positive for allosteric sites and
+  negative for binding affinity and flexibility, and residue-level splits inflate flexibility
+  scores by 27–39% against protein-level splits ([arXiv 2606.04228](https://arxiv.org/abs/2606.04228)).
+  Nothing is removed before the comparison.
+- *Separating amino-acid identity from a protein embedding.* PLM-eXplain factors ESM-2
+  embeddings into an interpretable subspace (including amino-acid type, secondary structure and
+  solvent accessibility) and a residual subspace, and reports that downstream performance is
+  maintained ([van Eck et al., Bioinformatics 2026](https://arxiv.org/abs/2504.07156)). This is the
+  closest work found; it treats one model and does not fuse.
+- *Shared and modality-specific information before fusion*, outside proteins. MISA learns
+  modality-invariant and modality-specific subspaces before fusing, for sentiment analysis
+  ([Hazarika et al., ACM Multimedia 2020](https://github.com/declare-lab/MISA)). Liang et al.
+  estimate redundancy, unique information and synergy between modalities for a task
+  ([NeurIPS 2023](https://arxiv.org/abs/2302.12247)).
+- *Linear concept erasure.* LEACE removes a concept so that no linear classifier can detect it,
+  and shows this holds exactly when every class has the same mean
+  ([Belrose et al., NeurIPS 2023](https://arxiv.org/abs/2306.03819)). Subtracting each amino acid's
+  mean meets that condition by construction, so the subtraction used in this study is a simple
+  linear erasure of amino-acid identity.
+
+**Gap.** No work found removes the training target that a sequence model and a structure model
+share before fusing them, or asks whether doing so makes them more complementary.
