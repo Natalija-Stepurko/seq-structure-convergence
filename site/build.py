@@ -271,13 +271,40 @@ def s_question():
 </div>"""
 
 
+MAIN_CARDS = """<div class="models">
+    <div class="m seq">
+      <span class="arch">Transformer · fill-in-the-blank on sequence</span>
+      <span class="nm">ESM-2</span>
+      <dl>
+        <dt>Sees</dt><dd>The amino-acid sequence. <b>Never any coordinates.</b></dd>
+        <dt>Learns by</dt><dd>Hiding residues and guessing them back from context — like a language
+        model over protein "text".</dd>
+        <dt>How</dt><dd>Attention: every residue looks at every other.</dd>
+        <dt>Architecture</dt><dd>Transformer, 12 layers, 35M parameters.</dd>
+      </dl>
+    </div>
+    <div class="m str">
+      <span class="arch">Graph neural network (GNN) · sequence design from shape</span>
+      <span class="nm">ProteinMPNN</span>
+      <dl>
+        <dt>Sees</dt><dd>Backbone atom coordinates. <b>Never the sequence.</b></dd>
+        <dt>Learns by</dt><dd>Being shown a shape and guessing which amino acids would fold into it.</dd>
+        <dt>How</dt><dd>Message passing: each residue exchanges information with its 48 nearest
+        neighbours in space.</dd>
+        <dt>Architecture</dt><dd>Message-passing GNN, 3 encoder and 3 decoder layers, 1.7M parameters;
+        this page reads the encoder.</dd>
+      </dl>
+    </div>
+  </div>"""
+
+
 REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Also used, as reference points</th>
     <th>Reads</th><th>Architecture</th><th>Why it is here</th></tr></thead><tbody>
     <tr><td>CARP-38M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Dilated convolutional network, 38M parameters</td>
       <td data-label="Why it is here">A sequence model built on a completely different design (stacked convolutions, not
       attention) — tests whether anything depends on the design.</td></tr>
-    <tr><td>ESM-IF1</td><td data-label="Reads">coordinates only</td><td data-label="Architecture">Graph network (geometric vector perceptrons) feeding a transformer,
-      142M parameters</td>
+    <tr><td>ESM-IF1</td><td data-label="Reads">coordinates only</td><td data-label="Architecture">Graph neural network (GNN) built from geometric vector perceptrons,
+      feeding a transformer; 142M parameters</td>
       <td data-label="Why it is here">A second, larger structure model.</td></tr>
     <tr><td>ESM-2 650M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
       <td data-label="Why it is here">The same model, 18× larger. Used only to ask whether agreement grows with size — it is not
@@ -287,8 +314,7 @@ REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thea
       protein language model released as several independently seeded checkpoints, so two copies
       differ <em>only</em> by random start. That gives the one honest answer to “how alike can two
       models even be?”</td></tr>
-    <tr><td>Untrained copies of both</td><td data-label="Reads">—</td><td data-label="Architecture">ESM-2 35M transformer and ProteinMPNN graph network, randomly
-      initialised</td>
+    <tr><td>Untrained copies of both</td><td data-label="Reads">—</td><td data-label="Architecture">ESM-2 35M transformer and ProteinMPNN GNN, randomly initialised</td>
       <td data-label="Why it is here">Same wiring, no learning. The floor.</td></tr>
   </tbody></table></div>"""
 
@@ -304,7 +330,7 @@ def s_models():
     matched in the way that matters here: both are small, both produce one description per residue
     for the same residues, and they read opposite halves of a protein.</p>
   </div>
-  {block("Two models carry the argument", '<div class="models">', '<div class="scroll">')}
+  {MAIN_CARDS}
   <p class="prose">All comparisons use one fixed set of {ds['domains']:,} non-redundant protein
   domains with experimentally solved structures (CATH S35), {ds['residues']:,} residues in total.
   Both models describe every one of those residues, so each comparison is residue-for-residue. Every
