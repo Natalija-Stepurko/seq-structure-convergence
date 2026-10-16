@@ -59,7 +59,7 @@ src/ssc/        shared metric library (CKA, SVCCA, mutual k-NN, k-NN purity, LVR
 tests/          tests for the metric library
 results/        every derived result the page uses (~30 MB); index in results/README.md
 site/           builds the results page from results/ and audits it
-research/       literature review
+research/       literature review; future_work.md: ideas for what to do next
 REPLICATION.md  full setup and pipeline guide · DATA.md  sizes, sources, licences
 ```
 
