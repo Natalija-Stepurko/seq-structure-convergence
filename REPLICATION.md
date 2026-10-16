@@ -115,6 +115,7 @@ S=/data/ssc/structures   R=/data/ssc/results
 uv run python scripts/01_dataset.py fetch      --structures-dir $S --limit 5000
 uv run python scripts/01_dataset.py annotate   --structures-dir $S
 uv run python scripts/01_dataset.py targets    --structures-dir $S
+uv run python scripts/01_dataset.py diversity  --structures-dir $S   # results/dataset/diversity.json
 uv run python scripts/02_extract.py esm        --structures-dir $S --results-dir $R/esm
 uv run python scripts/02_extract.py struct     --structures-dir $S --results-dir $R/proteinmpnn
 uv run python scripts/03_geometry.py depth-law --results-dir $R/esm --model-name esm \
@@ -146,6 +147,7 @@ exact command, the git commit, library versions and a UTC timestamp.
 | **`01_dataset.py`** | `fetch` | CATH S35 chains and PDB structures → per-chain `npz` (sequence, backbone coordinates, 3-state secondary structure, relative solvent accessibility) + `index.jsonl` |
 | | `annotate` | UniProt chain labels via the SIFTS mapping → `annotations.jsonl` |
 | | `targets` | per-residue binding, active and PTM sites; per-chain-normalised B-factor |
+| | `diversity` | what the chain set covers (CATH classes and fold counts, kingdoms, lengths, secondary structure) → `results/dataset/diversity.json`, plotted on the results page |
 | **`02_extract.py`** | `esm` | ESM-2 (or ESM-1v) per-residue embeddings at every layer |
 | | `struct` | ProteinMPNN encoder embeddings at every layer (never sees the sequence) |
 | | `esmif1` | ESM-IF1, the second structure model |

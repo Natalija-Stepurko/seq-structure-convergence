@@ -1,0 +1,65 @@
+{
+ "chains": 4898,
+ "residues": 1374765,
+ "cath_class": {
+  "α/β": 2476,
+  "Mainly α": 1199,
+  "Mainly β": 1072,
+  "Special": 102,
+  "Few secondary structures": 49
+ },
+ "cath_architectures": 39,
+ "cath_topologies": 713,
+ "cath_superfamilies": 1856,
+ "kingdom": {
+  "Bacteria": 2221,
+  "Eukaryota": 2022,
+  "Archaea": 255,
+  "Viruses": 208,
+  "No UniProt match": 192
+ },
+ "length": {
+  "median": 241.0,
+  "min": 40,
+  "max": 992,
+  "bins": [
+   {
+    "lo": 40,
+    "hi": 100,
+    "n": 642
+   },
+   {
+    "lo": 100,
+    "hi": 200,
+    "n": 1354
+   },
+   {
+    "lo": 200,
+    "hi": 300,
+    "n": 1040
+   },
+   {
+    "lo": 300,
+    "hi": 400,
+    "n": 811
+   },
+   {
+    "lo": 400,
+    "hi": 600,
+    "n": 728
+   },
+   {
+    "lo": 600,
+    "hi": 1000,
+    "n": 323
+   }
+  ]
+ },
+ "secondary_structure": {
+  "helix": 446629,
+  "strand": 228053,
+  "coil": 699994,
+  "unassigned": 89
+ },
+ "secondary_structure_method": "P-SEA (biotite annotate_sse) on the deposited coordinates"
+}

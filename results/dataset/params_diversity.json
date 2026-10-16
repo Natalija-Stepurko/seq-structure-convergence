@@ -1,0 +1,21 @@
+{
+  "script": "01_dataset.py",
+  "timestamp_utc": "2026-10-16T08:55:21+00:00",
+  "command": "scripts/01_dataset.py --structures-dir /ssc/structures",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "out": "results/dataset/diversity.json"
+  },
+  "git_commit": "83e97fd4bb98f3d6847dd2829153cdc671dba08b",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  }
+}

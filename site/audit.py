@@ -34,8 +34,19 @@ def claim(desc, value, fmt="{:.3f}"):
 
 print("dataset")
 chains = list(csv.DictReader(open(R / "dataset/chains.csv")))
-claim("protein domains", len(chains), "{:,}")
+claim("protein chains", len(chains), "{:,}")
 claim("residues", sum(int(c["length"]) for c in chains), "{:,}")
+div = json.load(open(R / "dataset/diversity.json"))
+for k, n in div["cath_class"].items():
+    claim(f"CATH class {k}", n, "{:,}")
+claim("CATH topologies", div["cath_topologies"], "{:,} topologies")
+claim("CATH superfamilies", div["cath_superfamilies"], "{:,} homologous superfamilies")
+for k, n in div["kingdom"].items():
+    claim(f"kingdom {k}", n, "{:,}")
+claim("median chain length", div["length"]["median"], "Median {:.0f}")
+ss = div["secondary_structure"]
+for k in ("helix", "strand", "coil"):
+    claim(f"{k} share of residues", 100 * ss[k] / sum(ss.values()), "{:.1f}%")
 
 print("agreement ladder (50 whole-chain subsamples of 8,000 residues)")
 lad = {(r["pair"], r["mode"], r["metric"]): float(r["mean"])

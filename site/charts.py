@@ -19,7 +19,7 @@ def esc(s):
 def depth_bars(D):
     """Raw CKA against the structure model's last encoder layer, by depth of the sequence model.
 
-    The shape of this curve is the whole of Finding 1: highest at the lookup layer, lowest in the
+    The shape of this curve is the whole of Finding 1: highest at the embedding layer, lowest in the
     middle, rising again where the model returns to predicting amino acids.
     """
     rows = D["depth_cka"]
@@ -53,8 +53,9 @@ def depth_bars(D):
                        f'{r["v"]:.3f}</text>')
         out.append(f'<text x="{x+bw/2:.1f}" y="{pt+ih+14:.1f}" class="cax" text-anchor="middle">'
                    f'{esc(r["layer"])}</text>')
-    out.append(f'<text x="{pl}" y="{h-8}" class="cax">input — the lookup layer</text>')
-    out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">output</text>')
+    out.append(f'<text x="{pl}" y="{h-8}" class="cax">emb = embedding layer (a lookup table) · '
+               f'b1–b12 = transformer blocks</text>')
+    out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">input → output</text>')
     out.append("</svg>")
     return "".join(out)
 
@@ -105,8 +106,9 @@ def depth_bars_partial(D):
                        f'text-anchor="middle">{r["partial"]:.3f}</text>')
         out.append(f'<text x="{x+bw/2:.1f}" y="{pt+ih+14:.1f}" class="cax" text-anchor="middle">'
                    f'{esc(r["label"])}</text>')
-    out.append(f'<text x="{pl}" y="{h-8}" class="cax">input — nothing left after the subtraction</text>')
-    out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">output</text>')
+    out.append(f'<text x="{pl}" y="{h-8}" class="cax">emb = embedding layer, empty after the '
+               f'subtraction · b1–b12 = transformer blocks</text>')
+    out.append(f'<text x="{pl+iw}" y="{h-8}" class="cax" text-anchor="end">input → output</text>')
     out.append("</svg>")
     return "".join(out)
 

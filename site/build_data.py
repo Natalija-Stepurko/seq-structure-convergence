@@ -141,9 +141,15 @@ chains = list(csv.DictReader(open(R / "dataset/chains.csv")))
 lad0 = next(csv.DictReader(open(R / "ladder_ci/ladder_ci.csv")))
 refits = {int(r["n"]) for r in csv.DictReader(open(R / "probes_ci/esm/chain_metrics_ci.csv"))}
 assert len(refits) == 1, f"probe refit counts differ across rows: {refits}"
-D["dataset"] = {"domains": len(chains), "residues": sum(int(c["length"]) for c in chains),
+D["dataset"] = {"chains": len(chains), "residues": sum(int(c["length"]) for c in chains),
                 "subsamples": int(lad0["n_resamples"]), "budget": int(lad0["n_residues_per_subsample"]),
                 "refits": refits.pop()}
+
+# What the chain set covers (scripts/01_dataset.py diversity).
+div = json.load(open(R / "dataset/diversity.json"))
+assert div["chains"] == D["dataset"]["chains"] and div["residues"] == D["dataset"]["residues"], \
+    "diversity.json describes a different chain set from chains.csv"
+D["diversity"] = div
 
 # Depth profile before and after the amino-acid subtraction, on the ladder's basis (depth-ci).
 dep = {}
@@ -169,4 +175,4 @@ print("  depth CKA:", [d["v"] for d in D["depth_cka"]])
 print(f"  stitching: {D['stitching']['worse']} worse / {D['stitching']['unclear']} unclear / "
       f"{D['stitching']['better']} better of {D['stitching']['total']}")
 print("  probe targets:", len(D["probe_chain"]["esm"]))
-print("  dataset:", D["dataset"]["domains"], "domains,", D["dataset"]["residues"], "residues")
+print("  dataset:", D["dataset"]["chains"], "chains,", D["dataset"]["residues"], "residues")

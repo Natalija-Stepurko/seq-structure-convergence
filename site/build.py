@@ -78,7 +78,9 @@ text.cgood{font-family:var(--mono);font-size:10px;fill:var(--chrome);font-weight
 .rb:last-child{border-right:0}
 .rb h3{font-size:1.06rem;font-weight:600;margin:0 0 8px}
 .rb .rbn{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.5rem;
-         font-weight:500;letter-spacing:-.02em;display:block;margin-bottom:6px}
+         font-weight:500;letter-spacing:-.02em;display:block;margin-bottom:2px}
+.rb .rbm{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+         color:var(--chrome);display:block;margin-bottom:8px}
 .rb p{font-size:.86rem;color:var(--ink-2);line-height:1.5}
 .rbfoot{grid-column:1/-1;border-top:1px solid var(--rule);padding:14px 22px;font-size:.86rem;
         color:var(--ink-2);line-height:1.5;background:var(--ground)}
@@ -99,13 +101,24 @@ text.cgood{font-family:var(--mono);font-size:10px;fill:var(--chrome);font-weight
 .def b{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;
        text-transform:uppercase;color:var(--chrome);margin-bottom:6px}
 .def span{font-size:.88rem;color:var(--ink-2);line-height:1.5}
-/* reference model list */
-.refmodels{display:grid;gap:10px;background:var(--panel);border:1px solid var(--rule);
-           border-radius:3px;padding:18px 22px}
-.refmodels div{display:grid;grid-template-columns:minmax(8rem,10rem) 1fr;gap:6px 16px;
-               font-size:.9rem;color:var(--ink-2);line-height:1.5}
-.refmodels dt{font-family:var(--mono);font-size:.8rem;color:var(--ink);font-weight:600}
-@media(max-width:620px){.refmodels div{grid-template-columns:1fr;gap:2px}}
+table.models-ref td:nth-child(3){min-width:13rem;font-size:.86rem;color:var(--ink-2)}
+/* on a phone, one card per model: label above each field */
+@media(max-width:640px){
+  table.models-ref thead{display:none}
+  table.models-ref,table.models-ref tbody,table.models-ref tr,table.models-ref td{display:block;width:auto;min-width:0}
+  table.models-ref tr{padding:10px 0;border-bottom:1px solid var(--rule-2)}
+  table.models-ref tbody tr:last-child{border-bottom:0}
+  table.models-ref td{border:0;padding:3px 16px}
+  table.models-ref td[data-label]::before{content:attr(data-label);display:block;font-size:.58rem;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
+}
+/* dataset coverage panel */
+.gblock h4{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+           color:var(--ink-3);font-weight:600;margin:0}
+.gblock .gn{font-size:.76rem;color:var(--ink-2);line-height:1.45;margin:2px 0 0}
+details .gbars{padding:4px 18px 18px}
+.gbars.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){.gbars.coverage{grid-template-columns:1fr}}
 /* details */
 details{background:var(--panel);border:1px solid var(--rule);border-radius:3px}
 details[open]{padding-bottom:16px}
@@ -147,12 +160,12 @@ def header():
     ds = D["dataset"]
     return f"""<header class="page" id="top">
   <div class="kicker">Two protein models, compared layer by layer ·
-    {ds['domains']:,} protein domains · {ds['residues']:,} residues</div>
+    {ds['chains']:,} protein chains · {ds['residues']:,} residues</div>
   <h1>Do two models given<br>opposite halves of a protein<br>learn the same biology?</h1>
   <p class="lede">A protein is a chain of amino acids that folds into a shape, and the shape is what
   lets it work. This page compares two machine-learning models that were each shown only one half
-  of that: <b>ESM-2</b> reads the chain of letters and never sees a coordinate; <b>ProteinMPNN</b>
-  reads the 3-D backbone and never sees a letter. If sequence and shape are two views of one
+  of that: <b>ESM-2</b> reads the amino-acid sequence and never sees a coordinate; <b>ProteinMPNN</b>
+  reads the 3-D backbone and never sees the amino-acid sequence. If sequence and shape are two views of one
   biology, the two should end up describing proteins the same way. They do only partly — and about
   half of what standard measurements report as agreement between them turns out to be the one
   thing both were trained to output: the amino acid at each position.</p>
@@ -160,6 +173,7 @@ def header():
   <div class="resultbox">
     <div class="rb"><h3>Some shared directions, not many</h3>
       <span class="rbn">{v(MAIN,'partial'):.3f}</span>
+      <span class="rbm">CKA · centred kernel alignment</span>
       <p>Each model turns every residue into a list of numbers. Lay out the same
       {ds['residues']/1e6:.1f} million residues both ways and the two layouts share some of the same
       axes. On this measure two copies of one model score
@@ -168,6 +182,7 @@ def header():
       {v(MAIN,'partial'):.3f}.</p></div>
     <div class="rb"><h3>Not the same map</h3>
       <span class="rbn">{v(MAIN,'partial','mutual_knn'):.3f}</span>
+      <span class="rbm">Mutual k-NN · 10 nearest neighbours</span>
       <p>Ask each model which ten residues are most like a given one, and the two lists almost
       never overlap: {v(MAIN,'partial','mutual_knn'):.3f} of neighbours in common, against
       {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for two copies of one model. The two
@@ -175,6 +190,7 @@ def header():
       environment.</p></div>
     <div class="rb"><h3>Not interchangeable</h3>
       <span class="rbn">{ST['worse']} / {ST['total']}</span>
+      <span class="rbm">Model stitching</span>
       <p>Hand ProteinMPNN's description of a residue to ESM-2 and let ESM-2's later layers finish
       the job. The result is clearly worse than ProteinMPNN alone in {ST['worse']} of {ST['total']}
       tests, including every test that enters ESM-2's first {LEAD} layers. Untrained layers pass the
@@ -182,8 +198,9 @@ def header():
       ProteinMPNN, ESM-2's description loses part of itself too.</p></div>
     <div class="rbfoot"><b>Why the raw scores overstate it.</b> Both models are trained to output the
     amino acid at each position, so they agree that position 47 is a leucine before they agree on
-    anything else. That shared answer accounts for about half of the strongest raw agreement score,
-    and one common measure returns {share('svcca'):.0f}% of its value even on scrambled data. The
+    anything else. That shared answer accounts for about half of the raw CKA score
+    ({v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}), and another common measure, SVCCA (singular-vector
+    canonical correlation analysis), returns {share('svcca'):.0f}% of its value even on scrambled data. The
     agreement scores above are read with the shared answer subtracted.</div>
   </div>
 
@@ -267,6 +284,89 @@ def s_question():
 </div>"""
 
 
+MAIN_CARDS = """<div class="models">
+    <div class="m seq">
+      <span class="arch">Transformer · fill-in-the-blank on sequence</span>
+      <span class="nm">ESM-2</span>
+      <dl>
+        <dt>Sees</dt><dd>The amino-acid sequence. <b>Never any coordinates.</b></dd>
+        <dt>Learns by</dt><dd>Hiding residues and guessing them back from context — like a language
+        model over protein "text".</dd>
+        <dt>How</dt><dd>Attention: every residue looks at every other.</dd>
+        <dt>Architecture</dt><dd>Transformer, 12 layers, 35M parameters.</dd>
+      </dl>
+    </div>
+    <div class="m str">
+      <span class="arch">Graph neural network (GNN) · sequence design from shape</span>
+      <span class="nm">ProteinMPNN</span>
+      <dl>
+        <dt>Sees</dt><dd>Backbone atom coordinates. <b>Never the sequence.</b></dd>
+        <dt>Learns by</dt><dd>Being shown a shape and guessing which amino acids would fold into it.</dd>
+        <dt>How</dt><dd>Message passing: each residue exchanges information with its 48 nearest
+        neighbours in space.</dd>
+        <dt>Architecture</dt><dd>Message-passing GNN, 3 encoder and 3 decoder layers, 1.7M parameters;
+        this page reads the encoder.</dd>
+      </dl>
+    </div>
+  </div>"""
+
+
+REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Also used, as reference points</th>
+    <th>Reads</th><th>Architecture</th><th>Why it is here</th></tr></thead><tbody>
+    <tr><td>CARP-38M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Dilated convolutional network, 38M parameters</td>
+      <td data-label="Why it is here">A sequence model built on a completely different design (stacked convolutions, not
+      attention) — tests whether anything depends on the design.</td></tr>
+    <tr><td>ESM-IF1</td><td data-label="Reads">coordinates only</td><td data-label="Architecture">Graph neural network (GNN) built from geometric vector perceptrons,
+      feeding a transformer; 142M parameters</td>
+      <td data-label="Why it is here">A second, larger structure model.</td></tr>
+    <tr><td>ESM-2 650M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
+      <td data-label="Why it is here">The same model, 18× larger. Used only to ask whether agreement grows with size — it is not
+      the main evidence.</td></tr>
+    <tr><td>ESM-1v, two copies</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
+      <td data-label="Why it is here"><b>The ceiling.</b> Not part of the main comparison: ESM-1v is used because it is the one
+      protein language model released as several independently seeded checkpoints, so two copies
+      differ <em>only</em> by random start. That gives the one honest answer to “how alike can two
+      models even be?”</td></tr>
+    <tr><td>Untrained copies of both</td><td data-label="Reads">—</td><td data-label="Architecture">ESM-2 35M transformer and ProteinMPNN GNN, randomly initialised</td>
+      <td data-label="Why it is here">Same wiring, no learning. The floor.</td></tr>
+  </tbody></table></div>"""
+
+
+def coverage_panel():
+    """Four small bar blocks: what the chain set covers, from results/dataset/diversity.json."""
+    dv = D["diversity"]
+
+    def lanes(items, fmt=lambda n: f"{n:,}"):
+        top = max(n for _, n in items)
+        return "".join(
+            f'<div class="glane"><span class="gl">{lab}</span><span class="gt"><i style="width:'
+            f'{100 * n / top:.1f}%;background:var(--chrome)"></i></span><span class="gv">{fmt(n)}</span></div>'
+            for lab, n in items)
+
+    bins = dv["length"]["bins"]
+    length = [(f"{b['lo']}–{b['hi'] - 1 if i < len(bins) - 1 else dv['length']['max']}", b["n"])
+              for i, b in enumerate(bins)]
+    ss = dv["secondary_structure"]
+    tot = sum(ss.values())
+    ss_items = [(k.capitalize(), ss[k]) for k in ("helix", "strand", "coil")]
+    blocks = [
+        ("Fold class (CATH)", lanes(list(dv["cath_class"].items())),
+         f"{dv['cath_architectures']} architectures · {dv['cath_topologies']:,} topologies · "
+         f"{dv['cath_superfamilies']:,} homologous superfamilies. Class of the CATH domain each chain "
+         "was chosen for."),
+        ("Organism", lanes(list(dv["kingdom"].items())),
+         "Kingdom of the UniProt entry each chain maps to."),
+        ("Length (residues per chain)", lanes(length),
+         f"Median {dv['length']['median']:.0f}, range {dv['length']['min']}–{dv['length']['max']}."),
+        ("Secondary structure (share of residues)",
+         lanes(ss_items, fmt=lambda n: f"{100 * n / tot:.1f}%"),
+         f"P-SEA on the deposited coordinates; {ss['unassigned']} residues unassigned."),
+    ]
+    return '<div class="gbars coverage">' + "".join(
+        f'<div class="gblock"><h4>{h}</h4>{body}<p class="gn">{note}</p></div>' for h, body, note in blocks
+    ) + "</div>"
+
+
 def s_models():
     ds = D["dataset"]
     return f"""<div class="page sec" id="models">
@@ -278,27 +378,19 @@ def s_models():
     matched in the way that matters here: both are small, both produce one description per residue
     for the same residues, and they read opposite halves of a protein.</p>
   </div>
-  {block("Two models carry the argument", '<div class="models">', '<div class="scroll">')}
-  <div class="refmodels">
-    <div><dt>CARP-38M</dt><dd>sequence: a sequence model of a completely different design — stacked
-      convolutions, not attention — to test whether anything depends on the design.</dd></div>
-    <div><dt>ESM-IF1</dt><dd>structure: a second, larger structure model.</dd></div>
-    <div><dt>ESM-2 650M</dt><dd>sequence: the same model 18× larger, used only to ask whether
-      agreement grows with size.</dd></div>
-    <div><dt>ESM-1v, two copies</dt><dd>sequence: the ceiling — the one protein language model
-      released as several independently seeded checkpoints, so two copies differ only by their
-      random start, which is the one honest answer to “how alike can two models even be?”</dd></div>
-    <div><dt>Untrained copies</dt><dd>of both main models: same wiring, no learning — the floor.</dd></div>
-  </div>
-  <p class="prose">All comparisons use one fixed set of {ds['domains']:,} non-redundant protein
-  domains with experimentally solved structures (CATH S35), {ds['residues']:,} residues in total.
+  {MAIN_CARDS}
+  <p class="prose">All comparisons use one fixed set of {ds['chains']:,} protein chains with
+  experimentally solved structures, one for each CATH S35 cluster, {ds['residues']:,} residues in total.
   Both models describe every one of those residues, so each comparison is residue-for-residue. Every
   agreement score on this page is an estimate over {ds['subsamples']} independent subsamples of
   {ds['budget']:,} residues, drawn whole chain at a time, with a 95% interval, because residues
   within a chain are not independent; probe scores carry the spread across {ds['refits']} independent
   refits instead.</p>
-  <details><summary>The reference models as a table</summary>
-    {block("Two models carry the argument", '<div class="scroll">').replace("depends on the machinery", "depends on the design")}
+  <details><summary>What the dataset covers: folds, organisms, lengths, secondary structure</summary>
+    {coverage_panel()}
+  </details>
+  <details><summary>The reference models that set the scale</summary>
+    {REFERENCE_TABLE}
   </details>
 </div>"""
 
@@ -308,7 +400,7 @@ def s_measures():
     return f"""<div class="page sec" id="measures">
   <div class="stack prose">
     <span class="eyebrow">How agreement was scored</span>
-    <h2>Three ways to ask “do they agree?” — and one of them mostly answers on its own</h2>
+    <h2>Three ways to ask “do they agree?”</h2>
     <p class="prose">Two taxonomists can use the same traits to organise species and still shelve
     them differently. These three measures separate exactly that. CKA is centred kernel alignment
     (Kornblith et al., 2019); SVCCA is singular-vector canonical correlation analysis (Raghu et al.,
@@ -319,7 +411,8 @@ def s_measures():
     <h3 class="subhead">Calibrating each measure on scrambled residues</h3>
     <p class="prose">No similarity score means anything on its own. Scramble which residue is which
     and every correspondence between the two models is destroyed; whatever a measure still reports
-    is what it returns for unrelated data. For the main pair: same pattern of resemblance reports
+    is what it returns for unrelated data. For the main pair, ESM-2 35M against ProteinMPNN: same
+    pattern of resemblance reports
     {c['cka']['obs']:.3f}, of which {share('cka'):.0f}% is null; same main directions reports
     {c['svcca']['obs']:.3f}, of which {share('svcca'):.0f}% is null; same neighbours reports
     {c['knn']['obs']:.3f}, of which {share('knn'):.0f}% is null. Two
@@ -364,21 +457,40 @@ def s_f1():
     sequence model by filling in masked residues, the structure model by saying which amino acids
     would fold into a given backbone. So two models can look like they agree simply by both knowing
     that position 47 holds a leucine, without sharing any understanding of proteins at all.</p>
-    <p class="prose">This is not hypothetical. The single strongest agreement measured between a
-    sequence model and a structure model sits at the sequence model's very first layer — the step
-    that looks each letter up in a table, before any learned processing has happened. Against a bare
-    label naming the amino acid, that layer scores {a['esm_svcca']:.3f} on same main directions and
-    {a['esm_knn']:.3f} on same neighbours: at that depth the representation is nothing but the
-    amino-acid code, so agreement measured there is the shared training target, not shared biology.
-    Deeper in the model, where the learned biology should be, raw agreement with the structure model
-    falls — from {dp['emb']:.3f} at the first layer to {dp['b7']:.3f} in the middle — and only rises
-    again toward the output, {dp['b12']:.3f} at the last layer, where the model returns to predicting
-    amino acids. The layers doing real work agree with the structure model less than the raw letter
-    code does.</p>
+    <p class="prose">This is not hypothetical. Measured by CKA against ProteinMPNN's last encoder
+    layer, ESM-2 agrees with the structure model most at its very first layer, the embedding
+    layer: a lookup table that gives each amino acid a fixed vector, before any context or learned
+    processing. That layer is nothing but the amino-acid code. Compared with a bare label naming the amino acid, it scores
+    {a['esm_svcca']:.3f} by SVCCA and {a['esm_knn']:.3f} by mutual k-NN, so agreement measured there
+    is the shared training target, not shared biology. Deeper in the model, where the learned
+    biology should be, CKA with the structure model falls, from {dp['emb']:.3f} at the embedding layer to
+    {dp['b7']:.3f} at block 7, and rises again toward the output, {dp['b12']:.3f} at block 12, where
+    the model returns to predicting amino acids. The layers doing real work agree with the structure
+    model less than the bare amino-acid code does.</p>
   </div>
+  <details><summary>The layers of each model, in one table</summary>
+    <div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Model</th><th>Layers</th>
+      <th>What they do</th></tr></thead><tbody>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">emb</td><td data-label="What they do">Embedding
+        layer: a lookup table, one fixed vector per amino acid, no context yet.</td></tr>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">b1–b12</td><td data-label="What they do">Transformer
+        blocks: each residue looks at every other; 480 numbers per residue.</td></tr>
+      <tr><td>ESM-2 35M</td><td data-label="Layers">output head</td><td data-label="What they do">Predicts
+        the amino acid at each position. Not read here.</td></tr>
+      <tr><td>ProteinMPNN</td><td data-label="Layers">input</td><td data-label="What they do">Distances
+        between the backbone atoms of each residue and its 48 nearest neighbours in space.</td></tr>
+      <tr><td>ProteinMPNN</td><td data-label="Layers">enc1–enc3</td><td data-label="What they do">Encoder:
+        neighbours exchange messages; 128 numbers per residue. Read on this page.</td></tr>
+      <tr><td>ProteinMPNN</td><td data-label="Layers">dec1–dec3</td><td data-label="What they do">Decoder:
+        predicts the amino acids one position at a time. Not read here.</td></tr>
+    </tbody></table></div>
+  </details>
   <div class="figwrap">{depth_bars(D)}
-    <p class="figcap">Each bar is one layer of the sequence model, scored against the structure
-    model's last encoder layer. Teal marks the lookup layer, orange the middle minimum.</p>
+    <p class="figcap">One bar per ESM-2 layer, from the embedding layer (emb) to the last
+    transformer block (b12). Bar height is the CKA between that layer and ProteinMPNN's last encoder
+    layer, over the same residues. The coloured bars are the three values in the text: the
+    embedding layer (teal, highest), block 7 (orange, lowest) and block 12 (dark blue, the last
+    layer).</p>
   </div>
   <figure class="bigfig">
     <img src="{FIGB}" alt="Residue maps for the sequence and structure models, coloured by amino
@@ -388,7 +500,7 @@ def s_f1():
     model describes similarly — the same 8,000 residues in both rows. The sequence model breaks
     residue space into about twenty islands, one per amino acid; colour the islands by anything
     structural and the colours are mixed within each island. That information is there, but it is
-    not what sets the geography. The structure model, which never sees a letter, does the opposite:
+    not what sets the geography. The structure model, which never sees the amino-acid sequence, does the opposite:
     amino acid is scattered noise, and buried-versus-exposed splits the map almost in half. The two
     models organise protein space by different principles — one by chemical identity, one by
     physical environment.</figcaption>
@@ -399,7 +511,7 @@ def s_f1():
     answer key, take every leucine in the dataset, average its description, and subtract that average
     from each individual leucine — then repeat for all twenty amino acids. What is left is how
     <em>this</em> leucine differs from a typical leucine: its surroundings, its role. If a model knew
-    only the letter, subtracting would leave exactly zero and its apparent agreement would vanish
+    only the amino acid, subtracting would leave exactly zero and its apparent agreement would vanish
     entirely; that is the intended behaviour. If a model knows real biology — where the residue sits,
     what surrounds it, whether it is buried, what it does — all of that survives untouched.</p>
   </div>
@@ -417,15 +529,15 @@ def s_f1():
   </div>
   <div class="callouts">
     <div class="callout"><b>{v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}</b>
-      <span>the same model trained twice — unchanged</span></div>
+      <span>ESM-1v trained twice, CKA — unchanged</span></div>
     <div class="callout"><b>{v('untrained seq x trained str','raw'):.3f} → {v('untrained seq x trained str','partial'):.3f}</b>
-      <span>untrained sequence against trained structure — collapses</span></div>
+      <span>Untrained ESM-2 35M against trained ProteinMPNN, CKA — collapses</span></div>
     <div class="callout"><b>{v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}</b>
-      <span>the main pair — about half of the strongest measure was the shared answer key</span></div>
+      <span>ESM-2 35M against ProteinMPNN, CKA — about half was the shared answer key</span></div>
   </div>
   <div class="stack prose">
-    <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's lookup layer
-    drops from {DP[0]['raw']:.3f} to nothing: it held only the letter code. The early blocks keep a
+    <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's embedding layer
+    drops from {DP[0]['raw']:.3f} to nothing: it held only the amino-acid code. The early blocks keep a
     small part of their agreement ({DP[1]['raw']:.3f} → {DP[1]['partial']:.3f} at block 1), and what
     remains grows with depth, highest at {DPTOP['label'].replace('b', 'block ')}
     ({DPTOP['raw']:.3f} → {DPTOP['partial']:.3f}). Before the subtraction the input layer led; after
@@ -480,8 +592,8 @@ def s_f2():
     model {v('untrained seq x trained str','partial'):.3f}, the reverse
     {v('trained seq x untrained str','partial'):.3f}, two untrained networks
     {v('untrained x untrained','partial'):.3f}.</p>
-    <p class="prose">Every sequence-against-structure pair lands between those rungs. The main pair
-    goes from {v(MAIN,'raw'):.3f} as measured to {v(MAIN,'partial'):.3f} with the answer key removed;
+    <p class="prose">Every sequence-against-structure pair lands between those rungs. The main pair,
+    ESM-2 35M against ProteinMPNN, goes from {v(MAIN,'raw'):.3f} as measured to {v(MAIN,'partial'):.3f} with the answer key removed;
     the other five cross-modal pairs land between {v('ESM-1v x ProteinMPNN','partial'):.3f} and
     {v('ESM-2 650M x ESM-IF1','partial'):.3f} after removal, the largest pair highest. All six sit
     clearly above every floor and clearly below the same-input rungs. Same main directions barely
@@ -526,7 +638,7 @@ def s_f3():
     subtraction ({v('ESM-1v s1 x ESM-1v s2','raw','mutual_knn'):.3f} as measured); two sequence
     models on {v('CARP x ESM-2','partial','mutual_knn'):.3f}; two structure models on
     {v('ESM-IF1 x ProteinMPNN','partial','mutual_knn'):.3f}. No sequence–structure pair exceeds
-    {mx:.2f}, and the main pair scores {v(MAIN,'partial','mutual_knn'):.3f}. The two families line up
+    {mx:.2f}, and the main pair, ESM-2 35M against ProteinMPNN, scores {v(MAIN,'partial','mutual_knn'):.3f}. The two families line up
     along some of the same directions, but they do not put the same residues next to each other —
     they are not two drawings of one map.</p>
     <p class="prose">Two sequence models are the one pair whose neighbour agreement <em>rises</em>
@@ -794,8 +906,9 @@ def s_limits():
       gap is size, not sequence versus shape. ESM-IF1, the larger structure model, narrows it without
       closing it.</p></div>
     <div class="card"><span class="tag">one kind of protein</span>
-      <p>4,898 domains with experimentally solved structures. Everything here is crystallisable and
-      domain-shaped; disordered and membrane proteins are under-represented.</p></div>
+      <p>4,898 chains with experimentally solved structures, each chosen for a classified CATH
+      domain. Everything here is crystallisable and folded; disordered and membrane proteins are
+      under-represented.</p></div>
     <div class="card"><span class="tag">scores depend on sample size</span>
       <p>All three measures inflate on smaller samples, unequally — halving the sample raises the
       neighbour measure by about a quarter. Every number here is quoted at a stated sample size, and

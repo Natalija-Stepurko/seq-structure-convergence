@@ -6,7 +6,7 @@
 One protein model reads only the amino-acid sequence (ESM-2); another reads only the backbone
 coordinates (ProteinMPNN). If sequence and shape are two views of one biology, the two should end
 up describing proteins the same way. This study measures whether they do, layer by layer, over
-4,898 non-redundant protein domains (1,374,765 residues), and finds that about half of what the
+4,898 protein chains, one per CATH S35 cluster (1,374,765 residues), and finds that about half of what the
 standard measurements report as agreement is the training target the two models share.
 
 **[Read the results →](https://natalija-stepurko.github.io/seq-structure-convergence/)** A
@@ -82,8 +82,8 @@ the licences of the upstream data and models, are in [DATA.md](DATA.md).
   nothing here speaks to how structure-prediction models encode proteins.
 - The stitching connectors are a linear map and a one-hidden-layer network, fitted on frozen
   models; fine-tuning either model to accept the other's input was not tried.
-- The chain set is CATH S35 domains with experimental structures; the scores are specific to that
-  set and to the residue budgets stated with each number.
+- The chain set is one chain per CATH S35 cluster, all with experimental structures; the scores
+  are specific to that set and to the residue budgets stated with each number.
 
 ## Citation and licence
 
