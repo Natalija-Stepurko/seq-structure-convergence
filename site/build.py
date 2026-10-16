@@ -798,9 +798,10 @@ def s_f6():
      .replace("<th>Best null</th>", "<th>Counting baseline</th>")
      .replace("Macro-F1; intervals are the spread across five\n  independent refits.",
               "Macro-F1; intervals are the spread across five\n  independent refits. Counting baseline: the "
-              "best of four predictors (linear and boosted trees) that see no protein model, only each "
-              "protein's amino-acid composition, the mean, spread and range of nine physicochemical scales "
-              "over its sequence (hydropathy, charge, volume, polarity and others), and its length.")}
+              "best of four predictors that see no protein model, linear and boosted-tree classifiers on "
+              "each protein's amino-acid composition alone and on composition plus its length and the mean, "
+              "spread and range of nine physicochemical scales over its sequence (hydropathy, charge, "
+              "volume, polarity and others); the last wins in every row.")}
   </details>
   <details id="battery-details"><summary>All twenty-five properties, against an amino-acid-counting baseline</summary>
     <p class="figcap">The grey tick is what you score by counting amino acids alone; a model sitting
