@@ -393,7 +393,7 @@ def s_measures():
     return f"""<div class="page sec" id="measures">
   <div class="stack prose">
     <span class="eyebrow">How agreement was scored</span>
-    <h2>Three ways to ask “do they agree?” — and one of them mostly answers on its own</h2>
+    <h2>Three ways to ask “do they agree?”</h2>
     <p class="prose">Two taxonomists can use the same traits to organise species and still shelve
     them differently. These three measures separate exactly that. CKA is centred kernel alignment
     (Kornblith et al., 2019); SVCCA is singular-vector canonical correlation analysis (Raghu et al.,
