@@ -147,7 +147,7 @@ def stitch_bars_reverse(D, keys):
 
 # ─────────────────────────────────────────────────────────── the ladder (interactive)
 LADDER_ORDER = [
-    ("ESM-1v s1 x ESM-1v s2", "The same model trained twice (two seeds)", "ceiling"),
+    ("ESM-1v s1 x ESM-1v s2", "ESM-1v, checkpoint 1 × checkpoint 2", "ceiling"),
     ("CARP x ESM-2", "CARP-38M × ESM-2 35M", "same input"),
     ("ESM-IF1 x ProteinMPNN", "ESM-IF1 × ProteinMPNN", "same input"),
     ("ESM-2 650M x ESM-IF1", "ESM-2 650M × ESM-IF1", "opposite inputs"),
