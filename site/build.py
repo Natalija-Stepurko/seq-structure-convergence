@@ -1,7 +1,7 @@
 """Build the results page from the pipeline outputs in results/.
 
 Reads build/data.json (written by build_data.py), the chart helpers in charts.py and two archived
-inputs in archive/: the three map images (pngs_opt.json) and the HTML fragments carried over from
+inputs in archive/: the three map images (maps.json) and the HTML fragments carried over from
 the earlier page (fragments.json). Writes build/index.html, the page GitHub Pages serves.
 """
 import json
@@ -17,7 +17,7 @@ FRAGMENTS = json.load(open(ARCHIVE / "fragments.json"))
 # The three maps, losslessly re-encoded with PIL (optimize=True, exact palette): ~10% smaller and
 # pixel-identical to the renders from results/umap6/coords.npz. Index 0 is Figure B. Pass
 # --fresh-figures to use a new render from make_figures.py.
-_FIG = BUILD / "figures.json" if "--fresh-figures" in sys.argv else ARCHIVE / "pngs_opt.json"
+_FIG = BUILD / "figures.json" if "--fresh-figures" in sys.argv else ARCHIVE / "maps.json"
 _OPT = json.load(open(_FIG))
 FIGB, PNG = _OPT[0], [None, _OPT[1], _OPT[2]]
 

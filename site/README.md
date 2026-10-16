@@ -24,8 +24,8 @@ build, the audit and the layout check, and deploys `index.html` to GitHub Pages.
 Most of the page is generated from `results/` on every build. Three inputs are carried over from
 the earlier version of the page, in `archive/`:
 
-- `pngs_opt.json`: the three map images, rendered by `make_figures.py` from
-  `results/umap6/coords.npz` and re-encoded losslessly (pixel-identical, ~10% smaller).
+- `maps.json`: the three map images as data URIs, rendered by `make_figures.py` from
+  `results/umap6/coords.npz` at twice the page column width and stored as WebP.
   `--fresh-figures` swaps in a new render.
 - `fragments.json`: nine HTML blocks lifted from the earlier page: the model cards and the
   reference-model table, the explainer diagrams for the three measures, the subtraction schematic,
