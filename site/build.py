@@ -229,6 +229,13 @@ def header():
     measures of representation similarity.</span>
     <span class="repo-path">Hugging Face dataset</span>
   </a>
+  <a class="repo" href="https://natalija-stepurko.com">
+    <svg viewBox="0 0 16 16" aria-hidden="true" width="17" height="17"><g fill="none"
+      stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.6"/>
+      <path d="M1.4 8h13.2M8 1.4c1.9 2 2.8 4.2 2.8 6.6S9.9 12.6 8 14.6M8 1.4C6.1 3.4 5.2 5.6 5.2 8s.9 4.6 2.8 6.6"/></g></svg>
+    <span><b>More of my work.</b> Other studies and what I am working on now.</span>
+    <span class="repo-path">natalija-stepurko.com</span>
+  </a>
 </header>"""
 
 
