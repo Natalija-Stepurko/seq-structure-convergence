@@ -655,18 +655,20 @@ def s_f4():
     <span class="eyebrow">Layer by layer</span>
     <h2>Agreement is highest where the sequence model has learned least</h2>
     <p class="prose">The same pair of models, every layer of one against every layer of the other, as
-    measured. Read along the sequence model's depth: same pattern of resemblance is highest at the
-    embedding layer ({dp['emb']:.3f} against the structure model's last encoder layer), falls through
+    measured. Read along ESM-2's depth, each layer scored against ProteinMPNN's last encoder layer
+    (enc3): CKA is highest at the embedding layer ({dp['emb']:.3f}), falls through
     the middle blocks to {dp['b7']:.3f} at block 7, climbs back to {dp['b11']:.3f} at block 11 and
-    dips to {dp['b12']:.3f} at the output. Same main directions is nearly flat
-    ({min(sv):.2f}–{max(sv):.2f}) and mostly null. Same neighbours never leaves the floor
-    ({min(kn):.3f}–{max(kn):.3f}). Read along the structure model's depth: its last encoder layer is
-    the most similar to every sequence layer, on every measure. The three panels disagree because the
+    dips to {dp['b12']:.3f} at the output. SVCCA is nearly flat
+    ({min(sv):.2f}–{max(sv):.2f}) and mostly null. Mutual k-NN never leaves the floor
+    ({min(kn):.3f}–{max(kn):.3f}). Read along ProteinMPNN's depth (enc1–enc3): its last encoder layer
+    is the most similar to every ESM-2 layer, on every measure, which is why the panels use it. The three panels disagree because the
     measures do.</p>
   </div>
   <div class="minirow">{layer_panels(D)}</div>
-  <p class="figcap">All three panels are <b>as measured</b> — the answer key has not been removed
-  here, which is why the embedding layer leads.</p>
+  <p class="figcap">One bar per ESM-2 35M layer, from the embedding layer (emb) to block 12, scored
+  against ProteinMPNN's last encoder layer (enc3): CKA left, SVCCA middle, mutual k-NN right, each on
+  its own scale. All three panels are <b>as measured</b> — the answer key has not been removed here,
+  which is why the embedding layer leads.</p>
   <details><summary>All 39 layer pairs, all three measures</summary>
     {block("Layer by layer", '<div class="heats">')}
   </details>
