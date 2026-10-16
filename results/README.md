@@ -15,6 +15,7 @@ that produced it; older folders predate that convention and are described here i
 | Folder | What it holds | Status |
 |---|---|---|
 | `dataset/chains.csv` | The 4,898 CATH S35 domains the study uses | **page** |
+| `dataset/diversity.json` | What those chains cover: CATH classes and fold counts, kingdoms, lengths, secondary structure (`01_dataset.py diversity`) | **page** (dataset coverage panel) |
 | `dataset/hf_chains.csv` | The 35 chains in the published embedding subsample on Hugging Face | **page** (dataset link) |
 | `dataset/hf_protein_ids.txt` | The 4,894 proteins in the published protein-level set on Hugging Face | **page** (dataset link) |
 
