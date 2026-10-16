@@ -404,7 +404,8 @@ def s_measures():
     <h3 class="subhead">Calibrating each measure on scrambled residues</h3>
     <p class="prose">No similarity score means anything on its own. Scramble which residue is which
     and every correspondence between the two models is destroyed; whatever a measure still reports
-    is what it returns for unrelated data. For the main pair: same pattern of resemblance reports
+    is what it returns for unrelated data. For the main pair, ESM-2 35M against ProteinMPNN: same
+    pattern of resemblance reports
     {c['cka']['obs']:.3f}, of which {share('cka'):.0f}% is null; same main directions reports
     {c['svcca']['obs']:.3f}, of which {share('svcca'):.0f}% is null; same neighbours reports
     {c['knn']['obs']:.3f}, of which {share('knn'):.0f}% is null. Two
@@ -521,11 +522,11 @@ def s_f1():
   </div>
   <div class="callouts">
     <div class="callout"><b>{v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}</b>
-      <span>the same model trained twice — unchanged</span></div>
+      <span>ESM-1v trained twice, CKA — unchanged</span></div>
     <div class="callout"><b>{v('untrained seq x trained str','raw'):.3f} → {v('untrained seq x trained str','partial'):.3f}</b>
-      <span>untrained sequence against trained structure — collapses</span></div>
+      <span>Untrained ESM-2 35M against trained ProteinMPNN, CKA — collapses</span></div>
     <div class="callout"><b>{v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}</b>
-      <span>the main pair — about half of the strongest measure was the shared answer key</span></div>
+      <span>ESM-2 35M against ProteinMPNN, CKA — about half was the shared answer key</span></div>
   </div>
   <div class="stack prose">
     <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's embedding layer
@@ -584,8 +585,8 @@ def s_f2():
     model {v('untrained seq x trained str','partial'):.3f}, the reverse
     {v('trained seq x untrained str','partial'):.3f}, two untrained networks
     {v('untrained x untrained','partial'):.3f}.</p>
-    <p class="prose">Every sequence-against-structure pair lands between those rungs. The main pair
-    goes from {v(MAIN,'raw'):.3f} as measured to {v(MAIN,'partial'):.3f} with the answer key removed;
+    <p class="prose">Every sequence-against-structure pair lands between those rungs. The main pair,
+    ESM-2 35M against ProteinMPNN, goes from {v(MAIN,'raw'):.3f} as measured to {v(MAIN,'partial'):.3f} with the answer key removed;
     the other five cross-modal pairs land between {v('ESM-1v x ProteinMPNN','partial'):.3f} and
     {v('ESM-2 650M x ESM-IF1','partial'):.3f} after removal, the largest pair highest. All six sit
     clearly above every floor and clearly below the same-input rungs. Same main directions barely
@@ -630,7 +631,7 @@ def s_f3():
     subtraction ({v('ESM-1v s1 x ESM-1v s2','raw','mutual_knn'):.3f} as measured); two sequence
     models on {v('CARP x ESM-2','partial','mutual_knn'):.3f}; two structure models on
     {v('ESM-IF1 x ProteinMPNN','partial','mutual_knn'):.3f}. No sequence–structure pair exceeds
-    {mx:.2f}, and the main pair scores {v(MAIN,'partial','mutual_knn'):.3f}. The two families line up
+    {mx:.2f}, and the main pair, ESM-2 35M against ProteinMPNN, scores {v(MAIN,'partial','mutual_knn'):.3f}. The two families line up
     along some of the same directions, but they do not put the same residues next to each other —
     they are not two drawings of one map.</p>
     <p class="prose">Two sequence models are the one pair whose neighbour agreement <em>rises</em>
