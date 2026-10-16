@@ -48,7 +48,7 @@ D["layer_grids"] = {m: [[round(float(z[m][i, j]), 4) for j in range(z[m].shape[1
                         for i in range(z[m].shape[0])] for m in ("cka", "svcca", "mutual_knn")}
 D["layer_labels"] = {"esm": el, "mpnn": [str(x) for x in z["st_labels"]]}
 
-props = [("ss3", "local shape"), ("burial", "buried or exposed"), ("rsa", "solvent accessibility")]
+props = [("ss3", "secondary structure"), ("burial", "buried or exposed"), ("rsa", "solvent accessibility")]
 
 
 def stitch_run(name):
@@ -77,8 +77,8 @@ def stitch_run(name):
 
 
 REV_MAIN = ("binding_site", "active_site", "ptm_site")
-REV_LABEL = {"binding_site": "binding site", "active_site": "active site", "ptm_site": "PTM site",
-             "ss3": "local shape", "burial": "buried or exposed", "rsa": "solvent accessibility"}
+REV_LABEL = {"binding_site": "binding site (ligand contact)", "active_site": "active site", "ptm_site": "PTM site",
+             "ss3": "secondary structure", "burial": "buried or exposed", "rsa": "solvent accessibility"}
 
 
 def stitch_reverse(name):

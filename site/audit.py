@@ -85,8 +85,8 @@ for cond in ("donor", "stitched_rand", "stitched"):
 claim("rsa, sequence model alone", sum(float(c["rsa_native_mean"]) for c in main_cells) / len(main_cells))
 count = lambda cells, v: sum(1 for c in cells for p in props if c[f"{p}_verdict"] == v)
 claim("clearly worse", count(main_cells, "worse"), "{} of " + str(3 * len(main_cells)))
-claim("no clear difference", count(main_cells, "no clear difference"), "in {} there is no clear difference")
-claim("clearly better", count(main_cells, "better"), "in {} it is better")
+claim("no clear difference", count(main_cells, "no clear difference"), "no clear difference in {}")
+claim("clearly better", count(main_cells, "better"), "is better in {}")
 r2 = [float(c["connector_r2_mean"]) for c in main_cells]
 claim("linear connector R2, mean", sum(r2) / len(r2))
 mlp = stitch("proteinmpnn_mlp")
