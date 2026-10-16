@@ -145,6 +145,12 @@ D["dataset"] = {"domains": len(chains), "residues": sum(int(c["length"]) for c i
                 "subsamples": int(lad0["n_resamples"]), "budget": int(lad0["n_residues_per_subsample"]),
                 "refits": refits.pop()}
 
+# What the chain set covers (scripts/01_dataset.py diversity).
+div = json.load(open(R / "dataset/diversity.json"))
+assert div["chains"] == D["dataset"]["domains"] and div["residues"] == D["dataset"]["residues"], \
+    "diversity.json describes a different chain set from chains.csv"
+D["diversity"] = div
+
 # Depth profile before and after the amino-acid subtraction, on the ladder's basis (depth-ci).
 dep = {}
 for r in csv.DictReader(open(R / "depth_ci/depth_ci.csv")):

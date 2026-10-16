@@ -112,6 +112,13 @@ table.models-ref td:nth-child(3){min-width:13rem;font-size:.86rem;color:var(--in
   table.models-ref td[data-label]::before{content:attr(data-label);display:block;font-size:.58rem;
     letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
 }
+/* dataset coverage panel */
+.gblock h4{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+           color:var(--ink-3);font-weight:600;margin:0}
+.gblock .gn{font-size:.76rem;color:var(--ink-2);line-height:1.45;margin:2px 0 0}
+details .gbars{padding:4px 18px 18px}
+.gbars.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){.gbars.coverage{grid-template-columns:1fr}}
 /* details */
 details{background:var(--panel);border:1px solid var(--rule);border-radius:3px}
 details[open]{padding-bottom:16px}
@@ -325,6 +332,40 @@ REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thea
   </tbody></table></div>"""
 
 
+def coverage_panel():
+    """Four small bar blocks: what the chain set covers, from results/dataset/diversity.json."""
+    dv = D["diversity"]
+
+    def lanes(items, fmt=lambda n: f"{n:,}"):
+        top = max(n for _, n in items)
+        return "".join(
+            f'<div class="glane"><span class="gl">{lab}</span><span class="gt"><i style="width:'
+            f'{100 * n / top:.1f}%;background:var(--chrome)"></i></span><span class="gv">{fmt(n)}</span></div>'
+            for lab, n in items)
+
+    bins = dv["length"]["bins"]
+    length = [(f"{b['lo']}–{b['hi'] - 1 if i < len(bins) - 1 else dv['length']['max']}", b["n"])
+              for i, b in enumerate(bins)]
+    ss = dv["secondary_structure"]
+    tot = sum(ss.values())
+    ss_items = [(k.capitalize(), ss[k]) for k in ("helix", "strand", "coil")]
+    blocks = [
+        ("Fold class (CATH)", lanes(list(dv["cath_class"].items())),
+         f"{dv['cath_architectures']} architectures · {dv['cath_topologies']:,} topologies · "
+         f"{dv['cath_superfamilies']:,} homologous superfamilies"),
+        ("Organism", lanes(list(dv["kingdom"].items())),
+         "Kingdom of the UniProt entry each chain maps to."),
+        ("Length (residues per chain)", lanes(length),
+         f"Median {dv['length']['median']:.0f}, range {dv['length']['min']}–{dv['length']['max']}."),
+        ("Secondary structure (share of residues)",
+         lanes(ss_items, fmt=lambda n: f"{100 * n / tot:.1f}%"),
+         f"P-SEA on the deposited coordinates; {ss['unassigned']} residues unassigned."),
+    ]
+    return '<div class="gbars coverage">' + "".join(
+        f'<div class="gblock"><h4>{h}</h4>{body}<p class="gn">{note}</p></div>' for h, body, note in blocks
+    ) + "</div>"
+
+
 def s_models():
     ds = D["dataset"]
     return f"""<div class="page sec" id="models">
@@ -344,6 +385,9 @@ def s_models():
   {ds['budget']:,} residues, drawn whole chain at a time, with a 95% interval, because residues
   within a chain are not independent; probe scores carry the spread across {ds['refits']} independent
   refits instead.</p>
+  <details><summary>What the dataset covers: folds, organisms, lengths, secondary structure</summary>
+    {coverage_panel()}
+  </details>
   <details><summary>The reference models that set the scale</summary>
     {REFERENCE_TABLE}
   </details>
