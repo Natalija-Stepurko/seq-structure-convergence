@@ -269,24 +269,25 @@ def width_bars(D):
 
 # ─────────────────────────────────────────────────────── layer-by-layer bar panels
 def layer_panels(D):
-    panels = [("depth_cka", "Same pattern of resemblance", 0.45, SEQ),
-              ("depth_svcca", "Same main directions", 0.45, CHROME),
-              ("depth_knn", "Same neighbours", 0.03, STR)]
+    panels = [("depth_cka", "CKA · same pattern of resemblance", 0.45, SEQ),
+              ("depth_svcca", "SVCCA · same main directions", 0.45, CHROME),
+              ("depth_knn", "Mutual k-NN · same neighbours", 0.03, STR)]
     out = []
     for key, name, vmax, col in panels:
         rows = D[key]
-        w, h, pl, pr, pt, pb = 250, 178, 34, 8, 40, 26
+        w, h, pl, pr, pt, pb = 250, 190, 34, 8, 52, 26
         iw, ih = w - pl - pr, h - pt - pb
         gap = iw / len(rows)
         bw = gap * 0.72
         sv = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="{esc(name)} by sequence-model '
               f'layer, against the structure model\'s last encoder layer.">',
               f'<text x="0" y="12" class="ctsm">{esc(name)}</text>',
-              f'<text x="0" y="25" class="cs">scale 0–{vmax:g} · as measured</text>']
+              f'<text x="0" y="25" class="cs">each ESM-2 35M layer vs ProteinMPNN enc3</text>',
+              f'<text x="0" y="37" class="cs">scale 0–{vmax:g} · as measured</text>']
         for gv in (0, vmax / 2, vmax):
             y = pt + (1 - gv / vmax) * ih
             sv.append(f'<line x1="{pl}" y1="{y:.1f}" x2="{pl+iw}" y2="{y:.1f}" stroke="{RULE2}"/>'
-                      f'<text x="{pl-5}" y="{y+3:.1f}" class="cax" text-anchor="end">{gv:.2f}</text>')
+                      f'<text x="{pl-5}" y="{y+3:.1f}" class="cax" text-anchor="end">{gv:g}</text>')
         for i, r in enumerate(rows):
             x = pl + i * gap + (gap - bw) / 2
             bh = min(r["v"] / vmax, 1) * ih
@@ -294,6 +295,7 @@ def layer_panels(D):
                       f'rx="1" fill="{col}" opacity=".8">'
                       f'<title>{esc(r["layer"])}: {r["v"]:.3f}</title></rect>')
         sv.append(f'<text x="{pl}" y="{h-7}" class="cax">emb</text>'
+                  f'<text x="{pl+iw/2:.1f}" y="{h-7}" class="cax" text-anchor="middle">ESM-2 layer →</text>'
                   f'<text x="{pl+iw}" y="{h-7}" class="cax" text-anchor="end">b12</text>')
         sv.append("</svg>")
         out.append(f'<div class="minipanel">{"".join(sv)}</div>')
