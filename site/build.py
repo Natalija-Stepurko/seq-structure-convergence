@@ -112,6 +112,7 @@ table.models-ref td:nth-child(3){min-width:13rem;font-size:.86rem;color:var(--in
   table.models-ref td[data-label]::before{content:attr(data-label);display:block;font-size:.58rem;
     letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
 }
+p.prose a{color:var(--chrome);text-decoration:underline;text-underline-offset:2px}
 /* dataset coverage panel */
 .gblock h4{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
            color:var(--ink-3);font-weight:600;margin:0}
@@ -580,6 +581,8 @@ def ladder_details():
 
 
 def s_f2():
+    mx = max(v(k, "partial", "mutual_knn") for k, _, t in LADDER_ORDER
+             if t == "opposite inputs" and k in EP)
     return f"""<div class="page sec" id="f2">
   <div class="stack prose">
     <span class="eyebrow">What survives · every pair, before and after</span>
@@ -625,16 +628,8 @@ def s_f2():
     {v(MAIN,'partial'):.3f} with the answer key removed.</p>
   </div>
   <details><summary>Every pair, every measure, with intervals</summary>{ladder_details()}</details>
-</div>"""
-
-
-def s_f3():
-    mx = max(v(k, "partial", "mutual_knn") for k, _, t in LADDER_ORDER
-             if t == "opposite inputs" and k in EP)
-    return f"""<div class="page sec" id="f3">
-  <div class="stack prose">
-    <span class="eyebrow">No shared map · neighbours</span>
-    <h2>They do not arrange proteins the same way</h2>
+  <div class="stack prose" id="f3">
+    <h3 class="subhead">They do not arrange proteins the same way</h3>
     <p class="prose">Sharing axes is weaker than sharing a map. The neighbour measure asks, for each
     residue, how many of its ten closest neighbours in one model are also among its ten closest in
     the other. ESM-1v checkpoint 1 × checkpoint 2 agree on
@@ -651,10 +646,9 @@ def s_f3():
     dominating the neighbour lists, so neighbours are compared within an amino acid. Cross-modal pairs do not move
     ({v(MAIN,'raw','mutual_knn'):.3f} → {v(MAIN,'partial','mutual_knn'):.3f}), which supports the
     reading that the subtraction removes the islands and leaves the biology intact.</p>
-  </div>
-  <div class="figwrap">{ladder_svg(D, 'mutual_knn', 'both')}
-    <p class="figcap">The same ladder as in “What survives”, on the neighbour measure. The ceiling is far to the
-    right; every sequence–structure pair is crowded against the axis.</p>
+    <p class="prose"><a href="#ladderwrap" data-show-measure="mutual_knn">Switch the chart above to
+    mutual k-NN</a> to see it: the ceiling sits far to the right, and every sequence–structure pair
+    is crowded against the axis.</p>
   </div>
 </div>"""
 
@@ -1004,6 +998,10 @@ const LADDER_CAPS = {json.dumps(caps)};
     }});
   }}
   wire('seg-measure', x => {{ measure = x; }});
+  document.querySelectorAll('[data-show-measure]').forEach(a => a.addEventListener('click', () => {{
+    const b = document.querySelector('#seg-measure button[data-v="' + a.dataset.showMeasure + '"]');
+    if (b) b.click();
+  }}));
   wire('seg-show', x => {{ show = x; }});
 }})();
 
@@ -1052,7 +1050,7 @@ const LADDER_CAPS = {json.dumps(caps)};
 
 
 SECTIONS = [("question", "The question"), ("models", "Models"), ("measures", "Measures"),
-            ("f1", "The answer key"), ("f2", "What survives"), ("f3", "No shared map"),
+            ("f1", "The answer key"), ("f2", "What survives"),
             ("f4", "Layer by layer"), ("f5", "Not interchangeable"), ("f6", "Who knows what"),
             ("f7", "Where it builds up"), ("beyond", "Beyond proteins"), ("limits", "Limits"),
             ("references", "References")]
@@ -1141,7 +1139,7 @@ BASE_CSS = open(ARCHIVE / "base_css.txt").read()
 PAGE = ("<title>Do a sequence model and a structure model learn the same biology?</title>\n"
         f"<style>{BASE_CSS}{CSS_EXTRA}{NAV_CSS}</style>\n\n"
         + topnav() + "\n\n"
-        + "\n\n".join([header(), s_question(), s_models(), s_measures(), s_f1(), s_f2(), s_f3(),
+        + "\n\n".join([header(), s_question(), s_models(), s_measures(), s_f1(), s_f2(),
                        s_f4(), s_f5(), s_f6(), s_f7(), s_beyond(), s_limits(), s_data()])
         + "\n\n" + script() + "\n" + NAV_JS + "\n")
 
