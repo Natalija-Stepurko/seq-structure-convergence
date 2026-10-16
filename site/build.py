@@ -164,8 +164,8 @@ def header():
   <h1>Do two models given<br>opposite halves of a protein<br>learn the same biology?</h1>
   <p class="lede">A protein is a chain of amino acids that folds into a shape, and the shape is what
   lets it work. This page compares two machine-learning models that were each shown only one half
-  of that: <b>ESM-2</b> reads the chain of letters and never sees a coordinate; <b>ProteinMPNN</b>
-  reads the 3-D backbone and never sees a letter. If sequence and shape are two views of one
+  of that: <b>ESM-2</b> reads the amino-acid sequence and never sees a coordinate; <b>ProteinMPNN</b>
+  reads the 3-D backbone and never sees the amino-acid sequence. If sequence and shape are two views of one
   biology, the two should end up describing proteins the same way. They do only partly — and about
   half of what standard measurements report as agreement between them turns out to be the one
   thing both were trained to output: the amino acid at each position.</p>
@@ -451,14 +451,14 @@ def s_f1():
     that position 47 holds a leucine, without sharing any understanding of proteins at all.</p>
     <p class="prose">This is not hypothetical. Measured by CKA against ProteinMPNN's last encoder
     layer, ESM-2 agrees with the structure model most at its very first layer: the lookup that turns
-    each letter into a fixed vector, before any learned processing. That layer is nothing but the
+    each amino acid into a fixed vector, before any learned processing. That layer is nothing but the
     amino-acid code. Compared with a bare label naming the amino acid, it scores
     {a['esm_svcca']:.3f} by SVCCA and {a['esm_knn']:.3f} by mutual k-NN, so agreement measured there
     is the shared training target, not shared biology. Deeper in the model, where the learned
     biology should be, CKA with the structure model falls, from {dp['emb']:.3f} at the lookup to
     {dp['b7']:.3f} at block 7, and rises again toward the output, {dp['b12']:.3f} at block 12, where
     the model returns to predicting amino acids. The layers doing real work agree with the structure
-    model less than the raw letter code does.</p>
+    model less than the bare amino-acid code does.</p>
   </div>
   <details><summary>The layers of each model, in one table</summary>
     <div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Model</th><th>Layers</th>
@@ -491,7 +491,7 @@ def s_f1():
     model describes similarly — the same 8,000 residues in both rows. The sequence model breaks
     residue space into about twenty islands, one per amino acid; colour the islands by anything
     structural and the colours are mixed within each island. That information is there, but it is
-    not what sets the geography. The structure model, which never sees a letter, does the opposite:
+    not what sets the geography. The structure model, which never sees the amino-acid sequence, does the opposite:
     amino acid is scattered noise, and buried-versus-exposed splits the map almost in half. The two
     models organise protein space by different principles — one by chemical identity, one by
     physical environment.</figcaption>
@@ -502,7 +502,7 @@ def s_f1():
     answer key, take every leucine in the dataset, average its description, and subtract that average
     from each individual leucine — then repeat for all twenty amino acids. What is left is how
     <em>this</em> leucine differs from a typical leucine: its surroundings, its role. If a model knew
-    only the letter, subtracting would leave exactly zero and its apparent agreement would vanish
+    only the amino acid, subtracting would leave exactly zero and its apparent agreement would vanish
     entirely; that is the intended behaviour. If a model knows real biology — where the residue sits,
     what surrounds it, whether it is buried, what it does — all of that survives untouched.</p>
   </div>
@@ -528,7 +528,7 @@ def s_f1():
   </div>
   <div class="stack prose">
     <p class="prose">Layer by layer, the subtraction redraws the first chart. ESM-2's lookup layer
-    drops from {DP[0]['raw']:.3f} to nothing: it held only the letter code. The early blocks keep a
+    drops from {DP[0]['raw']:.3f} to nothing: it held only the amino-acid code. The early blocks keep a
     small part of their agreement ({DP[1]['raw']:.3f} → {DP[1]['partial']:.3f} at block 1), and what
     remains grows with depth, highest at {DPTOP['label'].replace('b', 'block ')}
     ({DPTOP['raw']:.3f} → {DPTOP['partial']:.3f}). Before the subtraction the input layer led; after
