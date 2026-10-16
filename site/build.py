@@ -99,13 +99,17 @@ text.cgood{font-family:var(--mono);font-size:10px;fill:var(--chrome);font-weight
 .def b{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;
        text-transform:uppercase;color:var(--chrome);margin-bottom:6px}
 .def span{font-size:.88rem;color:var(--ink-2);line-height:1.5}
-/* reference model list */
-.refmodels{display:grid;gap:10px;background:var(--panel);border:1px solid var(--rule);
-           border-radius:3px;padding:18px 22px}
-.refmodels div{display:grid;grid-template-columns:minmax(8rem,10rem) 1fr;gap:6px 16px;
-               font-size:.9rem;color:var(--ink-2);line-height:1.5}
-.refmodels dt{font-family:var(--mono);font-size:.8rem;color:var(--ink);font-weight:600}
-@media(max-width:620px){.refmodels div{grid-template-columns:1fr;gap:2px}}
+table.models-ref td:nth-child(3){min-width:13rem;font-size:.86rem;color:var(--ink-2)}
+/* on a phone, one card per model: label above each field */
+@media(max-width:640px){
+  table.models-ref thead{display:none}
+  table.models-ref,table.models-ref tbody,table.models-ref tr,table.models-ref td{display:block;width:auto;min-width:0}
+  table.models-ref tr{padding:10px 0;border-bottom:1px solid var(--rule-2)}
+  table.models-ref tbody tr:last-child{border-bottom:0}
+  table.models-ref td{border:0;padding:3px 16px}
+  table.models-ref td[data-label]::before{content:attr(data-label);display:block;font-size:.58rem;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
+}
 /* details */
 details{background:var(--panel);border:1px solid var(--rule);border-radius:3px}
 details[open]{padding-bottom:16px}
@@ -267,6 +271,28 @@ def s_question():
 </div>"""
 
 
+REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thead><tr><th>Also used, as reference points</th>
+    <th>Reads</th><th>Architecture</th><th>Why it is here</th></tr></thead><tbody>
+    <tr><td>CARP-38M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Dilated convolutional network, 38M parameters</td>
+      <td data-label="Why it is here">A sequence model built on a completely different design (stacked convolutions, not
+      attention) — tests whether anything depends on the design.</td></tr>
+    <tr><td>ESM-IF1</td><td data-label="Reads">coordinates only</td><td data-label="Architecture">Graph network (geometric vector perceptrons) feeding a transformer,
+      142M parameters</td>
+      <td data-label="Why it is here">A second, larger structure model.</td></tr>
+    <tr><td>ESM-2 650M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
+      <td data-label="Why it is here">The same model, 18× larger. Used only to ask whether agreement grows with size — it is not
+      the main evidence.</td></tr>
+    <tr><td>ESM-1v, two copies</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
+      <td data-label="Why it is here"><b>The ceiling.</b> Not part of the main comparison: ESM-1v is used because it is the one
+      protein language model released as several independently seeded checkpoints, so two copies
+      differ <em>only</em> by random start. That gives the one honest answer to “how alike can two
+      models even be?”</td></tr>
+    <tr><td>Untrained copies of both</td><td data-label="Reads">—</td><td data-label="Architecture">ESM-2 35M transformer and ProteinMPNN graph network, randomly
+      initialised</td>
+      <td data-label="Why it is here">Same wiring, no learning. The floor.</td></tr>
+  </tbody></table></div>"""
+
+
 def s_models():
     ds = D["dataset"]
     return f"""<div class="page sec" id="models">
@@ -279,17 +305,6 @@ def s_models():
     for the same residues, and they read opposite halves of a protein.</p>
   </div>
   {block("Two models carry the argument", '<div class="models">', '<div class="scroll">')}
-  <div class="refmodels">
-    <div><dt>CARP-38M</dt><dd>sequence: a sequence model of a completely different design — stacked
-      convolutions, not attention — to test whether anything depends on the design.</dd></div>
-    <div><dt>ESM-IF1</dt><dd>structure: a second, larger structure model.</dd></div>
-    <div><dt>ESM-2 650M</dt><dd>sequence: the same model 18× larger, used only to ask whether
-      agreement grows with size.</dd></div>
-    <div><dt>ESM-1v, two copies</dt><dd>sequence: the ceiling — the one protein language model
-      released as several independently seeded checkpoints, so two copies differ only by their
-      random start, which is the one honest answer to “how alike can two models even be?”</dd></div>
-    <div><dt>Untrained copies</dt><dd>of both main models: same wiring, no learning — the floor.</dd></div>
-  </div>
   <p class="prose">All comparisons use one fixed set of {ds['domains']:,} non-redundant protein
   domains with experimentally solved structures (CATH S35), {ds['residues']:,} residues in total.
   Both models describe every one of those residues, so each comparison is residue-for-residue. Every
@@ -297,8 +312,8 @@ def s_models():
   {ds['budget']:,} residues, drawn whole chain at a time, with a 95% interval, because residues
   within a chain are not independent; probe scores carry the spread across {ds['refits']} independent
   refits instead.</p>
-  <details><summary>The reference models as a table</summary>
-    {block("Two models carry the argument", '<div class="scroll">').replace("depends on the machinery", "depends on the design")}
+  <details><summary>The reference models that set the scale</summary>
+    {REFERENCE_TABLE}
   </details>
 </div>"""
 
