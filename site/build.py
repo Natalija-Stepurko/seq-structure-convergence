@@ -1,7 +1,7 @@
 """Build the results page from the pipeline outputs in results/.
 
 Reads build/data.json (written by build_data.py), the chart helpers in charts.py and two archived
-inputs in archive/: the three map images (pngs_opt.json) and the HTML fragments carried over from
+inputs in archive/: the three map images (maps.json) and the HTML fragments carried over from
 the earlier page (fragments.json). Writes build/index.html, the page GitHub Pages serves.
 """
 import json
@@ -17,12 +17,12 @@ FRAGMENTS = json.load(open(ARCHIVE / "fragments.json"))
 # The three maps, losslessly re-encoded with PIL (optimize=True, exact palette): ~10% smaller and
 # pixel-identical to the renders from results/umap6/coords.npz. Index 0 is Figure B. Pass
 # --fresh-figures to use a new render from make_figures.py.
-_FIG = BUILD / "figures.json" if "--fresh-figures" in sys.argv else ARCHIVE / "pngs_opt.json"
+_FIG = BUILD / "figures.json" if "--fresh-figures" in sys.argv else ARCHIVE / "maps.json"
 _OPT = json.load(open(_FIG))
 FIGB, PNG = _OPT[0], [None, _OPT[1], _OPT[2]]
 
 sys.path.insert(0, str(HERE))
-from charts import (depth_bars, ladder_svg, null_strips, width_bars, layer_panels,
+from charts import (depth_bars, depth_all, ladder_svg, null_strips, width_bars, layer_panels,
                     stitch_bars, depth_verdicts, depth_bars_partial, stitch_bars_reverse, LADDER_ORDER,
                     METRIC_LABEL)
 
@@ -112,6 +112,23 @@ table.models-ref td:nth-child(3){min-width:13rem;font-size:.86rem;color:var(--in
   table.models-ref td[data-label]::before{content:attr(data-label);display:block;font-size:.58rem;
     letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
 }
+p.prose a{color:var(--chrome);text-decoration:underline;text-underline-offset:2px}
+.sepblock{border-top:1px solid var(--rule);padding-top:26px;margin-top:6px}
+.dlegend{display:flex;flex-wrap:wrap;gap:6px 20px;font-family:var(--mono);font-size:.7rem;color:var(--ink-2);margin-bottom:6px}
+.dlegend i{display:inline-block;width:14px;height:3px;border-radius:1px;vertical-align:middle;margin-right:6px}
+.dlegend i.dash{background:repeating-linear-gradient(90deg,#6E7880 0 3px,transparent 3px 6px)}
+.dgroup{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+        font-weight:600;margin:16px 0 8px}
+.dgrid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.limits{background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:4px 26px}
+.lim{display:grid;grid-template-columns:minmax(11rem,14rem) 1fr;gap:6px 30px;padding:18px 0;
+     border-top:1px solid var(--rule-2)}
+.lim:first-child{border-top:0}
+.lim-h{font-weight:600;color:var(--ink);font-size:1.02rem;line-height:1.35}
+.lim-n{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+       color:var(--chrome);margin-bottom:5px;font-weight:600}
+.lim p{font-size:.93rem;color:var(--ink-2);line-height:1.6;margin:0}
+@media(max-width:640px){.limits{padding:4px 18px}.lim{grid-template-columns:1fr}}
 /* dataset coverage panel */
 .gblock h4{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
            color:var(--ink-3);font-weight:600;margin:0}
@@ -176,8 +193,8 @@ def header():
       <span class="rbm">CKA · centred kernel alignment</span>
       <p>Each model turns every residue into a list of numbers. Lay out the same
       {ds['residues']/1e6:.1f} million residues both ways and the two layouts share some of the same
-      axes. On this measure two copies of one model score
-      {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} and an untrained network scores
+      axes. On this measure ESM-1v checkpoint 1 × checkpoint 2 scores
+      {v('ESM-1v s1 x ESM-1v s2','partial'):.3f} and untrained ESM-2 35M against ProteinMPNN scores
       {v('untrained seq x trained str','partial'):.3f}; ESM-2 against ProteinMPNN scores
       {v(MAIN,'partial'):.3f}.</p></div>
     <div class="rb"><h3>Not the same map</h3>
@@ -185,7 +202,7 @@ def header():
       <span class="rbm">Mutual k-NN · 10 nearest neighbours</span>
       <p>Ask each model which ten residues are most like a given one, and the two lists almost
       never overlap: {v(MAIN,'partial','mutual_knn'):.3f} of neighbours in common, against
-      {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for two copies of one model. The two
+      {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} for ESM-1v checkpoint 1 × checkpoint 2. The two
       arrange proteins by different principles — ESM-2 by chemical identity, ProteinMPNN by physical
       environment.</p></div>
     <div class="rb"><h3>Not interchangeable</h3>
@@ -210,10 +227,12 @@ def header():
       <li>Both models are trained to guess the amino acid at each position, so they agree on that
       before they agree on anything else. This page finds where in the network that shared answer
       sits — at ESM-2's very first layer — subtracts it, and checks the subtraction against two
-      references: two copies of one model, whose agreement is certainly real and must survive, and
-      an untrained network, whose agreement cannot be real and must vanish.</li>
-      <li>Every score is read against a ladder of reference points — the same model trained twice,
-      two models that share an input, untrained networks, and each measure's own score on scrambled
+      references: ESM-1v checkpoint 1 × checkpoint 2, the same model from two random seeds, whose agreement is certainly real
+      and must survive, and
+      untrained ESM-2 35M against trained ProteinMPNN, whose agreement cannot be real and must
+      vanish.</li>
+      <li>Every score is read against a ladder of reference points — ESM-1v checkpoint 1 × checkpoint 2,
+      two models that share an input, untrained copies of ESM-2 35M and ProteinMPNN, and each measure's own score on scrambled
       data. One standard measure turns out to be mostly its scrambled score, and to grow with the
       size of the model.</li>
       <li>Agreement is tested by use as well as by geometry: ProteinMPNN's description is fed into
@@ -254,6 +273,19 @@ def header():
     <span class="repo-path">natalija-stepurko.com</span>
   </a>
 </header>"""
+
+
+def winner_coloured(html):
+    """Colour each property name in the win/loss chart like its bar, so the side that wins it reads
+    from the label alone; the two direction labels in the header take the same colours."""
+    html = re.sub(r'<span class="dn">([^<]*)</span>(\s*<div class="dt">.*?</div>\s*)'
+                  r'<span class="dv" style="color:(#[0-9A-Fa-f]{6})">',
+                  r'<span class="dn" style="color:\3">\1</span>\2<span class="dv" style="color:\3">',
+                  html, flags=re.S)
+    return (html.replace("<span>◀ structure model better</span>",
+                         '<span style="color:#C06014">◀ structure model better</span>')
+                .replace("<span>sequence model better ▶</span>",
+                         '<span style="color:#2D5BD1">sequence model better ▶</span>'))
 
 
 def s_question():
@@ -322,13 +354,15 @@ REFERENCE_TABLE = """<div class="scroll"><table class="ci wrap models-ref"><thea
     <tr><td>ESM-2 650M</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
       <td data-label="Why it is here">The same model, 18× larger. Used only to ask whether agreement grows with size — it is not
       the main evidence.</td></tr>
-    <tr><td>ESM-1v, two copies</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
+    <tr><td>ESM-1v, checkpoint 1 × checkpoint 2</td><td data-label="Reads">sequence only</td><td data-label="Architecture">Transformer, 33 layers, 650M parameters</td>
       <td data-label="Why it is here"><b>The ceiling.</b> Not part of the main comparison: ESM-1v is used because it is the one
       protein language model released as several independently seeded checkpoints, so two copies
       differ <em>only</em> by random start. That gives the one honest answer to “how alike can two
       models even be?”</td></tr>
     <tr><td>Untrained copies of both</td><td data-label="Reads">—</td><td data-label="Architecture">ESM-2 35M transformer and ProteinMPNN GNN, randomly initialised</td>
-      <td data-label="Why it is here">Same wiring, no learning. The floor.</td></tr>
+      <td data-label="Why it is here">Same wiring, no learning. The floor. Built here, not
+      downloaded: each architecture with fresh random weights (ESM-2 with PyTorch's default
+      initialisation, ProteinMPNN with its own Xavier-uniform initialisation; seed 0).</td></tr>
   </tbody></table></div>"""
 
 
@@ -494,7 +528,7 @@ def s_f1():
   </div>
   <figure class="bigfig">
     <img src="{FIGB}" alt="Residue maps for the sequence and structure models, coloured by amino
-      acid, local shape, burial and solvent accessibility. The sequence model splits into about
+      acid, secondary structure, burial and solvent accessibility. The sequence model splits into about
       twenty islands; the structure model is one connected cloud."/>
     <figcaption><b>The problem, drawn.</b> Every dot is one residue, placed near the residues each
     model describes similarly — the same 8,000 residues in both rows. The sequence model breaks
@@ -517,10 +551,10 @@ def s_f1():
   </div>
   {block("What we subtract", '<div class="subfigs">', '<div class="steps">')}
   <div class="stack prose">
-    <p class="prose">Two checks show the subtraction does what it should. The same model trained
-    twice — agreement that is certainly real — barely moves:
-    {v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}. An untrained
-    sequence network against a trained structure model — agreement that cannot be about biology,
+    <p class="prose">Two checks show the subtraction does what it should. ESM-1v checkpoint 1 × checkpoint 2, the
+    same model from two random seeds — agreement that is certainly real — barely moves:
+    {v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}. Untrained
+    ESM-2 35M against trained ProteinMPNN — agreement that cannot be about biology,
     because one side has learned nothing — scores a respectable-looking
     {v('untrained seq x trained str','raw'):.3f} as measured and collapses to
     {v('untrained seq x trained str','partial'):.3f} once the answer key is gone. Real agreement is
@@ -529,7 +563,7 @@ def s_f1():
   </div>
   <div class="callouts">
     <div class="callout"><b>{v('ESM-1v s1 x ESM-1v s2','raw'):.3f} → {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}</b>
-      <span>ESM-1v trained twice, CKA — unchanged</span></div>
+      <span>ESM-1v, checkpoint 1 × checkpoint 2, CKA — unchanged</span></div>
     <div class="callout"><b>{v('untrained seq x trained str','raw'):.3f} → {v('untrained seq x trained str','partial'):.3f}</b>
       <span>Untrained ESM-2 35M against trained ProteinMPNN, CKA — collapses</span></div>
     <div class="callout"><b>{v(MAIN,'raw'):.3f} → {v(MAIN,'partial'):.3f}</b>
@@ -576,6 +610,8 @@ def ladder_details():
 
 
 def s_f2():
+    mx = max(v(k, "partial", "mutual_knn") for k, _, t in LADDER_ORDER
+             if t == "opposite inputs" and k in EP)
     return f"""<div class="page sec" id="f2">
   <div class="stack prose">
     <span class="eyebrow">What survives · every pair, before and after</span>
@@ -583,14 +619,14 @@ def s_f2():
     and well below two models that share an input</h2>
     <p class="prose">A score of 0.13 means nothing on its own until you know what the same
     measurement gives for two models that certainly agree and for two that certainly do not. So every
-    pair is read against a ladder. At the top, the same model trained twice:
+    pair is read against a ladder. At the top, ESM-1v checkpoint 1 × checkpoint 2:
     {v('ESM-1v s1 x ESM-1v s2','partial'):.3f}, unchanged by the subtraction. Next, two models
     sharing an input: two sequence models (CARP-38M × ESM-2 35M) {v('CARP x ESM-2','partial'):.3f}
     and two structure models (ESM-IF1 × ProteinMPNN) {v('ESM-IF1 x ProteinMPNN','partial'):.3f} after
     the subtraction ({v('CARP x ESM-2','raw'):.3f} and {v('ESM-IF1 x ProteinMPNN','raw'):.3f} as
-    measured). At the bottom, the floors: an untrained sequence network against a trained structure
-    model {v('untrained seq x trained str','partial'):.3f}, the reverse
-    {v('trained seq x untrained str','partial'):.3f}, two untrained networks
+    measured). At the bottom, the floors: untrained ESM-2 35M against trained ProteinMPNN
+    {v('untrained seq x trained str','partial'):.3f}, ESM-2 35M against untrained ProteinMPNN
+    {v('trained seq x untrained str','partial'):.3f}, and both untrained
     {v('untrained x untrained','partial'):.3f}.</p>
     <p class="prose">Every sequence-against-structure pair lands between those rungs. The main pair,
     ESM-2 35M against ProteinMPNN, goes from {v(MAIN,'raw'):.3f} as measured to {v(MAIN,'partial'):.3f} with the answer key removed;
@@ -621,19 +657,11 @@ def s_f2():
     {v(MAIN,'partial'):.3f} with the answer key removed.</p>
   </div>
   <details><summary>Every pair, every measure, with intervals</summary>{ladder_details()}</details>
-</div>"""
-
-
-def s_f3():
-    mx = max(v(k, "partial", "mutual_knn") for k, _, t in LADDER_ORDER
-             if t == "opposite inputs" and k in EP)
-    return f"""<div class="page sec" id="f3">
-  <div class="stack prose">
-    <span class="eyebrow">No shared map · neighbours</span>
-    <h2>They do not arrange proteins the same way</h2>
+  <div class="stack prose" id="f3">
+    <h3 class="subhead">They do not arrange proteins the same way</h3>
     <p class="prose">Sharing axes is weaker than sharing a map. The neighbour measure asks, for each
     residue, how many of its ten closest neighbours in one model are also among its ten closest in
-    the other. Two copies of the same model agree on
+    the other. ESM-1v checkpoint 1 × checkpoint 2 agree on
     {v('ESM-1v s1 x ESM-1v s2','partial','mutual_knn'):.3f} of each other's neighbours after the
     subtraction ({v('ESM-1v s1 x ESM-1v s2','raw','mutual_knn'):.3f} as measured); two sequence
     models on {v('CARP x ESM-2','partial','mutual_knn'):.3f}; two structure models on
@@ -647,10 +675,9 @@ def s_f3():
     dominating the neighbour lists, so neighbours are compared within an amino acid. Cross-modal pairs do not move
     ({v(MAIN,'raw','mutual_knn'):.3f} → {v(MAIN,'partial','mutual_knn'):.3f}), which supports the
     reading that the subtraction removes the islands and leaves the biology intact.</p>
-  </div>
-  <div class="figwrap">{ladder_svg(D, 'mutual_knn', 'both')}
-    <p class="figcap">The same ladder as in “What survives”, on the neighbour measure. The ceiling is far to the
-    right; every sequence–structure pair is crowded against the axis.</p>
+    <p class="prose"><a href="#ladderwrap" data-show-measure="mutual_knn">Switch the chart above to
+    mutual k-NN</a> to see it: the ceiling sits far to the right, and every sequence–structure pair
+    is crowded against the axis.</p>
   </div>
 </div>"""
 
@@ -664,18 +691,20 @@ def s_f4():
     <span class="eyebrow">Layer by layer</span>
     <h2>Agreement is highest where the sequence model has learned least</h2>
     <p class="prose">The same pair of models, every layer of one against every layer of the other, as
-    measured. Read along the sequence model's depth: same pattern of resemblance is highest at the
-    embedding layer ({dp['emb']:.3f} against the structure model's last encoder layer), falls through
+    measured. Read along ESM-2's depth, each layer scored against ProteinMPNN's last encoder layer
+    (enc3): CKA is highest at the embedding layer ({dp['emb']:.3f}), falls through
     the middle blocks to {dp['b7']:.3f} at block 7, climbs back to {dp['b11']:.3f} at block 11 and
-    dips to {dp['b12']:.3f} at the output. Same main directions is nearly flat
-    ({min(sv):.2f}–{max(sv):.2f}) and mostly null. Same neighbours never leaves the floor
-    ({min(kn):.3f}–{max(kn):.3f}). Read along the structure model's depth: its last encoder layer is
-    the most similar to every sequence layer, on every measure. The three panels disagree because the
+    dips to {dp['b12']:.3f} at the output. SVCCA is nearly flat
+    ({min(sv):.2f}–{max(sv):.2f}) and mostly null. Mutual k-NN never leaves the floor
+    ({min(kn):.3f}–{max(kn):.3f}). Read along ProteinMPNN's depth (enc1–enc3): its last encoder layer
+    is the most similar to every ESM-2 layer, on every measure, which is why the panels use it. The three panels disagree because the
     measures do.</p>
   </div>
   <div class="minirow">{layer_panels(D)}</div>
-  <p class="figcap">All three panels are <b>as measured</b> — the answer key has not been removed
-  here, which is why the embedding layer leads.</p>
+  <p class="figcap">One bar per ESM-2 35M layer, from the embedding layer (emb) to block 12, scored
+  against ProteinMPNN's last encoder layer (enc3): CKA left, SVCCA middle, mutual k-NN right, each on
+  its own scale. All three panels are <b>as measured</b> — the answer key has not been removed here,
+  which is why the embedding layer leads.</p>
   <details><summary>All 39 layer pairs, all three measures</summary>
     {block("Layer by layer", '<div class="heats">')}
   </details>
@@ -691,76 +720,78 @@ def s_f5():
     return f"""<div class="page sec" id="f5">
   <div class="stack prose">
     <span class="eyebrow">Not interchangeable · stitching</span>
-    <h2>The structure model's description does not survive the sequence model's layers intact</h2>
-    <p class="prose">Similar is not the same as interchangeable. Stitching — taking one model's
-    description of a residue and feeding it into the other model's remaining layers — tests the
-    stronger claim directly: take the structure model's description of each residue, pass it through
-    a single trained translation step into the sequence model at some layer, and let the sequence
-    model's own remaining layers finish the job. Every entry point was tried — {st['cells']}
-    combinations of structure-model layer and entry point — and each stitched model was scored on
-    three properties: {st['total']} cases, each repeated on {st['repeats']} independent samples of
-    proteins. The comparison that settles it is against the structure model <em>on its own</em>:
-    scoring against the sequence model would flatter stitching, because the structure model is simply
-    better at these properties to begin with (Lenc &amp; Vedaldi, 2015; Bansal et al., 2021).</p>
-    <p class="prose">Passing the structure model's work through the sequence model's trained layers
-    loses part of it. In {st['worse']} of {st['total']} cases the stitched model is clearly worse than
-    the structure model alone, a difference that holds up across all {st['repeats']} repeats; in {st['unclear']}
-    there is no clear difference, and in {st['better']} it is better. The losses are not spread
-    evenly: every case that enters in the first {LEAD} layers is worse, and the cases with no clear
-    difference sit at the deep entry points, where few of the sequence model's layers are left to
-    act.</p>
-    <p class="prose">What comes out is in between. Untrained layers pass the information through
-    unchanged ({p['ss3']['donor']:.3f} → {p['ss3']['rand']:.3f} for local shape,
-    {p['burial']['donor']:.3f} → {p['burial']['rand']:.3f} for buried or exposed,
-    {p['rsa']['donor']:.3f} → {p['rsa']['rand']:.3f} for solvent accessibility). Trained layers keep
-    more than the sequence model knows on its own and less than the structure model supplied: for
-    solvent accessibility, {p['rsa']['trained']:.3f}, against {p['rsa']['native']:.3f} for the
-    sequence model alone and {p['rsa']['donor']:.3f} for the structure model alone. The layers are
-    tuned to inputs a structure model never produces.</p>
-    <p class="prose">Two checks bound the result. The translation step is a single linear map, and on
-    held-out proteins it captures only {st['r2_min']:.2f}–{st['r2_max']:.2f} of the variance (mean
-    {st['r2_mean']:.3f}). A small neural network in its place fits slightly better (mean
-    {mlp['r2_mean']:.3f}) and changes nothing: {mlp['worse']} of {mlp['total']} cases are still
-    clearly worse. And the same test can pass. Fed into ESM-2 from CARP, a second sequence model, the
-    linear map fits about {ctl['r2_mean'] / st['r2_mean']:.0f} times better (mean
-    {ctl['r2_mean']:.3f}) and {ctl['unclear']} of {ctl['total']} cases show no clear loss. CARP starts
-    at roughly ESM-2's level on these properties, which makes a no-loss result easier to reach; the
-    structure model carries information the sequence model lacks, and that is what is lost. Folding
-    trunks that share both input and target have likewise been shown to be functionally
-    interchangeable (Lu et al., 2026).</p>
+    <h2>Can one protein model use what another has learned?</h2>
+    <p class="prose">Two models can have similar representations without being able to use each
+    other's information. To test whether ESM-2 and ProteinMPNN are interchangeable, I used model
+    stitching: take ProteinMPNN's description of each residue, translate it into ESM-2's
+    representation space with a trained linear map, feed it into ESM-2 at one of its layers, and let
+    ESM-2's remaining layers finish. Does the information ProteinMPNN encoded survive? The bar to clear
+    is ProteinMPNN on its own: if the information survives, the stitched model should match it.
+    Beating ESM-2 alone would prove little, because ESM-2 is weaker at these structural properties to
+    begin with (Lenc &amp; Vedaldi, 2015; Bansal et al., 2021).</p>
+    <p class="prose"><b>The result: ESM-2's layers lose part of ProteinMPNN's information.</b> Across
+    {st['total']} combinations of ProteinMPNN layer, ESM-2 entry point and property (secondary
+    structure, buried or exposed, solvent accessibility), each repeated on {st['repeats']} independent
+    samples of proteins, stitching is clearly worse than ProteinMPNN alone in {st['worse']}, shows no
+    clear difference in {st['unclear']} and is better in {st['better']}. Every combination entering
+    ESM-2's first {LEAD} layers is worse; the cases with no clear difference sit at the deepest entry
+    points, where few ESM-2 layers are left.</p>
   </div>
   <div class="minirow">{stitch_bars(D)}</div>
-  <p class="figcap">Each panel averages the {st['cells']} combinations of structure-model layer and
-  entry point, over {st['repeats']} repeats.</p>
+  <p class="figcap">ProteinMPNN's description passed into ESM-2. Each panel averages the {st['cells']}
+  combinations of ProteinMPNN layer and ESM-2 entry point, over {st['repeats']} repeats.</p>
   <div class="figwrap">{depth_verdicts(D)}</div>
   <div class="stack prose">
+    <h3 class="subhead">Controls</h3>
+    <p class="prose"><b>Untrained layers keep the information.</b> Passed through randomly initialised
+    ESM-2 layers, ProteinMPNN's description comes out unchanged ({p['ss3']['donor']:.3f} →
+    {p['ss3']['rand']:.3f} for secondary structure, {p['burial']['donor']:.3f} →
+    {p['burial']['rand']:.3f} for buried or exposed, {p['rsa']['donor']:.3f} → {p['rsa']['rand']:.3f}
+    for solvent accessibility). Through trained layers, solvent accessibility falls to
+    {p['rsa']['trained']:.3f}, still above ESM-2 alone ({p['rsa']['native']:.3f}).</p>
+    <p class="prose"><b>A more flexible translation does not fix it.</b> A small neural network in place
+    of the linear map fits slightly better (mean {mlp['r2_mean']:.3f} of the variance on held-out
+    proteins, against {st['r2_mean']:.3f}), but {mlp['worse']} of {mlp['total']} comparisons still
+    show a clear loss.</p>
+    <p class="prose"><b>The same test can pass.</b> Stitching CARP, a second sequence model, into ESM-2,
+    the linear map fits about {ctl['r2_mean'] / st['r2_mean']:.0f} times better (mean
+    {ctl['r2_mean']:.3f}) and {ctl['unclear']} of {ctl['total']} comparisons show no clear loss. CARP
+    starts at about ESM-2's own level on these properties, so it has less to lose than ProteinMPNN.
+    Folding trunks that share both input and training target have likewise been shown to be
+    interchangeable (Lu et al., 2026).</p>
+    <p class="prose"><b>A limit.</b> The translation is weak: the linear map captures only
+    {st['r2_min']:.2f}–{st['r2_max']:.2f} of the variance on held-out proteins, and the neural
+    network only modestly more. So the experiment shows that these translations do not carry
+    ProteinMPNN's information through ESM-2 intact; it does not rule out that a more powerful one
+    could. Part of the loss may reflect imperfect alignment between the two spaces, not ESM-2's layers
+    alone. The controls point to the trained layers but do not fully separate the two.</p>
+  </div>
+  <div class="stack prose sepblock">
     <h3 class="subhead">The other direction: ESM-2 into ProteinMPNN</h3>
-    <p class="prose">The test also runs the other way. ESM-2's description of each residue, through
-    the same kind of translation step, replaces ProteinMPNN's own after its first, second or third
-    encoder layer, and ProteinMPNN's remaining layers finish the job: {rv['cells']} combinations of
-    ESM-2 layer and entry point, each repeated on {rv['repeats']} independent samples of proteins.
-    One thing differs from the first direction. ProteinMPNN passes messages between each residue and
-    its nearest neighbours in space, and that neighbour graph comes from the coordinates, so its
-    remaining layers always have the geometry whatever is fed in. Two references are therefore
-    needed: ESM-2 on its own, and ProteinMPNN's remaining layers given nothing but the geometry.</p>
-    <p class="prose">A fair test needs a property ESM-2 reads at least as well as ProteinMPNN. At the
-    level of single residues only one qualifies here: whether a residue contacts a ligand, which ESM-2
-    alone scores {rb['donor']:.3f} and ProteinMPNN alone {rb['native']:.3f}. Passed through
-    ProteinMPNN's layers, ESM-2's description of it scores {rb['trained']:.3f}: clearly below ESM-2
-    alone in {pb['donor']['worse']} of {rv['cells']} cases, and clearly above the geometry on its own
-    ({rb['blank']:.3f}) in {pb['blank']['better']} of {rv['cells']}. Part of what ESM-2 knows
-    survives and part is lost — the same in-between result as in the first direction.</p>
-    <p class="prose">The structural properties show how the two sources combine. For solvent
-    accessibility the stitched model scores {rr['trained']:.3f}: above ESM-2 alone
-    ({rr['donor']:.3f}) and above the geometry alone ({rr['blank']:.3f}), so ESM-2's description adds
-    to what the coordinates give, but below ProteinMPNN alone ({rr['native']:.3f}). Active sites and
-    sites of chemical modification are too rare among residues to score here — the modification
-    sites sit at chance level in every condition — so their cases are not counted either way.</p>
+    <p class="prose">I also fed ESM-2's description into ProteinMPNN, after its first, second or third
+    encoder layer: {rv['cells']} combinations of ESM-2 layer and entry point, each repeated on
+    {rv['repeats']} samples of proteins. ProteinMPNN's remaining layers still receive the backbone
+    geometry, because its neighbour graph comes from the coordinates, so this direction has two
+    baselines: ESM-2 alone, and ProteinMPNN's remaining layers given only the geometry.</p>
+    <p class="prose">For ligand contact, the one residue-level property ESM-2 reads at least as well as
+    ProteinMPNN ({rb['donor']:.3f} against {rb['native']:.3f}), stitching scores {rb['trained']:.3f}:
+    clearly below ESM-2 alone in {pb['donor']['worse']} of {rv['cells']} cases, and clearly above the
+    geometry alone ({rb['blank']:.3f}) in {pb['blank']['better']} of {rv['cells']}. For solvent
+    accessibility, ESM-2's description plus the geometry scores {rr['trained']:.3f}, above either
+    alone (ESM-2 {rr['donor']:.3f}, geometry {rr['blank']:.3f}) but below ProteinMPNN's own
+    ({rr['native']:.3f}). Active sites and sites of chemical modification are too rare among residues
+    to score.</p>
   </div>
   <div class="minirow">{stitch_bars_reverse(D, ["binding_site", "rsa"])}</div>
-  <p class="figcap">Each panel averages the {rv['cells']} combinations of ESM-2 layer and
-  ProteinMPNN entry point, over {rv['repeats']} repeats, scored on every residue of the held-out
-  proteins. "Geometry only" is ProteinMPNN's remaining layers with an empty description fed in.</p>
+  <p class="figcap">ESM-2's description passed into ProteinMPNN. Each panel averages the
+  {rv['cells']} combinations of ESM-2 layer and ProteinMPNN entry point, over {rv['repeats']}
+  repeats, scored on every residue of the held-out proteins. "Geometry only" is ProteinMPNN's
+  remaining layers with an empty description fed in.</p>
+  <div class="stack prose">
+    <p class="prose"><b>The takeaway.</b> Some information transfers between the two models, but
+    their representations are not freely interchangeable: each model's trained layers are adapted to
+    the kind of input it normally receives.</p>
+  </div>
 </div>"""
 
 
@@ -774,9 +805,9 @@ def s_f6():
     <p class="prose">Both models were tested on properties neither was trained to predict, with a
     probe on each layer and the best layer reported. The split is clean, and it runs along the
     boundary between geometry and biology. Everything geometric — solvent accessibility, buried or
-    exposed, local shape, flexibility (B-factor) — is read better from the structure model: 0.816
+    exposed, secondary structure, flexibility (B-factor) — is read better from the structure model: 0.816
     against 0.420 for solvent accessibility (R²), 0.892 against 0.761 for buried or exposed, 0.887
-    against 0.786 for local shape, 0.276 against 0.180 for flexibility (R²). Everything functional
+    against 0.786 for secondary structure, 0.276 against 0.180 for flexibility (R²). Everything functional
     and evolutionary is read better from the sequence model: enzyme class {e['ec_class']['v']:.3f}
     against {m['ec_class']['v']:.3f}, protein class {e['protein_class']['v']:.3f} against
     {m['protein_class']['v']:.3f}, kingdom {e['kingdom']['v']:.3f} against {m['kingdom']['v']:.3f},
@@ -794,11 +825,18 @@ def s_f6():
     claims because their intervals overlap or their baselines do nothing but guess the commonest
     answer; they are shown in the full battery below.</p>
   </div>
-  {block("Which model wins, and by how much", '<div class="dv-wrap">')}
+  {winner_coloured(block("Which model wins, and by how much", '<div class="dv-wrap">'))}
   <p class="figcap">Which model reads each property better, and by how much (sequence minus
   structure). Bars left of centre: the structure model reads it better.</p>
   <details><summary>The headline tables with intervals</summary>
-    {block("Each model wins at what it was shown", '<div class="twocol">')}
+    {block("Each model wins at what it was shown", '<div class="twocol">').replace("Local shape (helix/sheet/coil)", "Secondary structure (helix/strand/coil)")
+     .replace("<th>Best null</th>", "<th>Counting baseline</th>")
+     .replace("Macro-F1; intervals are the spread across five\n  independent refits.",
+              "Macro-F1; intervals are the spread across five\n  independent refits. Counting baseline: the "
+              "best of four predictors that see no protein model, linear and boosted-tree classifiers on "
+              "each protein's amino-acid composition alone and on composition plus its length and the mean, "
+              "spread and range of nine physicochemical scales over its sequence (hydropathy, charge, "
+              "volume, polarity and others); the last wins in every row.")}
   </details>
   <details id="battery-details"><summary>All twenty-five properties, against an amino-acid-counting baseline</summary>
     <p class="figcap">The grey tick is what you score by counting amino acids alone; a model sitting
@@ -837,7 +875,7 @@ def s_f6():
       <img src="{PNG[1]}" alt="Residue maps for every model arm against six residue properties."/>
       <figcaption>The three ESM arms break into the same twenty amino-acid islands, so that pattern
       is not a matter of model size. CARP, also sequence-only and trained the same way, does not:
-      its map is organised by local shape and burial, like the two structure models. Against a bare
+      its map is organised by secondary structure and burial, like the two structure models. Against a bare
       amino-acid label CARP is more aligned than ESM-2 on same main directions (0.937 against 0.830)
       and far less on same neighbours (0.052 against 0.916) — and a map like this is built from
       neighbours. Binding site is the one column where no model shows any organisation: contact
@@ -849,21 +887,33 @@ def s_f6():
 
 
 def s_f7():
+    by = {d["key"]: d for d in D["depth_probes"]}
+    best = lambda d: max(d["esm"], key=lambda p: p["v"])
+    lab = lambda l: "the embedding layer" if l == "emb" else f"block {l[1:]}"
+    ss, ft = by["ss3"], by["cath_topol"]
+    mp = [p["v"] for p in ft["mpnn"]]
     return f"""<div class="page sec" id="f7">
   <div class="stack prose">
     <span class="eyebrow">Where it builds up · depth</span>
     <h2>Geometry is handed to the structure model; the sequence model has to build it</h2>
-    <p class="prose">Left is each model's input, right is its output. The structure model already
-    knows the geometry at its first layer — it is handed the coordinates, so there is nothing to
-    build — and reaches its ceiling almost immediately (local shape 0.887 at the first encoder
-    layer). The sequence model has to construct that knowledge, climbing steadily through twelve
-    blocks and never quite arriving (local shape 0.556 at the embedding layer to 0.778 at block 11).
-    For function it is the reverse: the sequence model rises far above the amino-acid-counting
-    baseline — fold topology from 0.239 at the input to 0.700 at block 8, against a baseline of 0.23
-    — while the structure model stays near it (0.400–0.481). This is also why the sequence model gets
-    more chances to pick a best layer.</p>
+    <p class="prose">Each panel follows one property from each model's input (left) to its output
+    (right), for all {len(D["depth_probes"])} properties tested. ProteinMPNN already knows the geometry
+    at its first encoder layer, because it is handed the coordinates, and is at its ceiling almost
+    immediately: secondary structure {ss['mpnn'][0]['v']:.3f} at enc1. ESM-2 has to construct that
+    knowledge, climbing through its blocks and never quite arriving: {ss['esm'][0]['v']:.3f} at the
+    embedding layer to {best(ss)['v']:.3f} at {lab(best(ss)['layer'])}. For function it is the reverse.
+    ESM-2 rises far above the counting baseline (fold topology from {ft['esm'][0]['v']:.3f} at the
+    input to {best(ft)['v']:.3f} at {lab(best(ft)['layer'])}, against a baseline of
+    {ft['baseline']:.3f}), while ProteinMPNN rises only modestly above it
+    ({min(mp):.3f}–{max(mp):.3f}). ESM-2 also
+    has more layers to pick a best one from, which favours it slightly.</p>
   </div>
-  {block("How each property builds up", '<div class="legend">')}
+  <div class="figwrap">{depth_all(D)}
+    <p class="figcap">Boosted-tree probes on each layer, mean of {D['dataset']['refits']} refits on
+    independent chain-level splits; the ESM-2 band and the ProteinMPNN whiskers are 95% intervals.
+    Residue-level targets are scored by accuracy, R² or F1 as marked; protein-level targets by
+    macro-F1. ESM-2's 13 layers and ProteinMPNN's 3 share one input-to-output axis.</p>
+  </div>
 </div>"""
 
 
@@ -875,14 +925,15 @@ def s_beyond():
     <h2>Three artefacts, each on its own large enough to manufacture a convergence result</h2>
     <p class="prose">Of the headline agreement between a sequence and a structure model, {share('svcca'):.0f}% of one
     measure is what it reports on scrambled data; roughly half of another is the training target both
-    models share; and an untrained network scores {v('untrained seq x trained str','raw'):.3f} — a
+    models share; and untrained ESM-2 35M scores {v('untrained seq x trained str','raw'):.3f} against
+    ProteinMPNN — a
     respectable-looking number — until that target is removed, whereupon it collapses to
     {v('untrained seq x trained str','partial'):.3f}. Any one of the three would be enough to produce
     a convergence result where there is none.</p>
     <p class="prose">The controls that catch them are cheap. A scrambled-residue null for every
     measure, so a score is read as its distance above chance, not as a bare number (Gröger et al.,
     2026, make the same argument for vision and language). Dimension matching before comparing models
-    of different widths. A ceiling from the same model trained twice, so “high” has a reference. And,
+    of different widths. A ceiling from ESM-1v checkpoint 1 × checkpoint 2, so “high” has a reference. And,
     wherever two models are trained toward the same target, a residualisation of that target before
     agreement is measured — the target-side counterpart of the input-side deconfounding proposed by
     Cui et al. (2022). The last of these is the one this study adds, and it changed the answer.</p>
@@ -896,24 +947,24 @@ def s_limits():
     <span class="eyebrow">Limits</span>
     <h2>What this does not show</h2>
   </div>
-  <div class="cards">
-    <div class="card"><span class="tag">these are not AlphaFold</span>
+  <div class="limits">
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 1</span>These are not AlphaFold</div>
       <p>The structure models here are ProteinMPNN and ESM-IF1, built to design sequences for a given
       backbone. No structure-prediction model is measured anywhere in this work, so nothing here says
       how AlphaFold-style models encode biology.</p></div>
-    <div class="card"><span class="tag">unequal sizes</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 2</span>Unequal sizes</div>
       <p>ProteinMPNN's encoder is small — 3 layers against ESM-2's 12. Part of the property-prediction
       gap is size, not sequence versus shape. ESM-IF1, the larger structure model, narrows it without
       closing it.</p></div>
-    <div class="card"><span class="tag">one kind of protein</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 3</span>One kind of protein</div>
       <p>4,898 chains with experimentally solved structures, each chosen for a classified CATH
       domain. Everything here is crystallisable and folded; disordered and membrane proteins are
       under-represented.</p></div>
-    <div class="card"><span class="tag">scores depend on sample size</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 4</span>Scores depend on sample size</div>
       <p>All three measures inflate on smaller samples, unequally — halving the sample raises the
       neighbour measure by about a quarter. Every number here is quoted at a stated sample size, and
       SVCCA is computed on at most 5,000 rows.</p></div>
-    <div class="card"><span class="tag">the subtraction is linear</span>
+    <div class="lim"><div class="lim-h"><span class="lim-n">Limit 5</span>The subtraction is linear</div>
       <p>Removing each amino acid's mean description removes the part of the answer key that is the
       same for every leucine. Anything the models encode about amino-acid identity in a non-linear
       way is not removed, so the “answer key removed” numbers are an upper bound on genuine
@@ -999,6 +1050,10 @@ const LADDER_CAPS = {json.dumps(caps)};
     }});
   }}
   wire('seg-measure', x => {{ measure = x; }});
+  document.querySelectorAll('[data-show-measure]').forEach(a => a.addEventListener('click', () => {{
+    const b = document.querySelector('#seg-measure button[data-v="' + a.dataset.showMeasure + '"]');
+    if (b) b.click();
+  }}));
   wire('seg-show', x => {{ show = x; }});
 }})();
 
@@ -1047,7 +1102,7 @@ const LADDER_CAPS = {json.dumps(caps)};
 
 
 SECTIONS = [("question", "The question"), ("models", "Models"), ("measures", "Measures"),
-            ("f1", "The answer key"), ("f2", "What survives"), ("f3", "No shared map"),
+            ("f1", "The answer key"), ("f2", "What survives"),
             ("f4", "Layer by layer"), ("f5", "Not interchangeable"), ("f6", "Who knows what"),
             ("f7", "Where it builds up"), ("beyond", "Beyond proteins"), ("limits", "Limits"),
             ("references", "References")]
@@ -1136,7 +1191,7 @@ BASE_CSS = open(ARCHIVE / "base_css.txt").read()
 PAGE = ("<title>Do a sequence model and a structure model learn the same biology?</title>\n"
         f"<style>{BASE_CSS}{CSS_EXTRA}{NAV_CSS}</style>\n\n"
         + topnav() + "\n\n"
-        + "\n\n".join([header(), s_question(), s_models(), s_measures(), s_f1(), s_f2(), s_f3(),
+        + "\n\n".join([header(), s_question(), s_models(), s_measures(), s_f1(), s_f2(),
                        s_f4(), s_f5(), s_f6(), s_f7(), s_beyond(), s_limits(), s_data()])
         + "\n\n" + script() + "\n" + NAV_JS + "\n")
 

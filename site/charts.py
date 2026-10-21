@@ -115,11 +115,11 @@ def depth_bars_partial(D):
 
 def stitch_bars_reverse(D, keys):
     """The other direction: ESM-2's description through ProteinMPNN's layers, per property."""
-    conds = [("donor", "sequence model alone", SEQ),
-             ("rand", "→ untrained structure layers", NULL),
-             ("trained", "→ trained structure layers", STR),
-             ("blank", "structure layers, geometry only", "#E3C4AA"),
-             ("native", "structure model alone", "#B9C2C7")]
+    conds = [("donor", "ESM-2 alone", SEQ),
+             ("rand", "→ untrained ProteinMPNN layers", NULL),
+             ("trained", "→ trained ProteinMPNN layers", STR),
+             ("blank", "ProteinMPNN layers, geometry only", "#E3C4AA"),
+             ("native", "ProteinMPNN alone", "#B9C2C7")]
     rv = {p["key"]: p for p in D["stitching_reverse"]["props"]}
     out = []
     for key in keys:
@@ -130,7 +130,7 @@ def stitch_bars_reverse(D, keys):
         sv = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Reverse stitching result for '
               f'{esc(p["label"])}.">',
               f'<text x="0" y="13" class="ctsm">{esc(p["label"])}</text>',
-              f'<text x="0" y="26" class="cs">mean over all {D["stitching_reverse"]["cells"]} layer × '
+              f'<text x="0" y="26" class="cs">mean of {D["stitching_reverse"]["cells"]} layer × '
               f'entry-point combinations</text>']
         for i, (k, lab, col) in enumerate(conds):
             y = pt + i * rowh
@@ -147,7 +147,7 @@ def stitch_bars_reverse(D, keys):
 
 # ─────────────────────────────────────────────────────────── the ladder (interactive)
 LADDER_ORDER = [
-    ("ESM-1v s1 x ESM-1v s2", "The same model trained twice (two seeds)", "ceiling"),
+    ("ESM-1v s1 x ESM-1v s2", "ESM-1v, checkpoint 1 × checkpoint 2", "ceiling"),
     ("CARP x ESM-2", "CARP-38M × ESM-2 35M", "same input"),
     ("ESM-IF1 x ProteinMPNN", "ESM-IF1 × ProteinMPNN", "same input"),
     ("ESM-2 650M x ESM-IF1", "ESM-2 650M × ESM-IF1", "opposite inputs"),
@@ -156,9 +156,9 @@ LADDER_ORDER = [
     ("ESM-2 35M x ProteinMPNN", "ESM-2 35M × ProteinMPNN", "opposite inputs"),
     ("CARP x ProteinMPNN", "CARP-38M × ProteinMPNN", "opposite inputs"),
     ("ESM-1v x ProteinMPNN", "ESM-1v × ProteinMPNN", "opposite inputs"),
-    ("untrained seq x trained str", "Untrained sequence × trained structure", "floor"),
-    ("trained seq x untrained str", "Trained sequence × untrained structure", "floor"),
-    ("untrained x untrained", "Two untrained networks", "floor"),
+    ("untrained seq x trained str", "Untrained ESM-2 35M × ProteinMPNN", "floor"),
+    ("trained seq x untrained str", "ESM-2 35M × untrained ProteinMPNN", "floor"),
+    ("untrained x untrained", "Untrained ESM-2 35M × untrained ProteinMPNN", "floor"),
 ]
 METRIC_LABEL = {"cka": "Same pattern of resemblance (CKA)",
                 "svcca": "Same main directions (SVCCA)",
@@ -168,7 +168,7 @@ METRIC_LABEL = {"cka": "Same pattern of resemblance (CKA)",
 def ladder_svg(D, metric="cka", show="both", chart_id="ladder"):
     """Horizontal bars: answer-key-removed solid, as-measured as a ghost bar behind it."""
     rows = [(lab, tag, D["every_pair"][k]) for k, lab, tag in LADDER_ORDER if k in D["every_pair"]]
-    w, rowh, pl, pr, pt = 760, 34, 256, 54, 50
+    w, rowh, pl, pr, pt = 760, 34, 262, 54, 50
     ih = rowh * len(rows)
     h = pt + ih + 34
     iw = w - pl - pr
@@ -269,24 +269,25 @@ def width_bars(D):
 
 # ─────────────────────────────────────────────────────── layer-by-layer bar panels
 def layer_panels(D):
-    panels = [("depth_cka", "Same pattern of resemblance", 0.45, SEQ),
-              ("depth_svcca", "Same main directions", 0.45, CHROME),
-              ("depth_knn", "Same neighbours", 0.03, STR)]
+    panels = [("depth_cka", "CKA · same pattern of resemblance", 0.45, SEQ),
+              ("depth_svcca", "SVCCA · same main directions", 0.45, CHROME),
+              ("depth_knn", "Mutual k-NN · same neighbours", 0.03, STR)]
     out = []
     for key, name, vmax, col in panels:
         rows = D[key]
-        w, h, pl, pr, pt, pb = 250, 178, 34, 8, 40, 26
+        w, h, pl, pr, pt, pb = 250, 190, 34, 8, 52, 26
         iw, ih = w - pl - pr, h - pt - pb
         gap = iw / len(rows)
         bw = gap * 0.72
         sv = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="{esc(name)} by sequence-model '
               f'layer, against the structure model\'s last encoder layer.">',
               f'<text x="0" y="12" class="ctsm">{esc(name)}</text>',
-              f'<text x="0" y="25" class="cs">scale 0–{vmax:g} · as measured</text>']
+              f'<text x="0" y="25" class="cs">each ESM-2 35M layer vs ProteinMPNN enc3</text>',
+              f'<text x="0" y="37" class="cs">scale 0–{vmax:g} · as measured</text>']
         for gv in (0, vmax / 2, vmax):
             y = pt + (1 - gv / vmax) * ih
             sv.append(f'<line x1="{pl}" y1="{y:.1f}" x2="{pl+iw}" y2="{y:.1f}" stroke="{RULE2}"/>'
-                      f'<text x="{pl-5}" y="{y+3:.1f}" class="cax" text-anchor="end">{gv:.2f}</text>')
+                      f'<text x="{pl-5}" y="{y+3:.1f}" class="cax" text-anchor="end">{gv:g}</text>')
         for i, r in enumerate(rows):
             x = pl + i * gap + (gap - bw) / 2
             bh = min(r["v"] / vmax, 1) * ih
@@ -294,6 +295,7 @@ def layer_panels(D):
                       f'rx="1" fill="{col}" opacity=".8">'
                       f'<title>{esc(r["layer"])}: {r["v"]:.3f}</title></rect>')
         sv.append(f'<text x="{pl}" y="{h-7}" class="cax">emb</text>'
+                  f'<text x="{pl+iw/2:.1f}" y="{h-7}" class="cax" text-anchor="middle">ESM-2 layer →</text>'
                   f'<text x="{pl+iw}" y="{h-7}" class="cax" text-anchor="end">b12</text>')
         sv.append("</svg>")
         out.append(f'<div class="minipanel">{"".join(sv)}</div>')
@@ -302,10 +304,10 @@ def layer_panels(D):
 
 # ──────────────────────────────────────────────────────────────────── stitching
 def stitch_bars(D):
-    conds = [("donor", "structure model alone", STR),
-             ("rand", "→ untrained sequence layers", NULL),
-             ("trained", "→ trained sequence layers", SEQ),
-             ("native", "sequence model alone", "#B9C2C7")]
+    conds = [("donor", "ProteinMPNN alone", STR),
+             ("rand", "→ untrained ESM-2 layers", NULL),
+             ("trained", "→ trained ESM-2 layers", SEQ),
+             ("native", "ESM-2 alone", "#B9C2C7")]
     out = []
     for p in D["stitching"]["props"]:
         w, rowh, pl, pr, pt = 380, 30, 176, 44, 42
@@ -314,8 +316,8 @@ def stitch_bars(D):
         sv = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Stitching result for '
               f'{esc(p["label"])}.">',
               f'<text x="0" y="13" class="ctsm">{esc(p["label"])}</text>',
-              f'<text x="0" y="26" class="cs">mean over all {D["stitching"]["cells"]} layer × entry-point '
-              f'combinations · higher is better</text>']
+              f'<text x="0" y="26" class="cs">mean of {D["stitching"]["cells"]} layer × entry-point '
+              f'combinations</text>']
         for i, (k, lab, col) in enumerate(conds):
             y = pt + i * rowh
             v = p[k]
@@ -332,7 +334,7 @@ def stitch_bars(D):
 def depth_verdicts(D):
     """Stitched vs the structure model alone, at each entry depth: worse / unclear / better."""
     rows = D["stitching"]["by_depth"]
-    cols = [("worse", "structure model alone better", STR),
+    cols = [("worse", "ProteinMPNN alone better", STR),
             ("no clear difference", "no clear difference", NULL),
             ("better", "stitched better", SEQ)]
     w, pl, pr, pt, rowh = 760, 150, 20, 58, 22
@@ -340,8 +342,8 @@ def depth_verdicts(D):
     n = max(sum(r[k] for k, _, _ in cols) for r in rows)
     h = pt + rowh * len(rows) + 24
     out = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="Stitching verdicts by entry depth.">',
-           '<text x="0" y="14" class="ct">The deeper the entry point, the less is lost</text>',
-           f'<text x="0" y="30" class="cs">each row: {n} cases (3 structure-model layers × 3 properties) '
+           '<text x="0" y="14" class="ct">ProteinMPNN into ESM-2: the deeper the entry point, the less is lost</text>',
+           f'<text x="0" y="30" class="cs">each row: {n} cases (3 ProteinMPNN layers × 3 properties) '
            f'· a case counts only when the interval across {D["stitching"]["repeats"]} repeats excludes zero</text>']
     x = pl
     for k, lab, col in cols:
@@ -350,7 +352,7 @@ def depth_verdicts(D):
         x += 215
     for i, r in enumerate(rows):
         y = pt + i * rowh
-        out.append(f'<text x="0" y="{y+14:.1f}" class="clabsm">enters at layer {r["layer"]}</text>')
+        out.append(f'<text x="0" y="{y+14:.1f}" class="clabsm">enters ESM-2 at layer {r["layer"]}</text>')
         x = pl
         for k, lab, col in cols:
             v = r[k]
@@ -363,3 +365,68 @@ def depth_verdicts(D):
                 x += bw
     out.append("</svg>")
     return "".join(out)
+
+
+# ──────────────────────────────────────────────────────────── every property by depth
+DEPTH_GROUPS = [("Local physical properties", ["ss3", "burial", "rsa", "bfactor"]),
+                ("Functional sites on single residues", ["binding_site", "active_site", "ptm_site"]),
+                ("Fold", ["cath_class", "cath_arch", "cath_topol"]),
+                ("Function", ["enzyme", "ec_class", "protein_class", "is_kinase", "is_transport",
+                              "is_dna_binding", "is_rna_binding", "is_ribosomal", "is_structural",
+                              "is_immune", "is_membrane_protein", "is_phospho", "is_glyco"]),
+                ("Where it lives", ["localisation", "kingdom"])]
+
+
+def depth_panel(d):
+    """One property: ESM-2 by layer (line, 95% band) and ProteinMPNN by layer (dots), both on a
+    shared input-to-output axis; dashed line = best counting baseline for protein-level targets."""
+    w, h, pl, pr, pt, pb = 250, 150, 30, 8, 34, 22
+    iw, ih = w - pl - pr, h - pt - pb
+    vals = [p[k] for s in ("esm", "mpnn") for p in d[s] for k in ("v", "hi")] + [d["baseline"] or 0]
+    vmax = 1.0 if d["metric"] != "R²" else max(0.5, round(max(vals) + 0.05, 1))
+    X = lambda i, n: pl + (i / (n - 1)) * iw
+    Y = lambda v: pt + (1 - max(min(v, vmax), 0) / vmax) * ih
+    e, m = d["esm"], d["mpnn"]
+    out = [f'<svg viewBox="0 0 {w} {h}" role="img" aria-label="{esc(d["label"])} by depth: ESM-2 from '
+           f'{e[0]["v"]:.3f} to {max(p["v"] for p in e):.3f} at best, ProteinMPNN {min(p["v"] for p in m):.3f}'
+           f'–{max(p["v"] for p in m):.3f}.">',
+           f'<text x="0" y="12" class="ctsm">{esc(d["label"])}</text>',
+           f'<text x="0" y="24" class="cs">{esc(d["metric"])} · {d["level"]} level</text>']
+    for gv in (0, vmax / 2, vmax):
+        out.append(f'<line x1="{pl}" y1="{Y(gv):.1f}" x2="{pl+iw}" y2="{Y(gv):.1f}" stroke="{RULE2}"/>'
+                   f'<text x="{pl-4}" y="{Y(gv)+3:.1f}" class="cax" text-anchor="end">{gv:g}</text>')
+    if d["baseline"] is not None:
+        out.append(f'<line x1="{pl}" y1="{Y(d["baseline"]):.1f}" x2="{pl+iw}" y2="{Y(d["baseline"]):.1f}" '
+                   f'stroke="{NULL}" stroke-dasharray="3 3"><title>counting baseline: '
+                   f'{d["baseline"]:.3f}</title></line>')
+    band = (" ".join(f"{X(i, 13):.1f},{Y(p['hi']):.1f}" for i, p in enumerate(e)) + " "
+            + " ".join(f"{X(i, 13):.1f},{Y(p['lo']):.1f}" for i, p in reversed(list(enumerate(e)))))
+    out.append(f'<polygon points="{band}" fill="{SEQ}" opacity=".15"/>')
+    out.append(f'<polyline points="{" ".join(f"{X(i, 13):.1f},{Y(p["v"]):.1f}" for i, p in enumerate(e))}" '
+               f'fill="none" stroke="{SEQ}" stroke-width="1.8"/>')
+    for i, p in enumerate(e):
+        out.append(f'<circle cx="{X(i, 13):.1f}" cy="{Y(p["v"]):.1f}" r="1.9" fill="{SEQ}">'
+                   f'<title>ESM-2 {p["layer"]}: {p["v"]:.3f}</title></circle>')
+    out.append(f'<polyline points="{" ".join(f"{X(j, 3):.1f},{Y(p["v"]):.1f}" for j, p in enumerate(m))}" '
+               f'fill="none" stroke="{STR}" stroke-width="1.6" stroke-dasharray="1 0"/>')
+    for j, p in enumerate(m):
+        out.append(f'<line x1="{X(j, 3):.1f}" y1="{Y(p["lo"]):.1f}" x2="{X(j, 3):.1f}" y2="{Y(p["hi"]):.1f}" '
+                   f'stroke="{STR}" stroke-width="1.2"/>'
+                   f'<circle cx="{X(j, 3):.1f}" cy="{Y(p["v"]):.1f}" r="3" fill="{STR}">'
+                   f'<title>ProteinMPNN {p["layer"]}: {p["v"]:.3f}</title></circle>')
+    out.append(f'<text x="{pl}" y="{h-6}" class="cax">input</text>'
+               f'<text x="{pl+iw}" y="{h-6}" class="cax" text-anchor="end">output</text>')
+    out.append("</svg>")
+    return f'<div class="minipanel">{"".join(out)}</div>'
+
+
+def depth_all(D):
+    by = {d["key"]: d for d in D["depth_probes"]}
+    legend = (f'<div class="dlegend"><span><i style="background:{SEQ}"></i>ESM-2, 13 layers (band: 95% '
+              f'interval over refits)</span><span><i style="background:{STR}"></i>ProteinMPNN, 3 encoder '
+              f'layers</span><span><i class="dash"></i>counting baseline (protein-level only)</span></div>')
+    parts = [legend]
+    for title, keys in DEPTH_GROUPS:
+        parts.append(f'<h4 class="dgroup">{esc(title)}</h4><div class="minirow dgrid">'
+                     + "".join(depth_panel(by[k]) for k in keys if k in by) + "</div>")
+    return "".join(parts)

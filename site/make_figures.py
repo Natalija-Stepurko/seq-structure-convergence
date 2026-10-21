@@ -2,10 +2,10 @@
 
 Writes build/figures.json in the order build.py expects: Figure B, the full residue-level grid,
 the full whole-protein grid. `python build.py --fresh-figures` then uses these renders; by default
-the page uses the archived, losslessly optimised copies in archive/pngs_opt.json.
+the page uses the archived copies in archive/maps.json.
 
-Sized to 1320px against a 1140px page column: 150 dpi doubled the base64 payload
-for no visible gain at the width the page actually renders.
+Rendered at twice the 1140px page column, so they stay sharp on high-density screens, and stored
+as WebP when that is smaller than PNG (it is, by about two thirds).
 
 The pipeline's own figures are 6x3 and 4x3 panels at print resolution -- unreadable inlined in a
 web page, and ~1 MB each before base64. These are the same coordinates, cut down to the panels
@@ -24,6 +24,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
+from matplotlib.lines import Line2D
+from PIL import Image
 
 from pathlib import Path
 
@@ -73,12 +75,21 @@ def panel(ax, xy, vals, kind, cmap, title=None, row_label=None, ncat=None):
         ax.set_ylabel(row_label, fontsize=10.5, labelpad=8, color=INK)
 
 
-def to_data_uri(fig, dpi=120):
+PAGE_PX = 1140          # the page column the maps are shown in
+
+
+def to_data_uri(fig, width_in):
+    """PNG at twice the page column width, then WebP (quality 92) if that is smaller."""
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight", pad_inches=0.12)
+    fig.savefig(buf, format="png", dpi=2 * PAGE_PX / width_in, bbox_inches="tight", pad_inches=0.08)
     plt.close(fig)
-    raw = buf.getvalue()
-    return f"data:image/png;base64,{base64.b64encode(raw).decode()}", len(raw)
+    png = buf.getvalue()
+    im = Image.open(io.BytesIO(png)).convert("RGB")
+    out = io.BytesIO(); im.save(out, format="WEBP", quality=92, method=6)
+    webp = out.getvalue()
+    raw, mime = (webp, "webp") if len(webp) < len(png) else (png, "png")
+    print(f"  {im.size[0]}x{im.size[1]} px: png {len(png)/1024:.0f} KB, webp {len(webp)/1024:.0f} KB -> {mime}")
+    return f"data:image/{mime};base64,{base64.b64encode(raw).decode()}", len(raw)
 
 
 # ─────────────────────────────────────────────────────────── residue-level
@@ -119,39 +130,41 @@ def codes(v, drop_missing=True):
 # Every model arm against every property. A colour map is useless without a key, so each column
 # carries its own legend strip: discrete swatches for categorical properties, a gradient bar with
 # end values for continuous ones.
-from matplotlib.gridspec import GridSpec
 
-SS3 = ["helix", "sheet", "coil"]
+SS3 = ["helix", "strand", "coil"]
 BURIAL = ["exposed", "buried"]
 BIND = ["other", "contacts a ligand"]
 bind_cmap = ListedColormap(["#C8D0D4", "#C0392B"])
 
 
-def legend_strip(ax, kind, cmap, labels=None, vrange=None, rotate=False):
-    """Draw the key for one column: swatches + names, or a gradient with its end values."""
-    ax.set_xticks([]); ax.set_yticks([])
-    for s in ax.spines.values():
-        s.set_visible(False)
+def column_key(ax, prop, sub, kind, cmap, labels=None, vrange=None, ncol=None):
+    """The key for one column, drawn above its top panel: name, one-line description, then
+    swatches for a categorical property or a gradient with its end values for a continuous one.
+    Anchored to the panel, so constrained layout reserves exactly the space it needs."""
+    head = f"{prop}\n{sub}"
     if kind == "cat":
         n = len(labels)
-        for i, lab in enumerate(labels):
-            ax.add_patch(plt.Rectangle((i / n, .55), 1 / n * .92, .42,
-                                       transform=ax.transAxes, clip_on=False,
-                                       facecolor=cmap(i / max(n - 1, 1) if n > 1 else 0.0),
-                                       edgecolor="none"))
-            ax.text((i + .46) / n, .44, lab, transform=ax.transAxes,
-                    ha="center" if not rotate else "right", va="top",
-                    fontsize=5.2 if n > 12 else (6.4 if n > 5 else 7.4), color=INK3,
-                    rotation=90 if rotate else 0)
+        wide = sum(len(x) for x in labels) > 20
+        cols = ncol or (1 if wide and n == 2 else (n if n <= 3 else (5 if n == 20 else 3)))   # fit the panel
+        handles = [Line2D([], [], ls="", marker="o", ms=5.5, mew=0,
+                          color=cmap(i / max(n - 1, 1) if n > 1 else 0.0)) for i in range(n)]
+        leg = ax.legend(handles, labels, title=head, loc="lower center", bbox_to_anchor=(0.5, 1.02),
+                        ncol=cols, frameon=False, fontsize=7.4, title_fontsize=9.6,
+                        handletextpad=0.25, columnspacing=0.9, labelspacing=0.35,
+                        borderaxespad=0.2, borderpad=0.1)
+        leg.get_title().set_color(INK)
+        leg.get_title().set_multialignment("center")
+        for t in leg.get_texts():
+            t.set_color(INK3)
     else:
-        grad = np.linspace(0, 1, 256).reshape(1, -1)
-        ax.imshow(grad, aspect="auto", cmap=cmap, extent=(0, 1, .55, .97),
-                  transform=ax.transAxes, clip_on=False)
-        ax.text(0, .40, f"{vrange[0]:.2g}", transform=ax.transAxes, ha="left", va="top",
-                fontsize=7.2, color=INK3)
-        ax.text(1, .40, f"{vrange[1]:.2g}", transform=ax.transAxes, ha="right", va="top",
-                fontsize=7.2, color=INK3)
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+        cax = ax.inset_axes([0.12, 1.06, 0.76, 0.055])
+        cax.imshow(np.linspace(0, 1, 256).reshape(1, -1), aspect="auto", cmap=cmap)
+        cax.set_xticks([0, 255], [f"{vrange[0]:.2g}", f"{vrange[1]:.2g}"], fontsize=7.4, color=INK3)
+        cax.set_yticks([])
+        cax.tick_params(length=0, pad=2)
+        for sp in cax.spines.values():
+            sp.set_visible(False)
+        cax.set_title(head, fontsize=9.6, color=INK, pad=4, linespacing=1.3)
 
 
 def pct(prop):
@@ -160,37 +173,30 @@ def pct(prop):
     return tuple(np.nanpercentile(v[f], [2, 98]))
 
 
-def grid_with_legends(rows, cols, title, figsize, dpi, labels_src, rotate_wide=False):
+def grid_with_legends(rows, cols, width, panel_h, labels_src):
+    """Every model arm (rows) against every property (columns), one key per column. Rendered at
+    twice the page column width so it stays sharp on high-density screens."""
     nr, nc = len(rows), len(cols)
-    fig = plt.figure(figsize=figsize)
-    lead = 0.62 if rotate_wide else 0.30   # rotated class names need vertical room
-    gs = GridSpec(nr + 1, nc, figure=fig, height_ratios=[lead] + [1] * nr,
-                  hspace=0.16, wspace=0.09)
-    for c, spec in enumerate(cols):
-        prop, kind, cmap, nc_cat, sub = spec
-        lax = fig.add_subplot(gs[0, c])
-        labs = labels_src(prop)
-        legend_strip(lax, kind, cmap, labels=labs,
-                     vrange=(pct(prop) if kind == "num" else None),
-                     rotate=bool(labs) and len(labs) > 5)
-        lax.set_title(prop, fontsize=10, pad=14, color=INK)
-        lax.text(.5, 1.06, sub, transform=lax.transAxes, ha="center", fontsize=7.2, color=INK3)
+    fig, axes = plt.subplots(nr, nc, figsize=(width, panel_h * nr + 1.0), squeeze=False,
+                             layout="constrained")
+    fig.get_layout_engine().set(w_pad=0.03, h_pad=0.03, wspace=0.03, hspace=0.04)
     for r, (key, rlab) in enumerate(rows):
         for c, (prop, kind, cmap, nc_cat, sub) in enumerate(cols):
-            ax = fig.add_subplot(gs[r + 1, c])
+            ax = axes[r, c]
             vals = RES[prop] if key.startswith("res_") else codes(CHAIN[prop])[0]
-            panel(ax, Z[key], vals, kind, cmap, ncat=nc_cat,
-                  row_label=(rlab if c == 0 else None))
-    fig.suptitle(title, fontsize=12, y=.995, color=INK)
-    return to_data_uri(fig, dpi=dpi)
+            panel(ax, Z[key], vals, kind, cmap, ncat=nc_cat, row_label=(rlab if c == 0 else None))
+            if r == 0:
+                column_key(ax, prop, sub, kind, cmap, labels=labels_src(prop),
+                           vrange=(pct(prop) if kind == "num" else None))
+    return to_data_uri(fig, width)
 
 
 RES_COLS = [("amino acid", "cat", aa_cmap, 20, "which of the 20 amino acids"),
-            ("secondary structure", "cat", ss_cmap, 3, "local shape"),
-            ("burial", "cat", bu_cmap, 2, "buried or on the surface"),
-            ("RSA", "num", plt.get_cmap("viridis"), None, "how solvent-exposed"),
-            ("B-factor", "num", plt.get_cmap("viridis"), None, "flexibility within the chain"),
-            ("binding site", "cat", bind_cmap, 2, "contacts a ligand")]
+            ("secondary structure", "cat", ss_cmap, 3, "helix, strand or coil"),
+            ("burial", "cat", bu_cmap, 2, "buried or exposed"),
+            ("RSA", "num", plt.get_cmap("viridis"), None, "solvent exposure"),
+            ("B-factor", "num", plt.get_cmap("viridis"), None, "flexibility"),
+            ("binding site", "cat", bind_cmap, 2, "ligand contact")]
 
 ROW_LABEL = {"esm": "ESM-2 35M\nsequence only", "esm650": "ESM-2 650M\nsequence only",
              "carp": "CARP-38M\nsequence only", "esm1v": "ESM-1v\nsequence only",
@@ -201,10 +207,7 @@ RES_ROWS = [(f"res_{a}", ROW_LABEL[a]) for a in present]
 RES_LABS = {"amino acid": list(AA), "secondary structure": SS3, "burial": BURIAL,
             "binding site": BIND, "RSA": None, "B-factor": None}
 
-fullres_uri, fullres_bytes = grid_with_legends(
-    RES_ROWS, RES_COLS,
-    "Residue-level maps — every model arm, every residue property, the same 8,000 residues",
-    (14.0, 1.1 + 2.3 * len(RES_ROWS)), 88, lambda p: RES_LABS[p], rotate_wide=False)
+fullres_uri, fullres_bytes = grid_with_legends(RES_ROWS, RES_COLS, 11.4, 1.55, lambda p: RES_LABS[p])
 
 # A ListedColormap longer than the class count skips entries -- with 4 kingdoms against a
 # 5-colour list, Viruses landed on the grey reserved for "unlabelled". Slice each palette to
@@ -218,7 +221,8 @@ CH_LABS = {
     "CATH class": [CATH_NAMES.get(c, c) for c in RAW["CATH class"]],
     "kingdom": RAW["kingdom"],
     "enzyme": ["not an enzyme", "enzyme"],
-    "protein class": [c.replace("enzyme_ec", "EC").replace("_", " ") for c in RAW["protein class"]],
+    "protein class": [c.replace("enzyme_ec", "EC").replace("_", " ").replace("dna ", "DNA ")
+                      .replace("rna ", "RNA ") for c in RAW["protein class"]],
 }
 CH_COLS = [("CATH class", "cat", exact(len(CH_LABS["CATH class"])),
             len(CH_LABS["CATH class"]), "broad fold class"),
@@ -230,10 +234,7 @@ CH_COLS = [("CATH class", "cat", exact(len(CH_LABS["CATH class"])),
             len(CH_LABS["protein class"]), f"{len(CH_LABS['protein class'])} functional categories")]
 CH_ROWS = [(f"chain_{a}", ROW_LABEL[a]) for a in present]
 
-fullchain_uri, fullchain_bytes = grid_with_legends(
-    CH_ROWS, CH_COLS,
-    "Whole-protein maps — every model arm, every whole-protein label, the same 2,000 proteins",
-    (11.5, 2.2 + 2.4 * len(CH_ROWS)), 85, lambda p: CH_LABS[p], rotate_wide=True)
+fullchain_uri, fullchain_bytes = grid_with_legends(CH_ROWS, CH_COLS, 11.4, 2.1, lambda p: CH_LABS[p])
 
 
 
@@ -242,16 +243,13 @@ fullchain_uri, fullchain_bytes = grid_with_legends(
 # "colour the islands by anything structural and the colours are mixed within each island" and
 # the reader can check it. One property alone cannot carry that sentence.
 FB_COLS = [("amino acid", "cat", aa_cmap, 20, "which of the 20 amino acids"),
-           ("secondary structure", "cat", ss_cmap, 3, "local shape"),
+           ("secondary structure", "cat", ss_cmap, 3, "helix, strand or coil"),
            ("burial", "cat", bu_cmap, 2, "buried or exposed"),
            ("RSA", "num", plt.get_cmap("viridis"), None, "solvent accessibility")]
 FB_ROWS = [("res_esm", "ESM-2 35M\nsequence only"), ("res_mpnn", "ProteinMPNN\nshape only")]
 FB_LABS = {"amino acid": list(AA), "secondary structure": SS3, "burial": BURIAL, "RSA": None}
-res_uri, res_bytes = grid_with_legends(
-    FB_ROWS, FB_COLS,
-    "The same 8,000 residues, as each model arranges them",
-    (12.0, 5.6), 110, lambda p: FB_LABS[p], rotate_wide=False)
-print(f"Figure B: {res_bytes/1024:.0f} KB png -> {len(res_uri)/1024:.0f} KB base64")
+res_uri, res_bytes = grid_with_legends(FB_ROWS, FB_COLS, 11.4, 2.5, lambda p: FB_LABS[p])
+print(f"Figure B: {res_bytes/1024:.0f} KB -> {len(res_uri)/1024:.0f} KB base64")
 
 (HERE / "build").mkdir(exist_ok=True)
 json.dump([res_uri, fullres_uri, fullchain_uri], open(HERE / "build/figures.json", "w"))

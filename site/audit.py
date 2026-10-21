@@ -61,6 +61,21 @@ claim("ceiling, mutual k-NN, shared target removed", lad[(CEIL, "partial", "mutu
 claim("untrained sequence model, CKA, raw", lad[(UNTRAINED, "raw", "cka")])
 claim("untrained sequence model, CKA, shared target removed", lad[(UNTRAINED, "partial", "cka")])
 
+print("every property by depth (probes_ci, boosted trees)")
+def pci(m, fn, metric, target=None):
+    return {r["layer"]: float(r["mean"]) for r in csv.DictReader(open(R / "probes_ci" / m / fn))
+            if r["metric"] == metric and (target is None or r["target"] == target)}
+ss_e, ss_m = pci("esm", "metrics_ci.csv", "ss3_xgb_acc"), pci("proteinmpnn", "metrics_ci.csv", "ss3_xgb_acc")
+claim("ProteinMPNN secondary structure at enc1", ss_m["enc1"])
+claim("ESM-2 secondary structure at the embedding layer", ss_e["emb"])
+claim("ESM-2 secondary structure at its best layer", max(ss_e.values()))
+ft_e = pci("esm", "chain_metrics_ci.csv", "xgb_f1", "cath_topol")
+ft_m = pci("proteinmpnn", "chain_metrics_ci.csv", "xgb_f1", "cath_topol")
+claim("ESM-2 fold topology at the embedding layer", ft_e["emb"])
+claim("ESM-2 fold topology at its best layer", max(ft_e.values()))
+claim("ProteinMPNN fold topology range", min(ft_m.values()), "({:.3f}–")
+claim("ProteinMPNN fold topology range, top", max(ft_m.values()), "–{:.3f})")
+
 print("calibration against scrambled residues (ladder rerun with nulls, main pair)")
 cal = {(r["pair"], r["mode"], r["metric"]): r
        for r in csv.DictReader(open(R / "ladder_ci_null/ladder_ci.csv"))}
@@ -85,8 +100,8 @@ for cond in ("donor", "stitched_rand", "stitched"):
 claim("rsa, sequence model alone", sum(float(c["rsa_native_mean"]) for c in main_cells) / len(main_cells))
 count = lambda cells, v: sum(1 for c in cells for p in props if c[f"{p}_verdict"] == v)
 claim("clearly worse", count(main_cells, "worse"), "{} of " + str(3 * len(main_cells)))
-claim("no clear difference", count(main_cells, "no clear difference"), "in {} there is no clear difference")
-claim("clearly better", count(main_cells, "better"), "in {} it is better")
+claim("no clear difference", count(main_cells, "no clear difference"), "no clear difference in {}")
+claim("clearly better", count(main_cells, "better"), "is better in {}")
 r2 = [float(c["connector_r2_mean"]) for c in main_cells]
 claim("linear connector R2, mean", sum(r2) / len(r2))
 mlp = stitch("proteinmpnn_mlp")
