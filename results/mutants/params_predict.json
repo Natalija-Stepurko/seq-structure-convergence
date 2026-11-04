@@ -1,0 +1,44 @@
+{
+  "script": "09_mutants.py",
+  "timestamp_utc": "2026-11-04T12:22:06+00:00",
+  "command": "scripts/09_mutants.py --structures-dir /ssc/structures --results-root /ssc/results --out-dir /ssc/results/mutants --raw-dir /scratch/claude-tests/mutants-raw",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "out_dir": "/ssc/results/mutants",
+    "raw_dir": "/scratch/claude-tests/mutants-raw",
+    "mpnn_weights": null
+  },
+  "git_commit": "aae7fe3fd2220066582bc2fbf50fb6d96ee2e484",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "arms": [
+      "esm",
+      "esm_residual",
+      "mpnn",
+      "raw",
+      "residual",
+      "hybrid"
+    ],
+    "tasks": [
+      "rsa",
+      "burial",
+      "ss3",
+      "bfactor",
+      "binding_site",
+      "active_site",
+      "ptm_site"
+    ],
+    "train_seed": 42
+  }
+}

@@ -1,4 +1,7 @@
 {
+ "level": "residue",
+ "identity_arm": "raw_aa",
+ "targets_needed": 3,
  "decision_rule": {
   "linear|0.01|residual": {
    "above_zero": [],

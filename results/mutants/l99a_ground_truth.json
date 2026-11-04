@@ -1,0 +1,151 @@
+{
+ "residues": 162,
+ "measured_abs_rsa_change_mean": 0.0084,
+ "measured_ss3_changes": 0,
+ "by_arm": {
+  "same backbone|linear|esm": {
+   "r_all": -0.059,
+   "r_within_8A": -0.388,
+   "predicted_change_at_99": -0.0226,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|linear|esm_residual": {
+   "r_all": -0.251,
+   "r_within_8A": -0.743,
+   "predicted_change_at_99": -0.0578,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|linear|mpnn": {
+   "r_all": NaN,
+   "r_within_8A": NaN,
+   "predicted_change_at_99": 0.0,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|linear|raw": {
+   "r_all": -0.561,
+   "r_within_8A": -0.955,
+   "predicted_change_at_99": -0.019,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|linear|residual": {
+   "r_all": -0.697,
+   "r_within_8A": -0.989,
+   "predicted_change_at_99": -0.0553,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|linear|hybrid": {
+   "r_all": -0.583,
+   "r_within_8A": -0.94,
+   "predicted_change_at_99": -0.0184,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|xgb|esm": {
+   "r_all": -0.034,
+   "r_within_8A": -0.378,
+   "predicted_change_at_99": -0.0205,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|xgb|esm_residual": {
+   "r_all": -0.177,
+   "r_within_8A": -0.426,
+   "predicted_change_at_99": -0.0845,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|xgb|mpnn": {
+   "r_all": NaN,
+   "r_within_8A": NaN,
+   "predicted_change_at_99": 0.0,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|xgb|raw": {
+   "r_all": -0.07,
+   "r_within_8A": -0.627,
+   "predicted_change_at_99": -0.0153,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|xgb|residual": {
+   "r_all": 0.223,
+   "r_within_8A": 0.68,
+   "predicted_change_at_99": 0.0329,
+   "measured_change_at_99": 0.1391
+  },
+  "same backbone|xgb|hybrid": {
+   "r_all": 0.364,
+   "r_within_8A": 0.813,
+   "predicted_change_at_99": 0.036,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|linear|esm": {
+   "r_all": -0.059,
+   "r_within_8A": -0.388,
+   "predicted_change_at_99": -0.0226,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|linear|esm_residual": {
+   "r_all": -0.251,
+   "r_within_8A": -0.743,
+   "predicted_change_at_99": -0.0578,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|linear|mpnn": {
+   "r_all": 0.163,
+   "r_within_8A": -0.042,
+   "predicted_change_at_99": -0.0026,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|linear|raw": {
+   "r_all": -0.011,
+   "r_within_8A": -0.725,
+   "predicted_change_at_99": -0.0209,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|linear|residual": {
+   "r_all": -0.279,
+   "r_within_8A": -0.934,
+   "predicted_change_at_99": -0.057,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|linear|hybrid": {
+   "r_all": -0.016,
+   "r_within_8A": -0.692,
+   "predicted_change_at_99": -0.0197,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|xgb|esm": {
+   "r_all": -0.034,
+   "r_within_8A": -0.378,
+   "predicted_change_at_99": -0.0205,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|xgb|esm_residual": {
+   "r_all": -0.177,
+   "r_within_8A": -0.426,
+   "predicted_change_at_99": -0.0845,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|xgb|mpnn": {
+   "r_all": -0.032,
+   "r_within_8A": -0.553,
+   "predicted_change_at_99": -0.0317,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|xgb|raw": {
+   "r_all": 0.006,
+   "r_within_8A": -0.504,
+   "predicted_change_at_99": -0.0214,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|xgb|residual": {
+   "r_all": -0.03,
+   "r_within_8A": 0.309,
+   "predicted_change_at_99": 0.0373,
+   "measured_change_at_99": 0.1391
+  },
+  "mutant crystal backbone|xgb|hybrid": {
+   "r_all": 0.063,
+   "r_within_8A": 0.42,
+   "predicted_change_at_99": 0.0188,
+   "measured_change_at_99": 0.1391
+  }
+ }
+}

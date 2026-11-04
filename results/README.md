@@ -67,7 +67,8 @@ directly comparable.
 | Folder | What it holds | Status |
 |---|---|---|
 | `fusion/` | `scores.csv`: every fit (5 refits × 3 training sizes × 7 targets × 3 predictors × 9 arms); `gains.csv`: paired gains of each fused arm over ESM-2 alone, ProteinMPNN alone and raw fusion plus one-hot; `summary.json`: the decision rule, variance partitioning, mean scores | supporting |
-| `mutants/` | `shifts.csv`: per mutant and ESM-2 block, the change at the mutated residue (as is and after the subtraction) and at residues under 8, 8–16 and over 16 Å away, in units of within-amino-acid spread; `summary.json`: ProteinMPNN encoder check (zero change) | supporting |
+| `fusion_protein/` | The same for whole proteins: 18 protein-level targets, macro-F1, amino-acid composition as the identity arm | supporting |
+| `mutants/` | `shifts.csv`: per mutant and ESM-2 block, the change at the mutated residue (as is and after the subtraction) and at residues under 8, 8–16 and over 16 Å away, in units of within-amino-acid spread; `summary.json`: ProteinMPNN encoder check (zero change); `predictions.csv` and `predictions_protein.csv`: how much each trained predictor's output changes from wild type to mutant, per arm; `l99a_ground_truth.json`: predicted against measured change in solvent accessibility for T4 lysozyme L99A | supporting |
 
 ## Stitching (`scripts/06_stitching.py`)
 

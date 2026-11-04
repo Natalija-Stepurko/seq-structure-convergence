@@ -221,6 +221,29 @@ background whose structure is 1L63, so the measured per-residue change in solven
 secondary structure is compared with the predicted change (Pearson r over residues; agreement of
 secondary-structure changes), as is and after the subtraction.
 
+**Result, predictions on the point mutants (`09_mutants.py predict`).** Predictors trained on the
+dataset and applied to wild type and the nine mutants, as the design above fixed:
+
+- *Predicted properties barely move, and only locally.* Averaged over the mutants, the predicted
+  solvent accessibility of the mutated residue changes by 0.02–0.07 (on a 0–1 scale) and that of
+  residues within 8 Å by 0.002–0.02; class predictions change at the site or within 8 Å in a handful
+  of cases out of hundreds (4–15 per arm). ProteinMPNN alone never changes, since its input does not.
+- *Fusing with ProteinMPNN damps the change for structural properties* (burial at the site, linear:
+  0.064 for ESM-2 alone, 0.016 fused): half the input is a backbone the mutation leaves unchanged.
+- *The subtraction mostly matters where amino-acid identity carries the answer.* For PTM sites the
+  predicted change at a mutated lysine falls from 0.36 to 0.10 (ESM-2, linear) once identity is
+  removed; for structural properties raw and residual predictions move about equally.
+- *Protein-level predictions rarely change class* (0–9 of 162 per arm), almost all for L99A and on
+  weakly separated targets such as kingdom and subcellular location.
+- *Against the crystal structures, the predictions fail for L99A.* The measured change between 1L63
+  and 1L90 is confined to residue 99, which becomes more exposed (+0.14 relative solvent
+  accessibility, the cavity); the nine residues within 8 Å change by 0.004 on average, less than
+  distant residues. Most arms predict residue 99 becomes slightly more buried (−0.02 to −0.08); only
+  boosted trees on the residual and hybrid features predict an increase, a quarter of the measured
+  size. Giving ProteinMPNN the real mutant backbone does not fix it. With one informative residue
+  this is an anecdote, not a test; correlations within 8 Å are dominated by that residue and are
+  not reported as evidence.
+
 ---
 
 ## 3. Can ESM-2 improve the sequences ProteinMPNN generates?

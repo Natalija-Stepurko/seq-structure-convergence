@@ -130,7 +130,10 @@ uv run python scripts/06_stitching.py grid-ci-reverse --structures-dir $S --esm-
     --struct-dir $R/proteinmpnn --out-dir $R/stitch_grid_ci/esm_to_proteinmpnn
 uv run python scripts/08_fusion.py run       --structures-dir $S --results-root $R --out-dir $R/fusion
 uv run python scripts/08_fusion.py summarise --out-dir $R/fusion
-uv run python scripts/09_mutants.py          --structures-dir $S --results-root $R --out-dir $R/mutants
+uv run python scripts/08_fusion.py run-protein --structures-dir $S --results-root $R --out-dir $R/fusion_protein
+uv run python scripts/08_fusion.py summarise --out-dir $R/fusion_protein --level protein
+uv run python scripts/09_mutants.py shift    --structures-dir $S --results-root $R --out-dir $R/mutants
+uv run python scripts/09_mutants.py predict  --structures-dir $S --results-root $R --out-dir $R/mutants
 ```
 
 Every subcommand lists its flags with `--help`. Where an output folder in `results/` has a
@@ -179,8 +182,10 @@ exact command, the git commit, library versions and a UTC timestamp.
 | | `grid-ci-reverse` | the other direction: ESM-2's description fed into ProteinMPNN's remaining encoder layers, on ProteinMPNN's own neighbour graph; scored against ESM-2 alone and against the geometry alone |
 | | `grid-ci` | the same grid repeated on independent chain samples, with paired intervals on stitched − donor; `--connector mlp` for a non-linear connector, `--donor-dir` for any donor model |
 | **`08_fusion.py`** | `run` | fusion of ESM-2 35M and ProteinMPNN embeddings, raw, after the amino-acid subtraction and with identity added back, against each model alone, on seven residue targets, three training sizes, three predictors and five refits (design in `research/future_work.md`, idea 2) |
-| | `summarise` | paired gains over each model alone and over raw fusion plus amino-acid identity, variance partitioning, and the pre-set decision rule |
-| **`09_mutants.py`** | — | point mutants of T4 lysozyme and ubiquitin: how far each embedding moves at the mutated residue and around it, as is and after the subtraction |
+| | `run-protein` | the same arms on whole proteins (embeddings averaged over residues), 18 protein-level targets, amino-acid composition as the identity arm |
+| | `summarise` | paired gains over each model alone and over raw fusion plus amino-acid identity, variance partitioning, and the pre-set decision rule; `--level protein` for `run-protein` |
+| **`09_mutants.py`** | `shift` | point mutants of T4 lysozyme and ubiquitin: how far each embedding moves at the mutated residue and around it, as is and after the subtraction |
+| | `predict` | property predictors applied to wild type and each mutant (raw, after the subtraction, fused), and the predicted change in solvent accessibility for L99A against the crystal structures 1L63 and 1L90 |
 | **`07_hf_dataset.py`** | — | the Hugging Face dataset: every model at every layer on 35 whole proteins, with labels and reference scores; `--protein-level` adds one mean vector per protein for all proteins |
 
 `scripts/07_hf_dataset.py` builds the dataset published on Hugging Face: every model arm at every layer on one fixed subsample of whole chains, with labels and reference scores.
