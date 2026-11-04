@@ -231,10 +231,11 @@ dataset and applied to wild type and the nine mutants, as the design above fixed
 - *Fusing with ProteinMPNN damps the change for structural properties* (burial at the site, linear:
   0.064 for ESM-2 alone, 0.016 fused): half the input is a backbone the mutation leaves unchanged.
 - *The subtraction mostly matters where amino-acid identity carries the answer.* For PTM sites the
-  predicted change at a mutated lysine falls from 0.36 to 0.10 (ESM-2, linear) once identity is
-  removed; for structural properties raw and residual predictions move about equally.
-- *Protein-level predictions rarely change class* (0–9 of 162 per arm), almost all for L99A and on
-  weakly separated targets such as kingdom and subcellular location.
+  predicted change at a mutated lysine falls from 0.55–0.86 to 0.12–0.25 (ESM-2, linear) once identity
+  is removed; for structural properties raw and residual predictions move about equally.
+- *Protein-level predictions rarely change class* (0–9 of 162 per arm, 49 in all), mostly for the
+  T4 lysozyme mutants (35 of 49) and mostly on weakly separated targets: subcellular location and
+  kingdom account for 32 of the 49.
 - *Against the crystal structures, the predictions fail for L99A.* The measured change between 1L63
   and 1L90 is confined to residue 99, which becomes more exposed (+0.14 relative solvent
   accessibility, the cavity); the nine residues within 8 Å change by 0.004 on average, less than
