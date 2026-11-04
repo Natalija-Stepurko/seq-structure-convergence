@@ -9,8 +9,10 @@ and MLP predictors; 1%, 10% and 100% of the training chains; seven residue targe
 Subcommands:
 
     run         fit every (refit, training size, target, predictor, arm) -> results/fusion/scores.csv
-    summarise   paired gains, variance partitioning and the decision rule -> results/fusion/gains.csv,
-                results/fusion/summary.json
+    run-protein the same on whole proteins (embeddings averaged over residues; 18 protein-level
+                targets; identity arm = amino-acid composition) -> results/fusion_protein/scores.csv
+    summarise   paired gains, variance partitioning and the decision rule -> <out-dir>/gains.csv,
+                <out-dir>/summary.json; --level protein for run-protein's output
 
     uv run python scripts/08_fusion.py run --structures-dir structures --results-root results
     uv run python scripts/08_fusion.py summarise
@@ -150,7 +152,7 @@ def _score(kind, y, pred):
         return r2_score(y, pred)
     if kind == "clf":
         return accuracy_score(y, pred)
-    return f1_score(y, pred, average="macro")
+    return f1_score(y, pred, average="macro")      # "site" (balanced weights) and "pclf" (protein level)
 
 
 def _cv_linear(kind, X, y, groups, w):
@@ -193,7 +195,11 @@ def fit_predict(pred, kind, Xtr, ytr, Xte, gtr, seed):
         m = MLPRegressor(hidden_layer_sizes=(256,), early_stopping=True, max_iter=200, random_state=seed)
         m.fit(sc.transform(Xtr), (ytr - mu) / sd)
         return m.predict(sc.transform(Xte)) * sd + mu, None
-    m = MLPClassifier(hidden_layer_sizes=(256,), early_stopping=True, max_iter=200, random_state=seed)
+    # early stopping holds out 10% of the training rows, stratified; with very few rows that holdout
+    # cannot hold every class, so the network then trains without it
+    n_cls = len(np.unique(ytr))
+    es = int(np.ceil(0.1 * len(ytr))) >= n_cls and len(ytr) - int(np.ceil(0.1 * len(ytr))) >= n_cls
+    m = MLPClassifier(hidden_layer_sizes=(256,), early_stopping=es, max_iter=200, random_state=seed)
     return m.fit(sc.transform(Xtr), ytr, **kw).predict(sc.transform(Xte)), None
 
 
@@ -268,14 +274,179 @@ def _main_run() -> None:
 
 
 # ==========================================================================================
+# run-protein: whole proteins
+# ==========================================================================================
+
+AA_ALL = list(fu.AA) + ["X"]                      # 20 standard amino acids and one bucket for the rest
+AA_CODE = {a: i for i, a in enumerate(AA_ALL)}
+ARMS_P = ("esm", "mpnn", "comp", "raw", "raw_comp", "residual", "hybrid", "esm_untrained_mpnn", "esm650")
+FUSED_P = ("raw", "raw_comp", "residual", "hybrid", "esm_untrained_mpnn")
+MIN_CLASS, MAX_CLASSES = 40, 12                    # as 05_probes.py
+EXCLUDE = {"localisation": {"unknown", "other"}, "kingdom": {"other"}}
+CHAIN_TARGETS = [("cath_class", "manifest"), ("cath_arch", "manifest"), ("cath_topol", "manifest"),
+                 ("ec_class", "annot"), ("enzyme", "annot"), ("protein_class", "annot"),
+                 ("localisation", "annot"), ("kingdom", "annot"), ("is_transport", "annot"),
+                 ("is_dna_binding", "annot"), ("is_rna_binding", "annot"), ("is_kinase", "annot"),
+                 ("is_ribosomal", "annot"), ("is_membrane_protein", "annot"), ("is_structural", "annot"),
+                 ("is_immune", "annot"), ("is_phospho", "annot"), ("is_glyco", "annot")]
+
+
+def load_protein(structures: Path, results: Path, max_chains: int | None):
+    """Per chain: each model's chosen layer averaged over residues, plus per-amino-acid sums and
+    counts for ESM-2 and ProteinMPNN, so amino-acid means can be refitted on any training set."""
+    manifest = {r["id"]: r for r in map(json.loads, (structures / "index.jsonl").open())
+                if r and r.get("valid", True)}
+    annot = {}
+    if (structures / "annotations.jsonl").exists():
+        annot = {a["id"]: a for a in map(json.loads, (structures / "annotations.jsonl").open()) if a}
+    keys = ("esm", "mpnn", "rand", "esm650", "sum_esm", "sum_mpnn", "counts")
+    P = {k: [] for k in keys}
+    labels = {t: [] for t, _ in CHAIN_TARGETS}
+    t0 = time.time()
+    for cid, rec in manifest.items():
+        paths = {m: results / m / f"{cid}.pt" for m in LAYERS}
+        if not all(p.exists() for p in paths.values()):
+            continue
+        seq = str(np.load(structures / "proteins" / f"{cid}.npz", allow_pickle=True)["seq"])
+        feats = {m: _layer(p, LAYERS[m]) for m, p in paths.items()}
+        if any(f.shape[0] != len(seq) for f in feats.values()):
+            continue
+        codes = np.array([AA_CODE.get(a, 20) for a in seq])
+        cnt = np.bincount(codes, minlength=21).astype(np.float32)
+        P["esm"].append(feats["esm"].mean(0)); P["mpnn"].append(feats["proteinmpnn"].mean(0))
+        P["rand"].append(feats["rand_mpnn"].mean(0)); P["esm650"].append(feats["esm650"].mean(0))
+        for k, m in (("sum_esm", "esm"), ("sum_mpnn", "proteinmpnn")):
+            sm = np.zeros((21, feats[m].shape[1]), np.float64)
+            np.add.at(sm, codes, feats[m])
+            P[k].append(sm.astype(np.float32))
+        P["counts"].append(cnt)
+        for t, src in CHAIN_TARGETS:
+            d = rec if src == "manifest" else annot.get(cid, {})
+            labels[t].append(d.get(t, None))
+        if len(P["counts"]) % 500 == 0:
+            print(f"  loaded {len(P['counts']):,} proteins ({time.time() - t0:,.0f}s)", flush=True)
+        if max_chains and len(P["counts"]) >= max_chains:
+            break
+    P = {k: np.stack(v) for k, v in P.items()}
+    P["labels"] = {t: np.array(v, dtype=object) for t, v in labels.items()}
+    return P
+
+
+def protein_arms(P, train):
+    """The nine feature sets for whole proteins. Removing each amino acid's mean from every residue
+    and then averaging equals the plain average minus the composition-weighted means, with the
+    means fitted on the training proteins' residues only."""
+    n = P["counts"].sum(1, keepdims=True)
+    frac = P["counts"] / n
+    tot = P["counts"][train].sum(0)
+    out = {}
+    for k in ("esm", "mpnn"):
+        sums = P[f"sum_{k}"][train].sum(0)
+        overall = sums.sum(0) / tot.sum()
+        means = np.where(tot[:, None] > 0, sums / np.maximum(tot[:, None], 1), overall)
+        out[k] = (P[k] - frac @ means).astype(np.float32)
+    comp = frac[:, :20].astype(np.float32)
+    return {"esm": P["esm"], "mpnn": P["mpnn"], "comp": comp,
+            "raw": np.hstack([P["esm"], P["mpnn"]]), "raw_comp": np.hstack([comp, P["esm"], P["mpnn"]]),
+            "residual": np.hstack([out["esm"], out["mpnn"]]),
+            "hybrid": np.hstack([comp, out["esm"], out["mpnn"]]),
+            "esm_untrained_mpnn": np.hstack([P["esm"], P["rand"]]), "esm650": P["esm650"]}
+
+
+def protein_targets(P):
+    """05_probes.py's filters: drop unknown labels, classes under 40 proteins, keep at most 12."""
+    out = {}
+    for t, _ in CHAIN_TARGETS:
+        raw = P["labels"][t]
+        have = np.array([v is not None and str(v) not in EXCLUDE.get(t, set()) for v in raw])
+        vals, counts = np.unique(raw[have].astype(str), return_counts=True)
+        vals = vals[counts >= MIN_CLASS]
+        keepc = list(vals[np.argsort(-counts[counts >= MIN_CLASS])][:MAX_CLASSES])
+        if len(keepc) < 2:
+            continue
+        code = {c: i for i, c in enumerate(sorted(keepc))}
+        out[t] = np.array([code.get(str(v), -1) if h else -1 for v, h in zip(raw, have)])
+    return out
+
+
+def run_protein_part(P, Y, seed, size, out_csv):
+    C = len(P["counts"])
+    rng = np.random.default_rng(seed)
+    test_chains = rng.choice(C, max(1, int(C * TEST_FRAC)), replace=False)
+    train_pool = np.setdiff1d(np.arange(C), test_chains)
+    sub = np.random.default_rng(seed + 1000)
+    n_keep = max(3, int(round(len(train_pool) * size)))
+    train_chains = sub.choice(train_pool, min(n_keep, len(train_pool)), replace=False)
+    train, test = np.isin(np.arange(C), train_chains), np.isin(np.arange(C), test_chains)
+    A = protein_arms(P, train)
+    groups = np.arange(C)
+    rows = []
+    for task, y in Y.items():
+        tr, te = train & (y >= 0), test & (y >= 0)
+        counts = np.bincount(y[tr], minlength=int(y.max()) + 1)
+        skip = None if counts.min() >= 2 else f"a class has {int(counts.min())} training proteins"
+        base = {"seed": seed, "size": size, "task": task, "metric": "f1",
+                "n_train": int(tr.sum()), "n_test": int(te.sum()), "n_train_chains": len(train_chains)}
+        for pred in PREDICTORS:
+            for arm in ARMS_P:
+                row = dict(base, predictor=pred, arm=arm, score="", penalty="", skipped=skip or "")
+                if skip is None:
+                    X = A[arm]
+                    p, chosen = fit_predict(pred, "pclf", X[tr], y[tr], X[te], groups[tr], seed)
+                    row["score"] = round(float(_score("pclf", y[te], p)), 5)
+                    row["penalty"] = "" if chosen is None else chosen
+                rows.append(row)
+        print(f"    seed {seed} size {size:.2f} {task:<20} done", flush=True)
+    with out_csv.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
+
+
+def _main_run_protein() -> None:
+    ap = argparse.ArgumentParser(description="Fit every fusion arm on whole proteins")
+    ap.add_argument("--structures-dir", default="structures")
+    ap.add_argument("--results-root", default="results")
+    ap.add_argument("--out-dir", default="results/fusion_protein")
+    ap.add_argument("--max-chains", type=int, default=None, help="smoke tests only")
+    ap.add_argument("--workers", type=int, default=2)
+    args = ap.parse_args()
+    out = Path(args.out_dir); parts = out / "parts"; parts.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+    P = load_protein(Path(args.structures_dir), Path(args.results_root), args.max_chains)
+    Y = protein_targets(P)
+    print(f"  {len(P['counts']):,} proteins, {len(Y)} targets ({time.time() - t0:,.0f}s)", flush=True)
+    jobs = [(s, z) for s in SEEDS for z in SIZES if not (parts / f"seed{s}_size{z:.2f}.csv").exists()]
+    from joblib import Parallel, delayed
+    Parallel(n_jobs=args.workers, backend="loky")(
+        delayed(run_protein_part)(P, Y, s, z, parts / f"seed{s}_size{z:.2f}.csv") for s, z in jobs)
+    rows = []
+    for p in sorted(parts.glob("seed*_size*.csv")):
+        rows += list(csv.DictReader(p.open()))
+    with (out / "scores.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
+    qc.record_params(out, args, extra={"layers": LAYERS, "seeds": SEEDS, "sizes": SIZES,
+                                       "proteins": int(len(P["counts"])), "targets": list(Y),
+                                       "rows": len(rows), "minutes": round((time.time() - t0) / 60, 1)})
+    print(f"-> {out / 'scores.csv'} ({len(rows):,} rows, {(time.time() - t0) / 60:,.0f} min)")
+
+
+# ==========================================================================================
 # summarise
 # ==========================================================================================
 
 def _main_summarise() -> None:
     ap = argparse.ArgumentParser(description="Paired gains, variance partitioning, decision rule")
     ap.add_argument("--out-dir", default="results/fusion")
+    ap.add_argument("--level", choices=("residue", "protein"), default="residue")
     args = ap.parse_args()
     out = Path(args.out_dir)
+    protein = args.level == "protein"
+    arms_, fused, ident = (ARMS_P, FUSED_P, "raw_comp") if protein else (ARMS, FUSED, "raw_aa")
+    need = 6 if protein else 3                     # targets with the interval above zero, fixed in advance
+    tasks = []
+    for r in csv.DictReader((out / "scores.csv").open()):
+        if (r["task"], r["metric"]) not in tasks:
+            tasks.append((r["task"], r["metric"]))
+    tasks = [(t, None, m) for t, m in tasks]
     S = {}
     for r in csv.DictReader((out / "scores.csv").open()):
         if r["score"] == "":
@@ -289,12 +460,12 @@ def _main_summarise() -> None:
     gains = []
     for pred in PREDICTORS:
         for size in SIZES:
-            for task, _, metric in TASKS:
-                for arm in FUSED + ("esm650",):
+            for task, _, metric in tasks:
+                for arm in fused + ("esm650",):
                     a = vec((pred, size, task, arm))
                     if not np.isfinite(a).any():
                         continue
-                    for ref in ("esm", "mpnn", "raw_aa"):
+                    for ref in ("esm", "mpnn", ident):
                         if ref == arm:
                             continue
                         g = fu.paired_gain(a, vec((pred, size, task, ref)))
@@ -304,21 +475,21 @@ def _main_summarise() -> None:
     with (out / "gains.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(gains[0])); w.writeheader(); w.writerows(gains)
 
-    # decision rule: residual or hybrid beats raw-plus-one-hot if the paired interval is above zero on
-    # at least three of the seven targets for the same predictor
+    # decision rule: residual or hybrid beats raw fusion plus identity (one-hot, or composition for
+    # proteins) if the paired interval is above zero on at least `need` targets for the same predictor
     rule = {}
     for pred in PREDICTORS:
         for size in SIZES:
             for arm in ("residual", "hybrid"):
                 above = [g["task"] for g in gains if g["predictor"] == pred and g["size"] == size
-                         and g["arm"] == arm and g["over"] == "raw_aa" and g["n"] >= 2 and g["lo"] > 0]
+                         and g["arm"] == arm and g["over"] == ident and g["n"] >= 2 and g["lo"] > 0]
                 below = [g["task"] for g in gains if g["predictor"] == pred and g["size"] == size
-                         and g["arm"] == arm and g["over"] == "raw_aa" and g["n"] >= 2 and g["hi"] < 0]
+                         and g["arm"] == arm and g["over"] == ident and g["n"] >= 2 and g["hi"] < 0]
                 rule[f"{pred}|{size:.2f}|{arm}"] = {"above_zero": above, "below_zero": below,
-                                                    "better": len(above) >= 3}
+                                                    "better": len(above) >= need}
     # variance partitioning of the linear scores, raw and residual fusion, full training size
     vp = {}
-    for task, _, _ in TASKS:
+    for task, _, _ in tasks:
         e, m = vec(("linear", 1.0, task, "esm")), vec(("linear", 1.0, task, "mpnn"))
         for arm in ("raw", "residual"):
             f = vec(("linear", 1.0, task, arm))
@@ -326,16 +497,16 @@ def _main_summarise() -> None:
                 parts_ = fu.variance_partition(float(e.mean()), float(m.mean()), float(f.mean()))
                 vp[f"{task}|{arm}"] = {k: round(v, 4) for k, v in parts_.items()}
     means = {f"{p}|{z:.2f}|{t}|{a}": round(float(np.nanmean(vec((p, z, t, a)))), 4)
-             for p in PREDICTORS for z in SIZES for t, _, _ in TASKS for a in ARMS
+             for p in PREDICTORS for z in SIZES for t, _, _ in tasks for a in arms_
              if np.isfinite(vec((p, z, t, a))).any()}
-    summary = {"decision_rule": rule, "variance_partition_linear_full": vp, "mean_scores": means,
+    summary = {"level": args.level, "identity_arm": ident, "targets_needed": need, "decision_rule": rule, "variance_partition_linear_full": vp, "mean_scores": means,
                "seeds": list(SEEDS), "sizes": list(SIZES), "layers": LAYERS}
     (out / "summary.json").write_text(json.dumps(summary, indent=1) + "\n")
     print(json.dumps(rule, indent=1))
     print(f"-> {out / 'gains.csv'}, {out / 'summary.json'}")
 
 
-_SUBCOMMANDS = {"run": _main_run, "summarise": _main_summarise}
+_SUBCOMMANDS = {"run": _main_run, "run-protein": _main_run_protein, "summarise": _main_summarise}
 
 
 def main() -> None:
