@@ -196,6 +196,31 @@ embedded with ESM-2 35M; means over blocks 1–12, in units of within-amino-acid
 - ProteinMPNN's encoder does not change at all (exactly zero): it reads only the backbone, which a
   point mutation on the same structure leaves untouched. Testing it needs a mutant structure.
 
+**Phase 2 design, fixed before running (4 November 2026).**
+
+*Per-protein fusion.* The same nine arms on whole proteins: each model's chosen layer (ESM-2 35M
+layer 11, ProteinMPNN encoder 3) averaged over the protein's residues. Removing each amino acid's
+mean (fitted on training proteins' residues only) before averaging removes the part of the average
+explained by the protein's amino-acid composition, so the identity arm is the 20-value composition
+vector, the input of the counting baseline. Arms: ESM-2; ProteinMPNN; composition; raw fusion; raw
+fusion plus composition; residual fusion; hybrid (composition plus both residuals); ESM-2 with an
+untrained ProteinMPNN; ESM-2 650M (layer 32). Targets: the 18 protein-level properties of
+`05_probes.py`, with its class filters (classes under 40 proteins dropped, at most 12 classes,
+unknown and other excluded). Macro-F1. Same predictors, training sizes (a target is skipped at a
+size where any class has fewer than 2 training proteins), refits and chain-level splits. Decision
+rule: residual or hybrid fusion is better than raw fusion plus composition for a predictor if the
+paired 95% interval of its gain is above zero on at least 6 of the 18 targets at full size.
+
+*Predictions on the point mutants.* Predictors trained once (seed 42, full training set, linear and
+boosted trees) on the residue targets for ESM-2 alone (raw and residual), ProteinMPNN alone, and
+raw, residual and hybrid fusion, and on the protein-level targets for the same arms, are applied to
+wild type and each mutant. Reported, descriptively: the change in predicted value at the mutated
+residue, within 8 Å, and beyond 16 Å, and whether any protein-level prediction changes class.
+Ground truth for one mutant: T4 lysozyme L99A has a crystal structure (1L90) on the cysteine-free
+background whose structure is 1L63, so the measured per-residue change in solvent accessibility and
+secondary structure is compared with the predicted change (Pearson r over residues; agreement of
+secondary-structure changes), as is and after the subtraction.
+
 ---
 
 ## 3. Can ESM-2 improve the sequences ProteinMPNN generates?
