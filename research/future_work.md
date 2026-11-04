@@ -163,6 +163,103 @@ inflates similarity scores without hurting fusion.
 Cost: no new extraction for phase 1. Loading one layer per model and about 2,800 probe fits take
 a few hours of CPU.
 
+**Result, phase 1 (run 16 October 2026; `scripts/08_fusion.py`, `results/fusion/`).**
+
+- *Combining helps, and where it helps follows each model's blind spot.* With the linear predictor
+  at full training size, raw fusion beats ESM-2 alone and ProteinMPNN alone on all seven targets,
+  every one of the 14 paired gains with its interval above zero. Over ESM-2 alone the gains are
+  largest on structure (solvent accessibility +0.400, burial +0.131); over ProteinMPNN alone on
+  functional sites (PTM sites +0.154, active sites +0.094). On structural targets the gains over
+  ProteinMPNN shrink to +0.007 at most with boosted trees, and turn negative with the MLP (solvent
+  accessibility −0.028, B-factor −0.063), which fits the larger input less well.
+- *The subtraction does not make the two easier to combine.* By the rule fixed in advance, neither
+  residual nor hybrid fusion beats raw fusion plus one-hot for any predictor at any training size.
+  Residual fusion is significantly worse on most targets: removing amino-acid identity removes
+  information the targets use. Hybrid fusion ties raw-plus-one-hot with the linear predictor, as the
+  linear equivalence predicts, and is never better by the rule.
+- *Size controls.* ESM-2 with an untrained ProteinMPNN recovers most of the fusion gain on
+  structural targets (solvent accessibility 0.812 against 0.841, linear), so much of what
+  ProteinMPNN adds is the backbone geometry itself. ESM-2 650M alone beats the fusion on functional
+  sites (active sites 0.717 against 0.632) and loses on structure (solvent accessibility 0.567).
+
+**Specificity check: point mutants (`scripts/09_mutants.py`, `results/mutants/`).** Nine point
+mutants of T4 lysozyme (L99A, L99I, K16R, K16E) and ubiquitin (V26A, V26I, K48R, K48E, I44A),
+embedded with ESM-2 35M; means over blocks 1–12, in units of within-amino-acid spread:
+
+- At the mutated residue the embedding moves 0.39–0.74; the subtraction removes 39–66% of that (the
+  amino-acid swap itself) and leaves 0.17–0.33, the residue's response to its new context.
+- The change is local: residues within 8 Å move 2–5 times more than residues over 16 Å away, most
+  around the buried sites (4.7–5.2 times around L99 in T4 lysozyme).
+- Radical substitutions move it more than conservative ones at the same site in all four pairs, as
+  is and after the subtraction; the contrast is larger after it (ratio 1.3–1.7 against 1.2–1.4).
+  Four pairs make this descriptive.
+- ProteinMPNN's encoder does not change at all (exactly zero): it reads only the backbone, which a
+  point mutation on the same structure leaves untouched. Testing it needs a mutant structure.
+
+**Phase 2 design, fixed before running (4 November 2026).**
+
+*Per-protein fusion.* The same nine arms on whole proteins: each model's chosen layer (ESM-2 35M
+layer 11, ProteinMPNN encoder 3) averaged over the protein's residues. Removing each amino acid's
+mean (fitted on training proteins' residues only) before averaging removes the part of the average
+explained by the protein's amino-acid composition, so the identity arm is the 20-value composition
+vector, the input of the counting baseline. Arms: ESM-2; ProteinMPNN; composition; raw fusion; raw
+fusion plus composition; residual fusion; hybrid (composition plus both residuals); ESM-2 with an
+untrained ProteinMPNN; ESM-2 650M (layer 32). Targets: the 18 protein-level properties of
+`05_probes.py`, with its class filters (classes under 40 proteins dropped, at most 12 classes,
+unknown and other excluded). Macro-F1. Same predictors, training sizes (a target is skipped at a
+size where any class has fewer than 2 training proteins), refits and chain-level splits. Decision
+rule: residual or hybrid fusion is better than raw fusion plus composition for a predictor if the
+paired 95% interval of its gain is above zero on at least 6 of the 18 targets at full size.
+
+*Predictions on the point mutants.* Predictors trained once (seed 42, full training set, linear and
+boosted trees) on the residue targets for ESM-2 alone (raw and residual), ProteinMPNN alone, and
+raw, residual and hybrid fusion, and on the protein-level targets for the same arms, are applied to
+wild type and each mutant. Reported, descriptively: the change in predicted value at the mutated
+residue, within 8 Å, and beyond 16 Å, and whether any protein-level prediction changes class.
+Ground truth for one mutant: T4 lysozyme L99A has a crystal structure (1L90) on the cysteine-free
+background whose structure is 1L63, so the measured per-residue change in solvent accessibility and
+secondary structure is compared with the predicted change (Pearson r over residues; agreement of
+secondary-structure changes), as is and after the subtraction.
+
+**Result, per-protein fusion (`08_fusion.py run-protein`, `results/fusion_protein/`).** Whole
+proteins tell a different story from residues:
+
+- *Combining adds nothing over ESM-2 alone.* Raw fusion is significantly better than ESM-2 alone on
+  1 of the 18 protein-level targets with the linear predictor and 0 of 18 with boosted trees (and
+  significantly worse on one, transporters), against all 18 over ProteinMPNN alone. Even fold class,
+  a structural label, gains only +0.027 (interval spanning zero). Averaged over residues, what
+  ProteinMPNN knows about each protein is already in ESM-2's average.
+- *The bigger sequence model is the better addition.* ESM-2 650M alone scores highest on most
+  targets (kingdom 0.807 against 0.654 for raw fusion, linear).
+- *The subtraction is neutral here.* By the rule fixed in advance (6 of 18 targets) neither residual
+  nor hybrid fusion beats raw fusion plus composition for any predictor or size; residual fusion is
+  above it on at most 3 targets and below on at most 2. At 1% of training proteins most targets are
+  skipped (a class with fewer than 2 training proteins).
+
+**Result, predictions on the point mutants (`09_mutants.py predict`).** Predictors trained on the
+dataset and applied to wild type and the nine mutants, as the design above fixed:
+
+- *Predicted properties barely move, and only locally.* Averaged over the mutants, the predicted
+  solvent accessibility of the mutated residue changes by 0.02–0.07 (on a 0–1 scale) and that of
+  residues within 8 Å by 0.002–0.02; class predictions change at the site or within 8 Å in a handful
+  of cases out of hundreds (4–15 per arm). ProteinMPNN alone never changes, since its input does not.
+- *Fusing with ProteinMPNN damps the change for structural properties* (burial at the site, linear:
+  0.064 for ESM-2 alone, 0.016 fused): half the input is a backbone the mutation leaves unchanged.
+- *The subtraction mostly matters where amino-acid identity carries the answer.* For PTM sites the
+  predicted change at a mutated lysine falls from 0.55–0.86 to 0.12–0.25 (ESM-2, linear) once identity
+  is removed; for structural properties raw and residual predictions move about equally.
+- *Protein-level predictions rarely change class* (0–9 of 162 per arm, 49 in all), mostly for the
+  T4 lysozyme mutants (35 of 49) and mostly on weakly separated targets: subcellular location and
+  kingdom account for 32 of the 49.
+- *Against the crystal structures, the predictions fail for L99A.* The measured change between 1L63
+  and 1L90 is confined to residue 99, which becomes more exposed (+0.14 relative solvent
+  accessibility, the cavity); the nine residues within 8 Å change by 0.004 on average, less than
+  distant residues. Most arms predict residue 99 becomes slightly more buried (−0.02 to −0.08); only
+  boosted trees on the residual and hybrid features predict an increase, a quarter of the measured
+  size. Giving ProteinMPNN the real mutant backbone does not fix it. With one informative residue
+  this is an anecdote, not a test; correlations within 8 Å are dominated by that residue and are
+  not reported as evidence.
+
 ---
 
 ## 3. Can ESM-2 improve the sequences ProteinMPNN generates?
@@ -256,6 +353,11 @@ withheld, so the searches were repeated by hand.
   S-PLM aligns ESM-2 with a structure encoder by contrastive learning
   ([bioRxiv 2023](https://www.biorxiv.org/content/10.1101/2023.08.06.552203)). None removes
   information the two share before fusing.
+- *Combining embeddings from models with different priors* is common and often helps, but the gain
+  depends on the task. Ensembles of ProtT5, ESM-2 and Ankh embeddings improved O-GlcNAc site
+  prediction ([PMC10650050](https://pmc.ncbi.nlm.nih.gov/articles/PMC10650050/)); concatenating
+  ProstT5 structure-aware and sequence embeddings raised scores only numerically, not significantly
+  ([NAR Genomics and Bioinformatics 2024](https://academic.oup.com/nargab/article/6/4/lqae150/7901286)).
 - *Asking when structure adds to sequence.* Chauhan measures the linear "information bonus" of
   frozen AlphaFold2 representations over frozen ESM-2: it is positive for allosteric sites and
   negative for binding affinity and flexibility, and residue-level splits inflate flexibility

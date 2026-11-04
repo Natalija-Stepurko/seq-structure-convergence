@@ -1,0 +1,1945 @@
+protein,mutation,task,predictor,arm,change,class_changed
+T4 lysozyme,L99A,cath_class,linear,esm,0.01994,0
+T4 lysozyme,L99A,cath_class,linear,esm_residual,0.02506,0
+T4 lysozyme,L99A,cath_class,linear,mpnn,0.0,0
+T4 lysozyme,L99A,cath_class,linear,raw,0.01206,0
+T4 lysozyme,L99A,cath_class,linear,residual,0.01442,0
+T4 lysozyme,L99A,cath_class,linear,hybrid,0.01418,0
+T4 lysozyme,L99A,cath_class,xgb,esm,0.02781,0
+T4 lysozyme,L99A,cath_class,xgb,esm_residual,0.01068,0
+T4 lysozyme,L99A,cath_class,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,cath_class,xgb,raw,0.00355,0
+T4 lysozyme,L99A,cath_class,xgb,residual,0.00027,0
+T4 lysozyme,L99A,cath_class,xgb,hybrid,0.00431,0
+T4 lysozyme,L99A,cath_arch,linear,esm,0.02416,0
+T4 lysozyme,L99A,cath_arch,linear,esm_residual,0.0241,0
+T4 lysozyme,L99A,cath_arch,linear,mpnn,0.0,0
+T4 lysozyme,L99A,cath_arch,linear,raw,0.02341,0
+T4 lysozyme,L99A,cath_arch,linear,residual,0.02409,0
+T4 lysozyme,L99A,cath_arch,linear,hybrid,0.0236,0
+T4 lysozyme,L99A,cath_arch,xgb,esm,0.01591,0
+T4 lysozyme,L99A,cath_arch,xgb,esm_residual,0.16354,0
+T4 lysozyme,L99A,cath_arch,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,cath_arch,xgb,raw,0.00688,0
+T4 lysozyme,L99A,cath_arch,xgb,residual,0.05744,0
+T4 lysozyme,L99A,cath_arch,xgb,hybrid,0.0279,0
+T4 lysozyme,L99A,cath_topol,linear,esm,0.04508,0
+T4 lysozyme,L99A,cath_topol,linear,esm_residual,0.04503,0
+T4 lysozyme,L99A,cath_topol,linear,mpnn,0.0,0
+T4 lysozyme,L99A,cath_topol,linear,raw,0.0395,0
+T4 lysozyme,L99A,cath_topol,linear,residual,0.03878,0
+T4 lysozyme,L99A,cath_topol,linear,hybrid,0.04009,0
+T4 lysozyme,L99A,cath_topol,xgb,esm,0.18531,1
+T4 lysozyme,L99A,cath_topol,xgb,esm_residual,0.14092,1
+T4 lysozyme,L99A,cath_topol,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,cath_topol,xgb,raw,0.11114,1
+T4 lysozyme,L99A,cath_topol,xgb,residual,0.08649,0
+T4 lysozyme,L99A,cath_topol,xgb,hybrid,0.11511,0
+T4 lysozyme,L99A,ec_class,linear,esm,0.0491,0
+T4 lysozyme,L99A,ec_class,linear,esm_residual,0.05121,0
+T4 lysozyme,L99A,ec_class,linear,mpnn,0.0,0
+T4 lysozyme,L99A,ec_class,linear,raw,0.0368,0
+T4 lysozyme,L99A,ec_class,linear,residual,0.03811,0
+T4 lysozyme,L99A,ec_class,linear,hybrid,0.0329,0
+T4 lysozyme,L99A,ec_class,xgb,esm,0.05091,0
+T4 lysozyme,L99A,ec_class,xgb,esm_residual,0.12845,0
+T4 lysozyme,L99A,ec_class,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,ec_class,xgb,raw,0.04729,0
+T4 lysozyme,L99A,ec_class,xgb,residual,0.06043,0
+T4 lysozyme,L99A,ec_class,xgb,hybrid,0.07107,0
+T4 lysozyme,L99A,enzyme,linear,esm,0.00483,0
+T4 lysozyme,L99A,enzyme,linear,esm_residual,0.00476,0
+T4 lysozyme,L99A,enzyme,linear,mpnn,0.0,0
+T4 lysozyme,L99A,enzyme,linear,raw,0.00848,0
+T4 lysozyme,L99A,enzyme,linear,residual,0.00894,0
+T4 lysozyme,L99A,enzyme,linear,hybrid,0.00854,0
+T4 lysozyme,L99A,enzyme,xgb,esm,0.02966,0
+T4 lysozyme,L99A,enzyme,xgb,esm_residual,0.12269,0
+T4 lysozyme,L99A,enzyme,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,enzyme,xgb,raw,0.14689,0
+T4 lysozyme,L99A,enzyme,xgb,residual,0.04716,0
+T4 lysozyme,L99A,enzyme,xgb,hybrid,0.20586,1
+T4 lysozyme,L99A,protein_class,linear,esm,0.08387,0
+T4 lysozyme,L99A,protein_class,linear,esm_residual,0.08409,0
+T4 lysozyme,L99A,protein_class,linear,mpnn,0.0,0
+T4 lysozyme,L99A,protein_class,linear,raw,0.11263,1
+T4 lysozyme,L99A,protein_class,linear,residual,0.11443,0
+T4 lysozyme,L99A,protein_class,linear,hybrid,0.11317,0
+T4 lysozyme,L99A,protein_class,xgb,esm,0.07809,0
+T4 lysozyme,L99A,protein_class,xgb,esm_residual,0.05667,0
+T4 lysozyme,L99A,protein_class,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,protein_class,xgb,raw,0.042,0
+T4 lysozyme,L99A,protein_class,xgb,residual,0.0211,0
+T4 lysozyme,L99A,protein_class,xgb,hybrid,0.01075,0
+T4 lysozyme,L99A,localisation,linear,esm,0.18207,0
+T4 lysozyme,L99A,localisation,linear,esm_residual,0.19773,0
+T4 lysozyme,L99A,localisation,linear,mpnn,0.0,0
+T4 lysozyme,L99A,localisation,linear,raw,0.1458,0
+T4 lysozyme,L99A,localisation,linear,residual,0.15983,0
+T4 lysozyme,L99A,localisation,linear,hybrid,0.14773,0
+T4 lysozyme,L99A,localisation,xgb,esm,0.04249,0
+T4 lysozyme,L99A,localisation,xgb,esm_residual,0.2385,0
+T4 lysozyme,L99A,localisation,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,localisation,xgb,raw,0.18891,1
+T4 lysozyme,L99A,localisation,xgb,residual,0.19875,1
+T4 lysozyme,L99A,localisation,xgb,hybrid,0.09556,0
+T4 lysozyme,L99A,kingdom,linear,esm,0.0519,1
+T4 lysozyme,L99A,kingdom,linear,esm_residual,0.13219,1
+T4 lysozyme,L99A,kingdom,linear,mpnn,0.0,0
+T4 lysozyme,L99A,kingdom,linear,raw,0.05877,0
+T4 lysozyme,L99A,kingdom,linear,residual,0.04738,0
+T4 lysozyme,L99A,kingdom,linear,hybrid,0.04311,0
+T4 lysozyme,L99A,kingdom,xgb,esm,0.24755,0
+T4 lysozyme,L99A,kingdom,xgb,esm_residual,0.08575,1
+T4 lysozyme,L99A,kingdom,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,kingdom,xgb,raw,0.05149,0
+T4 lysozyme,L99A,kingdom,xgb,residual,0.1216,1
+T4 lysozyme,L99A,kingdom,xgb,hybrid,0.03698,1
+T4 lysozyme,L99A,is_transport,linear,esm,0.00025,0
+T4 lysozyme,L99A,is_transport,linear,esm_residual,0.00019,0
+T4 lysozyme,L99A,is_transport,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_transport,linear,raw,0.00037,0
+T4 lysozyme,L99A,is_transport,linear,residual,0.00037,0
+T4 lysozyme,L99A,is_transport,linear,hybrid,0.00026,0
+T4 lysozyme,L99A,is_transport,xgb,esm,0.00057,0
+T4 lysozyme,L99A,is_transport,xgb,esm_residual,0.00141,0
+T4 lysozyme,L99A,is_transport,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_transport,xgb,raw,6e-05,0
+T4 lysozyme,L99A,is_transport,xgb,residual,4e-05,0
+T4 lysozyme,L99A,is_transport,xgb,hybrid,0.00096,0
+T4 lysozyme,L99A,is_dna_binding,linear,esm,0.01044,0
+T4 lysozyme,L99A,is_dna_binding,linear,esm_residual,0.01451,0
+T4 lysozyme,L99A,is_dna_binding,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_dna_binding,linear,raw,0.01359,0
+T4 lysozyme,L99A,is_dna_binding,linear,residual,0.01676,0
+T4 lysozyme,L99A,is_dna_binding,linear,hybrid,0.01436,0
+T4 lysozyme,L99A,is_dna_binding,xgb,esm,0.00255,0
+T4 lysozyme,L99A,is_dna_binding,xgb,esm_residual,0.01207,0
+T4 lysozyme,L99A,is_dna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_dna_binding,xgb,raw,0.0007,0
+T4 lysozyme,L99A,is_dna_binding,xgb,residual,0.00024,0
+T4 lysozyme,L99A,is_dna_binding,xgb,hybrid,0.00036,0
+T4 lysozyme,L99A,is_rna_binding,linear,esm,0.00183,0
+T4 lysozyme,L99A,is_rna_binding,linear,esm_residual,0.00353,0
+T4 lysozyme,L99A,is_rna_binding,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_rna_binding,linear,raw,0.00025,0
+T4 lysozyme,L99A,is_rna_binding,linear,residual,0.00222,0
+T4 lysozyme,L99A,is_rna_binding,linear,hybrid,0.00184,0
+T4 lysozyme,L99A,is_rna_binding,xgb,esm,0.00079,0
+T4 lysozyme,L99A,is_rna_binding,xgb,esm_residual,0.00067,0
+T4 lysozyme,L99A,is_rna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_rna_binding,xgb,raw,0.00097,0
+T4 lysozyme,L99A,is_rna_binding,xgb,residual,0.00036,0
+T4 lysozyme,L99A,is_rna_binding,xgb,hybrid,0.00021,0
+T4 lysozyme,L99A,is_kinase,linear,esm,0.0001,0
+T4 lysozyme,L99A,is_kinase,linear,esm_residual,0.00065,0
+T4 lysozyme,L99A,is_kinase,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_kinase,linear,raw,0.00076,0
+T4 lysozyme,L99A,is_kinase,linear,residual,2e-05,0
+T4 lysozyme,L99A,is_kinase,linear,hybrid,0.00081,0
+T4 lysozyme,L99A,is_kinase,xgb,esm,6e-05,0
+T4 lysozyme,L99A,is_kinase,xgb,esm_residual,0.00012,0
+T4 lysozyme,L99A,is_kinase,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_kinase,xgb,raw,0.00088,0
+T4 lysozyme,L99A,is_kinase,xgb,residual,0.0003,0
+T4 lysozyme,L99A,is_kinase,xgb,hybrid,1e-05,0
+T4 lysozyme,L99A,is_ribosomal,linear,esm,0.00042,0
+T4 lysozyme,L99A,is_ribosomal,linear,esm_residual,0.007,0
+T4 lysozyme,L99A,is_ribosomal,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_ribosomal,linear,raw,0.02963,0
+T4 lysozyme,L99A,is_ribosomal,linear,residual,0.01916,0
+T4 lysozyme,L99A,is_ribosomal,linear,hybrid,0.02448,0
+T4 lysozyme,L99A,is_ribosomal,xgb,esm,0.0006,0
+T4 lysozyme,L99A,is_ribosomal,xgb,esm_residual,8e-05,0
+T4 lysozyme,L99A,is_ribosomal,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_ribosomal,xgb,raw,0.00021,0
+T4 lysozyme,L99A,is_ribosomal,xgb,residual,0.00071,0
+T4 lysozyme,L99A,is_ribosomal,xgb,hybrid,0.0009,0
+T4 lysozyme,L99A,is_membrane_protein,linear,esm,0.01133,0
+T4 lysozyme,L99A,is_membrane_protein,linear,esm_residual,0.00588,0
+T4 lysozyme,L99A,is_membrane_protein,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_membrane_protein,linear,raw,0.00243,0
+T4 lysozyme,L99A,is_membrane_protein,linear,residual,0.00171,0
+T4 lysozyme,L99A,is_membrane_protein,linear,hybrid,0.00131,0
+T4 lysozyme,L99A,is_membrane_protein,xgb,esm,5e-05,0
+T4 lysozyme,L99A,is_membrane_protein,xgb,esm_residual,0.00111,0
+T4 lysozyme,L99A,is_membrane_protein,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_membrane_protein,xgb,raw,0.00056,0
+T4 lysozyme,L99A,is_membrane_protein,xgb,residual,0.00093,0
+T4 lysozyme,L99A,is_membrane_protein,xgb,hybrid,0.00045,0
+T4 lysozyme,L99A,is_structural,linear,esm,0.03076,0
+T4 lysozyme,L99A,is_structural,linear,esm_residual,0.03993,0
+T4 lysozyme,L99A,is_structural,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_structural,linear,raw,0.00248,0
+T4 lysozyme,L99A,is_structural,linear,residual,0.00773,0
+T4 lysozyme,L99A,is_structural,linear,hybrid,0.00454,0
+T4 lysozyme,L99A,is_structural,xgb,esm,0.00447,0
+T4 lysozyme,L99A,is_structural,xgb,esm_residual,0.0019,0
+T4 lysozyme,L99A,is_structural,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_structural,xgb,raw,0.00096,0
+T4 lysozyme,L99A,is_structural,xgb,residual,3e-05,0
+T4 lysozyme,L99A,is_structural,xgb,hybrid,0.00037,0
+T4 lysozyme,L99A,is_immune,linear,esm,0.01063,0
+T4 lysozyme,L99A,is_immune,linear,esm_residual,0.01255,0
+T4 lysozyme,L99A,is_immune,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_immune,linear,raw,0.01976,0
+T4 lysozyme,L99A,is_immune,linear,residual,0.10802,0
+T4 lysozyme,L99A,is_immune,linear,hybrid,0.02061,0
+T4 lysozyme,L99A,is_immune,xgb,esm,0.00249,0
+T4 lysozyme,L99A,is_immune,xgb,esm_residual,0.00133,0
+T4 lysozyme,L99A,is_immune,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_immune,xgb,raw,0.01884,0
+T4 lysozyme,L99A,is_immune,xgb,residual,0.01878,0
+T4 lysozyme,L99A,is_immune,xgb,hybrid,0.00416,0
+T4 lysozyme,L99A,is_phospho,linear,esm,0.01385,0
+T4 lysozyme,L99A,is_phospho,linear,esm_residual,0.01423,0
+T4 lysozyme,L99A,is_phospho,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_phospho,linear,raw,0.01307,0
+T4 lysozyme,L99A,is_phospho,linear,residual,0.01327,0
+T4 lysozyme,L99A,is_phospho,linear,hybrid,0.00605,0
+T4 lysozyme,L99A,is_phospho,xgb,esm,0.04657,0
+T4 lysozyme,L99A,is_phospho,xgb,esm_residual,0.00029,0
+T4 lysozyme,L99A,is_phospho,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_phospho,xgb,raw,0.00336,0
+T4 lysozyme,L99A,is_phospho,xgb,residual,0.01065,0
+T4 lysozyme,L99A,is_phospho,xgb,hybrid,0.00237,0
+T4 lysozyme,L99A,is_glyco,linear,esm,0.00439,0
+T4 lysozyme,L99A,is_glyco,linear,esm_residual,0.00428,0
+T4 lysozyme,L99A,is_glyco,linear,mpnn,0.0,0
+T4 lysozyme,L99A,is_glyco,linear,raw,0.00295,0
+T4 lysozyme,L99A,is_glyco,linear,residual,0.00274,0
+T4 lysozyme,L99A,is_glyco,linear,hybrid,0.00278,0
+T4 lysozyme,L99A,is_glyco,xgb,esm,0.00028,0
+T4 lysozyme,L99A,is_glyco,xgb,esm_residual,0.00273,0
+T4 lysozyme,L99A,is_glyco,xgb,mpnn,0.0,0
+T4 lysozyme,L99A,is_glyco,xgb,raw,0.00026,0
+T4 lysozyme,L99A,is_glyco,xgb,residual,0.00012,0
+T4 lysozyme,L99A,is_glyco,xgb,hybrid,4e-05,0
+T4 lysozyme,L99I,cath_class,linear,esm,0.01284,0
+T4 lysozyme,L99I,cath_class,linear,esm_residual,0.01372,0
+T4 lysozyme,L99I,cath_class,linear,mpnn,0.0,0
+T4 lysozyme,L99I,cath_class,linear,raw,0.00771,0
+T4 lysozyme,L99I,cath_class,linear,residual,0.0072,0
+T4 lysozyme,L99I,cath_class,linear,hybrid,0.00598,0
+T4 lysozyme,L99I,cath_class,xgb,esm,0.02708,0
+T4 lysozyme,L99I,cath_class,xgb,esm_residual,0.00845,0
+T4 lysozyme,L99I,cath_class,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,cath_class,xgb,raw,2e-05,0
+T4 lysozyme,L99I,cath_class,xgb,residual,0.00074,0
+T4 lysozyme,L99I,cath_class,xgb,hybrid,0.00289,0
+T4 lysozyme,L99I,cath_arch,linear,esm,0.01276,0
+T4 lysozyme,L99I,cath_arch,linear,esm_residual,0.00929,0
+T4 lysozyme,L99I,cath_arch,linear,mpnn,0.0,0
+T4 lysozyme,L99I,cath_arch,linear,raw,0.0138,0
+T4 lysozyme,L99I,cath_arch,linear,residual,0.01134,0
+T4 lysozyme,L99I,cath_arch,linear,hybrid,0.01384,0
+T4 lysozyme,L99I,cath_arch,xgb,esm,0.02266,0
+T4 lysozyme,L99I,cath_arch,xgb,esm_residual,0.0919,0
+T4 lysozyme,L99I,cath_arch,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,cath_arch,xgb,raw,0.0129,0
+T4 lysozyme,L99I,cath_arch,xgb,residual,0.08035,0
+T4 lysozyme,L99I,cath_arch,xgb,hybrid,0.05603,0
+T4 lysozyme,L99I,cath_topol,linear,esm,0.01095,0
+T4 lysozyme,L99I,cath_topol,linear,esm_residual,0.00865,0
+T4 lysozyme,L99I,cath_topol,linear,mpnn,0.0,0
+T4 lysozyme,L99I,cath_topol,linear,raw,0.0113,0
+T4 lysozyme,L99I,cath_topol,linear,residual,0.00808,0
+T4 lysozyme,L99I,cath_topol,linear,hybrid,0.00959,0
+T4 lysozyme,L99I,cath_topol,xgb,esm,0.05274,0
+T4 lysozyme,L99I,cath_topol,xgb,esm_residual,0.06474,0
+T4 lysozyme,L99I,cath_topol,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,cath_topol,xgb,raw,0.08138,0
+T4 lysozyme,L99I,cath_topol,xgb,residual,0.05883,0
+T4 lysozyme,L99I,cath_topol,xgb,hybrid,0.04633,0
+T4 lysozyme,L99I,ec_class,linear,esm,0.01806,0
+T4 lysozyme,L99I,ec_class,linear,esm_residual,0.01151,0
+T4 lysozyme,L99I,ec_class,linear,mpnn,0.0,0
+T4 lysozyme,L99I,ec_class,linear,raw,0.01687,0
+T4 lysozyme,L99I,ec_class,linear,residual,0.01182,0
+T4 lysozyme,L99I,ec_class,linear,hybrid,0.01093,0
+T4 lysozyme,L99I,ec_class,xgb,esm,0.01998,0
+T4 lysozyme,L99I,ec_class,xgb,esm_residual,0.018,0
+T4 lysozyme,L99I,ec_class,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,ec_class,xgb,raw,0.01261,0
+T4 lysozyme,L99I,ec_class,xgb,residual,0.03398,0
+T4 lysozyme,L99I,ec_class,xgb,hybrid,0.01463,0
+T4 lysozyme,L99I,enzyme,linear,esm,0.00139,0
+T4 lysozyme,L99I,enzyme,linear,esm_residual,0.00167,0
+T4 lysozyme,L99I,enzyme,linear,mpnn,0.0,0
+T4 lysozyme,L99I,enzyme,linear,raw,0.00032,0
+T4 lysozyme,L99I,enzyme,linear,residual,0.00045,0
+T4 lysozyme,L99I,enzyme,linear,hybrid,0.00013,0
+T4 lysozyme,L99I,enzyme,xgb,esm,0.05625,0
+T4 lysozyme,L99I,enzyme,xgb,esm_residual,0.02926,0
+T4 lysozyme,L99I,enzyme,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,enzyme,xgb,raw,0.09452,0
+T4 lysozyme,L99I,enzyme,xgb,residual,0.0,0
+T4 lysozyme,L99I,enzyme,xgb,hybrid,0.02937,0
+T4 lysozyme,L99I,protein_class,linear,esm,0.01728,0
+T4 lysozyme,L99I,protein_class,linear,esm_residual,0.01241,0
+T4 lysozyme,L99I,protein_class,linear,mpnn,0.0,0
+T4 lysozyme,L99I,protein_class,linear,raw,0.01909,0
+T4 lysozyme,L99I,protein_class,linear,residual,0.02094,0
+T4 lysozyme,L99I,protein_class,linear,hybrid,0.01877,0
+T4 lysozyme,L99I,protein_class,xgb,esm,0.02994,0
+T4 lysozyme,L99I,protein_class,xgb,esm_residual,0.03588,0
+T4 lysozyme,L99I,protein_class,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,protein_class,xgb,raw,0.03042,0
+T4 lysozyme,L99I,protein_class,xgb,residual,0.00699,0
+T4 lysozyme,L99I,protein_class,xgb,hybrid,0.01672,0
+T4 lysozyme,L99I,localisation,linear,esm,0.01295,0
+T4 lysozyme,L99I,localisation,linear,esm_residual,0.00958,0
+T4 lysozyme,L99I,localisation,linear,mpnn,0.0,0
+T4 lysozyme,L99I,localisation,linear,raw,0.01011,0
+T4 lysozyme,L99I,localisation,linear,residual,0.00835,0
+T4 lysozyme,L99I,localisation,linear,hybrid,0.00833,0
+T4 lysozyme,L99I,localisation,xgb,esm,0.02769,0
+T4 lysozyme,L99I,localisation,xgb,esm_residual,0.10246,0
+T4 lysozyme,L99I,localisation,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,localisation,xgb,raw,0.06889,1
+T4 lysozyme,L99I,localisation,xgb,residual,0.05364,0
+T4 lysozyme,L99I,localisation,xgb,hybrid,0.01539,0
+T4 lysozyme,L99I,kingdom,linear,esm,0.01314,0
+T4 lysozyme,L99I,kingdom,linear,esm_residual,0.012,0
+T4 lysozyme,L99I,kingdom,linear,mpnn,0.0,0
+T4 lysozyme,L99I,kingdom,linear,raw,0.00768,0
+T4 lysozyme,L99I,kingdom,linear,residual,0.01918,0
+T4 lysozyme,L99I,kingdom,linear,hybrid,0.01782,0
+T4 lysozyme,L99I,kingdom,xgb,esm,0.07019,1
+T4 lysozyme,L99I,kingdom,xgb,esm_residual,0.04055,0
+T4 lysozyme,L99I,kingdom,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,kingdom,xgb,raw,0.0903,0
+T4 lysozyme,L99I,kingdom,xgb,residual,0.06291,1
+T4 lysozyme,L99I,kingdom,xgb,hybrid,0.01385,0
+T4 lysozyme,L99I,is_transport,linear,esm,2e-05,0
+T4 lysozyme,L99I,is_transport,linear,esm_residual,1e-05,0
+T4 lysozyme,L99I,is_transport,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_transport,linear,raw,3e-05,0
+T4 lysozyme,L99I,is_transport,linear,residual,4e-05,0
+T4 lysozyme,L99I,is_transport,linear,hybrid,4e-05,0
+T4 lysozyme,L99I,is_transport,xgb,esm,0.00019,0
+T4 lysozyme,L99I,is_transport,xgb,esm_residual,0.00582,0
+T4 lysozyme,L99I,is_transport,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_transport,xgb,raw,0.0001,0
+T4 lysozyme,L99I,is_transport,xgb,residual,2e-05,0
+T4 lysozyme,L99I,is_transport,xgb,hybrid,0.00033,0
+T4 lysozyme,L99I,is_dna_binding,linear,esm,0.0016,0
+T4 lysozyme,L99I,is_dna_binding,linear,esm_residual,0.00111,0
+T4 lysozyme,L99I,is_dna_binding,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_dna_binding,linear,raw,0.00253,0
+T4 lysozyme,L99I,is_dna_binding,linear,residual,0.00171,0
+T4 lysozyme,L99I,is_dna_binding,linear,hybrid,0.00284,0
+T4 lysozyme,L99I,is_dna_binding,xgb,esm,0.00086,0
+T4 lysozyme,L99I,is_dna_binding,xgb,esm_residual,0.00861,0
+T4 lysozyme,L99I,is_dna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_dna_binding,xgb,raw,0.0,0
+T4 lysozyme,L99I,is_dna_binding,xgb,residual,0.00055,0
+T4 lysozyme,L99I,is_dna_binding,xgb,hybrid,0.00033,0
+T4 lysozyme,L99I,is_rna_binding,linear,esm,0.00215,0
+T4 lysozyme,L99I,is_rna_binding,linear,esm_residual,0.00065,0
+T4 lysozyme,L99I,is_rna_binding,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_rna_binding,linear,raw,0.00355,0
+T4 lysozyme,L99I,is_rna_binding,linear,residual,0.00147,0
+T4 lysozyme,L99I,is_rna_binding,linear,hybrid,0.00473,0
+T4 lysozyme,L99I,is_rna_binding,xgb,esm,0.00013,0
+T4 lysozyme,L99I,is_rna_binding,xgb,esm_residual,0.00016,0
+T4 lysozyme,L99I,is_rna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_rna_binding,xgb,raw,0.00014,0
+T4 lysozyme,L99I,is_rna_binding,xgb,residual,7e-05,0
+T4 lysozyme,L99I,is_rna_binding,xgb,hybrid,2e-05,0
+T4 lysozyme,L99I,is_kinase,linear,esm,4e-05,0
+T4 lysozyme,L99I,is_kinase,linear,esm_residual,0.00012,0
+T4 lysozyme,L99I,is_kinase,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_kinase,linear,raw,1e-05,0
+T4 lysozyme,L99I,is_kinase,linear,residual,0.0,0
+T4 lysozyme,L99I,is_kinase,linear,hybrid,3e-05,0
+T4 lysozyme,L99I,is_kinase,xgb,esm,5e-05,0
+T4 lysozyme,L99I,is_kinase,xgb,esm_residual,0.0,0
+T4 lysozyme,L99I,is_kinase,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_kinase,xgb,raw,0.00023,0
+T4 lysozyme,L99I,is_kinase,xgb,residual,1e-05,0
+T4 lysozyme,L99I,is_kinase,xgb,hybrid,1e-05,0
+T4 lysozyme,L99I,is_ribosomal,linear,esm,6e-05,0
+T4 lysozyme,L99I,is_ribosomal,linear,esm_residual,0.00067,0
+T4 lysozyme,L99I,is_ribosomal,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_ribosomal,linear,raw,0.00213,0
+T4 lysozyme,L99I,is_ribosomal,linear,residual,0.0029,0
+T4 lysozyme,L99I,is_ribosomal,linear,hybrid,0.00427,0
+T4 lysozyme,L99I,is_ribosomal,xgb,esm,0.00054,0
+T4 lysozyme,L99I,is_ribosomal,xgb,esm_residual,7e-05,0
+T4 lysozyme,L99I,is_ribosomal,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_ribosomal,xgb,raw,0.00019,0
+T4 lysozyme,L99I,is_ribosomal,xgb,residual,0.00033,0
+T4 lysozyme,L99I,is_ribosomal,xgb,hybrid,8e-05,0
+T4 lysozyme,L99I,is_membrane_protein,linear,esm,0.00036,0
+T4 lysozyme,L99I,is_membrane_protein,linear,esm_residual,0.00017,0
+T4 lysozyme,L99I,is_membrane_protein,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_membrane_protein,linear,raw,1e-05,0
+T4 lysozyme,L99I,is_membrane_protein,linear,residual,6e-05,0
+T4 lysozyme,L99I,is_membrane_protein,linear,hybrid,5e-05,0
+T4 lysozyme,L99I,is_membrane_protein,xgb,esm,0.0,0
+T4 lysozyme,L99I,is_membrane_protein,xgb,esm_residual,0.00048,0
+T4 lysozyme,L99I,is_membrane_protein,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_membrane_protein,xgb,raw,0.0,0
+T4 lysozyme,L99I,is_membrane_protein,xgb,residual,0.00015,0
+T4 lysozyme,L99I,is_membrane_protein,xgb,hybrid,0.00034,0
+T4 lysozyme,L99I,is_structural,linear,esm,0.00791,0
+T4 lysozyme,L99I,is_structural,linear,esm_residual,0.05237,0
+T4 lysozyme,L99I,is_structural,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_structural,linear,raw,0.00432,0
+T4 lysozyme,L99I,is_structural,linear,residual,0.00756,0
+T4 lysozyme,L99I,is_structural,linear,hybrid,0.00384,0
+T4 lysozyme,L99I,is_structural,xgb,esm,0.00254,0
+T4 lysozyme,L99I,is_structural,xgb,esm_residual,0.00503,0
+T4 lysozyme,L99I,is_structural,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_structural,xgb,raw,0.00068,0
+T4 lysozyme,L99I,is_structural,xgb,residual,3e-05,0
+T4 lysozyme,L99I,is_structural,xgb,hybrid,0.00024,0
+T4 lysozyme,L99I,is_immune,linear,esm,0.00227,0
+T4 lysozyme,L99I,is_immune,linear,esm_residual,0.00234,0
+T4 lysozyme,L99I,is_immune,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_immune,linear,raw,0.0046,0
+T4 lysozyme,L99I,is_immune,linear,residual,0.01593,0
+T4 lysozyme,L99I,is_immune,linear,hybrid,0.00449,0
+T4 lysozyme,L99I,is_immune,xgb,esm,0.00042,0
+T4 lysozyme,L99I,is_immune,xgb,esm_residual,0.0,0
+T4 lysozyme,L99I,is_immune,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_immune,xgb,raw,0.00016,0
+T4 lysozyme,L99I,is_immune,xgb,residual,0.0,0
+T4 lysozyme,L99I,is_immune,xgb,hybrid,0.0,0
+T4 lysozyme,L99I,is_phospho,linear,esm,0.00046,0
+T4 lysozyme,L99I,is_phospho,linear,esm_residual,0.00042,0
+T4 lysozyme,L99I,is_phospho,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_phospho,linear,raw,0.00056,0
+T4 lysozyme,L99I,is_phospho,linear,residual,0.00085,0
+T4 lysozyme,L99I,is_phospho,linear,hybrid,0.00062,0
+T4 lysozyme,L99I,is_phospho,xgb,esm,0.00602,0
+T4 lysozyme,L99I,is_phospho,xgb,esm_residual,0.0,0
+T4 lysozyme,L99I,is_phospho,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_phospho,xgb,raw,0.0037,0
+T4 lysozyme,L99I,is_phospho,xgb,residual,0.0,0
+T4 lysozyme,L99I,is_phospho,xgb,hybrid,0.00253,0
+T4 lysozyme,L99I,is_glyco,linear,esm,0.00026,0
+T4 lysozyme,L99I,is_glyco,linear,esm_residual,0.00038,0
+T4 lysozyme,L99I,is_glyco,linear,mpnn,0.0,0
+T4 lysozyme,L99I,is_glyco,linear,raw,0.00015,0
+T4 lysozyme,L99I,is_glyco,linear,residual,0.00022,0
+T4 lysozyme,L99I,is_glyco,linear,hybrid,3e-05,0
+T4 lysozyme,L99I,is_glyco,xgb,esm,3e-05,0
+T4 lysozyme,L99I,is_glyco,xgb,esm_residual,0.0,0
+T4 lysozyme,L99I,is_glyco,xgb,mpnn,0.0,0
+T4 lysozyme,L99I,is_glyco,xgb,raw,0.0,0
+T4 lysozyme,L99I,is_glyco,xgb,residual,0.0,0
+T4 lysozyme,L99I,is_glyco,xgb,hybrid,4e-05,0
+T4 lysozyme,K16R,cath_class,linear,esm,0.01626,0
+T4 lysozyme,K16R,cath_class,linear,esm_residual,0.01689,0
+T4 lysozyme,K16R,cath_class,linear,mpnn,0.0,0
+T4 lysozyme,K16R,cath_class,linear,raw,0.00628,0
+T4 lysozyme,K16R,cath_class,linear,residual,0.00637,0
+T4 lysozyme,K16R,cath_class,linear,hybrid,0.00595,0
+T4 lysozyme,K16R,cath_class,xgb,esm,0.09407,0
+T4 lysozyme,K16R,cath_class,xgb,esm_residual,0.11678,0
+T4 lysozyme,K16R,cath_class,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,cath_class,xgb,raw,0.00634,0
+T4 lysozyme,K16R,cath_class,xgb,residual,0.00032,0
+T4 lysozyme,K16R,cath_class,xgb,hybrid,0.01066,0
+T4 lysozyme,K16R,cath_arch,linear,esm,0.01461,0
+T4 lysozyme,K16R,cath_arch,linear,esm_residual,0.015,0
+T4 lysozyme,K16R,cath_arch,linear,mpnn,0.0,0
+T4 lysozyme,K16R,cath_arch,linear,raw,0.01023,0
+T4 lysozyme,K16R,cath_arch,linear,residual,0.01112,0
+T4 lysozyme,K16R,cath_arch,linear,hybrid,0.01161,0
+T4 lysozyme,K16R,cath_arch,xgb,esm,0.10678,0
+T4 lysozyme,K16R,cath_arch,xgb,esm_residual,0.12981,0
+T4 lysozyme,K16R,cath_arch,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,cath_arch,xgb,raw,0.12248,0
+T4 lysozyme,K16R,cath_arch,xgb,residual,0.08791,0
+T4 lysozyme,K16R,cath_arch,xgb,hybrid,0.06284,0
+T4 lysozyme,K16R,cath_topol,linear,esm,0.02141,0
+T4 lysozyme,K16R,cath_topol,linear,esm_residual,0.02374,0
+T4 lysozyme,K16R,cath_topol,linear,mpnn,0.0,0
+T4 lysozyme,K16R,cath_topol,linear,raw,0.016,0
+T4 lysozyme,K16R,cath_topol,linear,residual,0.01717,0
+T4 lysozyme,K16R,cath_topol,linear,hybrid,0.01695,0
+T4 lysozyme,K16R,cath_topol,xgb,esm,0.27115,1
+T4 lysozyme,K16R,cath_topol,xgb,esm_residual,0.12635,1
+T4 lysozyme,K16R,cath_topol,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,cath_topol,xgb,raw,0.13741,1
+T4 lysozyme,K16R,cath_topol,xgb,residual,0.14126,0
+T4 lysozyme,K16R,cath_topol,xgb,hybrid,0.07432,0
+T4 lysozyme,K16R,ec_class,linear,esm,0.0332,0
+T4 lysozyme,K16R,ec_class,linear,esm_residual,0.03109,0
+T4 lysozyme,K16R,ec_class,linear,mpnn,0.0,0
+T4 lysozyme,K16R,ec_class,linear,raw,0.01505,0
+T4 lysozyme,K16R,ec_class,linear,residual,0.01503,0
+T4 lysozyme,K16R,ec_class,linear,hybrid,0.02112,0
+T4 lysozyme,K16R,ec_class,xgb,esm,0.04104,0
+T4 lysozyme,K16R,ec_class,xgb,esm_residual,0.09637,0
+T4 lysozyme,K16R,ec_class,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,ec_class,xgb,raw,0.05324,0
+T4 lysozyme,K16R,ec_class,xgb,residual,0.00848,0
+T4 lysozyme,K16R,ec_class,xgb,hybrid,0.03193,0
+T4 lysozyme,K16R,enzyme,linear,esm,0.00773,0
+T4 lysozyme,K16R,enzyme,linear,esm_residual,0.00777,0
+T4 lysozyme,K16R,enzyme,linear,mpnn,0.0,0
+T4 lysozyme,K16R,enzyme,linear,raw,0.00526,0
+T4 lysozyme,K16R,enzyme,linear,residual,0.00531,0
+T4 lysozyme,K16R,enzyme,linear,hybrid,0.00512,0
+T4 lysozyme,K16R,enzyme,xgb,esm,0.00236,0
+T4 lysozyme,K16R,enzyme,xgb,esm_residual,0.10572,0
+T4 lysozyme,K16R,enzyme,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,enzyme,xgb,raw,0.17078,1
+T4 lysozyme,K16R,enzyme,xgb,residual,0.06913,1
+T4 lysozyme,K16R,enzyme,xgb,hybrid,0.16518,0
+T4 lysozyme,K16R,protein_class,linear,esm,0.03867,0
+T4 lysozyme,K16R,protein_class,linear,esm_residual,0.03835,0
+T4 lysozyme,K16R,protein_class,linear,mpnn,0.0,0
+T4 lysozyme,K16R,protein_class,linear,raw,0.05225,0
+T4 lysozyme,K16R,protein_class,linear,residual,0.05373,0
+T4 lysozyme,K16R,protein_class,linear,hybrid,0.05057,1
+T4 lysozyme,K16R,protein_class,xgb,esm,0.07349,0
+T4 lysozyme,K16R,protein_class,xgb,esm_residual,0.02606,0
+T4 lysozyme,K16R,protein_class,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,protein_class,xgb,raw,0.05255,0
+T4 lysozyme,K16R,protein_class,xgb,residual,0.03651,0
+T4 lysozyme,K16R,protein_class,xgb,hybrid,0.01738,0
+T4 lysozyme,K16R,localisation,linear,esm,0.12088,0
+T4 lysozyme,K16R,localisation,linear,esm_residual,0.11626,1
+T4 lysozyme,K16R,localisation,linear,mpnn,0.0,0
+T4 lysozyme,K16R,localisation,linear,raw,0.0948,0
+T4 lysozyme,K16R,localisation,linear,residual,0.09089,0
+T4 lysozyme,K16R,localisation,linear,hybrid,0.09434,0
+T4 lysozyme,K16R,localisation,xgb,esm,0.40039,1
+T4 lysozyme,K16R,localisation,xgb,esm_residual,0.19909,0
+T4 lysozyme,K16R,localisation,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,localisation,xgb,raw,0.21605,0
+T4 lysozyme,K16R,localisation,xgb,residual,0.03795,0
+T4 lysozyme,K16R,localisation,xgb,hybrid,0.14187,1
+T4 lysozyme,K16R,kingdom,linear,esm,0.04297,1
+T4 lysozyme,K16R,kingdom,linear,esm_residual,0.04599,1
+T4 lysozyme,K16R,kingdom,linear,mpnn,0.0,0
+T4 lysozyme,K16R,kingdom,linear,raw,0.04486,0
+T4 lysozyme,K16R,kingdom,linear,residual,0.05132,0
+T4 lysozyme,K16R,kingdom,linear,hybrid,0.04895,0
+T4 lysozyme,K16R,kingdom,xgb,esm,0.15954,0
+T4 lysozyme,K16R,kingdom,xgb,esm_residual,0.51345,1
+T4 lysozyme,K16R,kingdom,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,kingdom,xgb,raw,0.09629,0
+T4 lysozyme,K16R,kingdom,xgb,residual,0.06032,0
+T4 lysozyme,K16R,kingdom,xgb,hybrid,0.09226,1
+T4 lysozyme,K16R,is_transport,linear,esm,0.00039,0
+T4 lysozyme,K16R,is_transport,linear,esm_residual,0.00027,0
+T4 lysozyme,K16R,is_transport,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_transport,linear,raw,0.00053,0
+T4 lysozyme,K16R,is_transport,linear,residual,0.00047,0
+T4 lysozyme,K16R,is_transport,linear,hybrid,0.00044,0
+T4 lysozyme,K16R,is_transport,xgb,esm,0.00014,0
+T4 lysozyme,K16R,is_transport,xgb,esm_residual,0.00368,0
+T4 lysozyme,K16R,is_transport,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_transport,xgb,raw,8e-05,0
+T4 lysozyme,K16R,is_transport,xgb,residual,2e-05,0
+T4 lysozyme,K16R,is_transport,xgb,hybrid,2e-05,0
+T4 lysozyme,K16R,is_dna_binding,linear,esm,0.00243,0
+T4 lysozyme,K16R,is_dna_binding,linear,esm_residual,0.00483,0
+T4 lysozyme,K16R,is_dna_binding,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_dna_binding,linear,raw,0.00428,0
+T4 lysozyme,K16R,is_dna_binding,linear,residual,0.00672,0
+T4 lysozyme,K16R,is_dna_binding,linear,hybrid,0.00508,0
+T4 lysozyme,K16R,is_dna_binding,xgb,esm,0.00829,0
+T4 lysozyme,K16R,is_dna_binding,xgb,esm_residual,0.00814,0
+T4 lysozyme,K16R,is_dna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_dna_binding,xgb,raw,0.00052,0
+T4 lysozyme,K16R,is_dna_binding,xgb,residual,0.00333,0
+T4 lysozyme,K16R,is_dna_binding,xgb,hybrid,0.00453,0
+T4 lysozyme,K16R,is_rna_binding,linear,esm,0.00115,0
+T4 lysozyme,K16R,is_rna_binding,linear,esm_residual,0.00177,0
+T4 lysozyme,K16R,is_rna_binding,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_rna_binding,linear,raw,0.00122,0
+T4 lysozyme,K16R,is_rna_binding,linear,residual,0.00236,0
+T4 lysozyme,K16R,is_rna_binding,linear,hybrid,0.00088,0
+T4 lysozyme,K16R,is_rna_binding,xgb,esm,0.00073,0
+T4 lysozyme,K16R,is_rna_binding,xgb,esm_residual,0.00041,0
+T4 lysozyme,K16R,is_rna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_rna_binding,xgb,raw,0.00015,0
+T4 lysozyme,K16R,is_rna_binding,xgb,residual,2e-05,0
+T4 lysozyme,K16R,is_rna_binding,xgb,hybrid,2e-05,0
+T4 lysozyme,K16R,is_kinase,linear,esm,2e-05,0
+T4 lysozyme,K16R,is_kinase,linear,esm_residual,0.00052,0
+T4 lysozyme,K16R,is_kinase,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_kinase,linear,raw,0.00103,0
+T4 lysozyme,K16R,is_kinase,linear,residual,3e-05,0
+T4 lysozyme,K16R,is_kinase,linear,hybrid,0.00103,0
+T4 lysozyme,K16R,is_kinase,xgb,esm,0.0,0
+T4 lysozyme,K16R,is_kinase,xgb,esm_residual,2e-05,0
+T4 lysozyme,K16R,is_kinase,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_kinase,xgb,raw,0.00027,0
+T4 lysozyme,K16R,is_kinase,xgb,residual,2e-05,0
+T4 lysozyme,K16R,is_kinase,xgb,hybrid,1e-05,0
+T4 lysozyme,K16R,is_ribosomal,linear,esm,0.00246,0
+T4 lysozyme,K16R,is_ribosomal,linear,esm_residual,0.01154,0
+T4 lysozyme,K16R,is_ribosomal,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_ribosomal,linear,raw,0.01954,0
+T4 lysozyme,K16R,is_ribosomal,linear,residual,0.01254,0
+T4 lysozyme,K16R,is_ribosomal,linear,hybrid,0.01348,0
+T4 lysozyme,K16R,is_ribosomal,xgb,esm,0.00028,0
+T4 lysozyme,K16R,is_ribosomal,xgb,esm_residual,4e-05,0
+T4 lysozyme,K16R,is_ribosomal,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_ribosomal,xgb,raw,0.00027,0
+T4 lysozyme,K16R,is_ribosomal,xgb,residual,0.00013,0
+T4 lysozyme,K16R,is_ribosomal,xgb,hybrid,0.00032,0
+T4 lysozyme,K16R,is_membrane_protein,linear,esm,0.00445,0
+T4 lysozyme,K16R,is_membrane_protein,linear,esm_residual,0.0028,0
+T4 lysozyme,K16R,is_membrane_protein,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_membrane_protein,linear,raw,0.00153,0
+T4 lysozyme,K16R,is_membrane_protein,linear,residual,0.00106,0
+T4 lysozyme,K16R,is_membrane_protein,linear,hybrid,0.00094,0
+T4 lysozyme,K16R,is_membrane_protein,xgb,esm,0.00079,0
+T4 lysozyme,K16R,is_membrane_protein,xgb,esm_residual,0.00012,0
+T4 lysozyme,K16R,is_membrane_protein,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_membrane_protein,xgb,raw,4e-05,0
+T4 lysozyme,K16R,is_membrane_protein,xgb,residual,0.00018,0
+T4 lysozyme,K16R,is_membrane_protein,xgb,hybrid,5e-05,0
+T4 lysozyme,K16R,is_structural,linear,esm,0.02888,0
+T4 lysozyme,K16R,is_structural,linear,esm_residual,0.08015,0
+T4 lysozyme,K16R,is_structural,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_structural,linear,raw,0.00488,0
+T4 lysozyme,K16R,is_structural,linear,residual,0.00475,0
+T4 lysozyme,K16R,is_structural,linear,hybrid,0.00687,0
+T4 lysozyme,K16R,is_structural,xgb,esm,0.00392,0
+T4 lysozyme,K16R,is_structural,xgb,esm_residual,0.0001,0
+T4 lysozyme,K16R,is_structural,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_structural,xgb,raw,0.00048,0
+T4 lysozyme,K16R,is_structural,xgb,residual,0.00012,0
+T4 lysozyme,K16R,is_structural,xgb,hybrid,0.00016,0
+T4 lysozyme,K16R,is_immune,linear,esm,0.00669,0
+T4 lysozyme,K16R,is_immune,linear,esm_residual,0.00764,0
+T4 lysozyme,K16R,is_immune,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_immune,linear,raw,0.01223,0
+T4 lysozyme,K16R,is_immune,linear,residual,0.06387,0
+T4 lysozyme,K16R,is_immune,linear,hybrid,0.01283,0
+T4 lysozyme,K16R,is_immune,xgb,esm,0.00039,0
+T4 lysozyme,K16R,is_immune,xgb,esm_residual,0.0001,0
+T4 lysozyme,K16R,is_immune,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_immune,xgb,raw,0.00042,0
+T4 lysozyme,K16R,is_immune,xgb,residual,0.00338,0
+T4 lysozyme,K16R,is_immune,xgb,hybrid,0.00032,0
+T4 lysozyme,K16R,is_phospho,linear,esm,0.00484,0
+T4 lysozyme,K16R,is_phospho,linear,esm_residual,0.00447,0
+T4 lysozyme,K16R,is_phospho,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_phospho,linear,raw,0.0018,0
+T4 lysozyme,K16R,is_phospho,linear,residual,0.00086,0
+T4 lysozyme,K16R,is_phospho,linear,hybrid,0.00013,0
+T4 lysozyme,K16R,is_phospho,xgb,esm,0.01359,0
+T4 lysozyme,K16R,is_phospho,xgb,esm_residual,0.00813,0
+T4 lysozyme,K16R,is_phospho,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_phospho,xgb,raw,0.00934,0
+T4 lysozyme,K16R,is_phospho,xgb,residual,0.00108,0
+T4 lysozyme,K16R,is_phospho,xgb,hybrid,0.00274,0
+T4 lysozyme,K16R,is_glyco,linear,esm,0.00219,0
+T4 lysozyme,K16R,is_glyco,linear,esm_residual,0.00236,0
+T4 lysozyme,K16R,is_glyco,linear,mpnn,0.0,0
+T4 lysozyme,K16R,is_glyco,linear,raw,0.00145,0
+T4 lysozyme,K16R,is_glyco,linear,residual,0.00154,0
+T4 lysozyme,K16R,is_glyco,linear,hybrid,0.00157,0
+T4 lysozyme,K16R,is_glyco,xgb,esm,0.00069,0
+T4 lysozyme,K16R,is_glyco,xgb,esm_residual,7e-05,0
+T4 lysozyme,K16R,is_glyco,xgb,mpnn,0.0,0
+T4 lysozyme,K16R,is_glyco,xgb,raw,0.00026,0
+T4 lysozyme,K16R,is_glyco,xgb,residual,6e-05,0
+T4 lysozyme,K16R,is_glyco,xgb,hybrid,6e-05,0
+T4 lysozyme,K16E,cath_class,linear,esm,0.03748,0
+T4 lysozyme,K16E,cath_class,linear,esm_residual,0.03672,0
+T4 lysozyme,K16E,cath_class,linear,mpnn,0.0,0
+T4 lysozyme,K16E,cath_class,linear,raw,0.01636,0
+T4 lysozyme,K16E,cath_class,linear,residual,0.01636,0
+T4 lysozyme,K16E,cath_class,linear,hybrid,0.01749,0
+T4 lysozyme,K16E,cath_class,xgb,esm,0.0568,0
+T4 lysozyme,K16E,cath_class,xgb,esm_residual,0.01823,0
+T4 lysozyme,K16E,cath_class,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,cath_class,xgb,raw,0.00338,0
+T4 lysozyme,K16E,cath_class,xgb,residual,0.00101,0
+T4 lysozyme,K16E,cath_class,xgb,hybrid,0.00311,0
+T4 lysozyme,K16E,cath_arch,linear,esm,0.03787,0
+T4 lysozyme,K16E,cath_arch,linear,esm_residual,0.03879,0
+T4 lysozyme,K16E,cath_arch,linear,mpnn,0.0,0
+T4 lysozyme,K16E,cath_arch,linear,raw,0.03273,0
+T4 lysozyme,K16E,cath_arch,linear,residual,0.03335,0
+T4 lysozyme,K16E,cath_arch,linear,hybrid,0.033,0
+T4 lysozyme,K16E,cath_arch,xgb,esm,0.04018,0
+T4 lysozyme,K16E,cath_arch,xgb,esm_residual,0.06081,0
+T4 lysozyme,K16E,cath_arch,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,cath_arch,xgb,raw,0.03647,0
+T4 lysozyme,K16E,cath_arch,xgb,residual,0.03531,0
+T4 lysozyme,K16E,cath_arch,xgb,hybrid,0.01881,0
+T4 lysozyme,K16E,cath_topol,linear,esm,0.01902,0
+T4 lysozyme,K16E,cath_topol,linear,esm_residual,0.02004,0
+T4 lysozyme,K16E,cath_topol,linear,mpnn,0.0,0
+T4 lysozyme,K16E,cath_topol,linear,raw,0.01644,0
+T4 lysozyme,K16E,cath_topol,linear,residual,0.01627,0
+T4 lysozyme,K16E,cath_topol,linear,hybrid,0.01766,0
+T4 lysozyme,K16E,cath_topol,xgb,esm,0.08487,1
+T4 lysozyme,K16E,cath_topol,xgb,esm_residual,0.11894,1
+T4 lysozyme,K16E,cath_topol,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,cath_topol,xgb,raw,0.05576,0
+T4 lysozyme,K16E,cath_topol,xgb,residual,0.13883,0
+T4 lysozyme,K16E,cath_topol,xgb,hybrid,0.11073,0
+T4 lysozyme,K16E,ec_class,linear,esm,0.03582,0
+T4 lysozyme,K16E,ec_class,linear,esm_residual,0.03469,0
+T4 lysozyme,K16E,ec_class,linear,mpnn,0.0,0
+T4 lysozyme,K16E,ec_class,linear,raw,0.0304,0
+T4 lysozyme,K16E,ec_class,linear,residual,0.03249,0
+T4 lysozyme,K16E,ec_class,linear,hybrid,0.03172,0
+T4 lysozyme,K16E,ec_class,xgb,esm,0.02677,0
+T4 lysozyme,K16E,ec_class,xgb,esm_residual,0.06688,0
+T4 lysozyme,K16E,ec_class,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,ec_class,xgb,raw,0.00855,0
+T4 lysozyme,K16E,ec_class,xgb,residual,0.03739,0
+T4 lysozyme,K16E,ec_class,xgb,hybrid,0.01505,0
+T4 lysozyme,K16E,enzyme,linear,esm,0.01086,0
+T4 lysozyme,K16E,enzyme,linear,esm_residual,0.0108,0
+T4 lysozyme,K16E,enzyme,linear,mpnn,0.0,0
+T4 lysozyme,K16E,enzyme,linear,raw,0.0062,0
+T4 lysozyme,K16E,enzyme,linear,residual,0.00628,0
+T4 lysozyme,K16E,enzyme,linear,hybrid,0.00641,0
+T4 lysozyme,K16E,enzyme,xgb,esm,0.07945,0
+T4 lysozyme,K16E,enzyme,xgb,esm_residual,0.11023,0
+T4 lysozyme,K16E,enzyme,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,enzyme,xgb,raw,0.01493,0
+T4 lysozyme,K16E,enzyme,xgb,residual,0.07146,1
+T4 lysozyme,K16E,enzyme,xgb,hybrid,0.00126,0
+T4 lysozyme,K16E,protein_class,linear,esm,0.03175,0
+T4 lysozyme,K16E,protein_class,linear,esm_residual,0.02747,0
+T4 lysozyme,K16E,protein_class,linear,mpnn,0.0,0
+T4 lysozyme,K16E,protein_class,linear,raw,0.04199,0
+T4 lysozyme,K16E,protein_class,linear,residual,0.04337,0
+T4 lysozyme,K16E,protein_class,linear,hybrid,0.04044,0
+T4 lysozyme,K16E,protein_class,xgb,esm,0.06852,0
+T4 lysozyme,K16E,protein_class,xgb,esm_residual,0.02467,0
+T4 lysozyme,K16E,protein_class,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,protein_class,xgb,raw,0.04871,0
+T4 lysozyme,K16E,protein_class,xgb,residual,0.02526,0
+T4 lysozyme,K16E,protein_class,xgb,hybrid,0.02374,0
+T4 lysozyme,K16E,localisation,linear,esm,0.061,0
+T4 lysozyme,K16E,localisation,linear,esm_residual,0.07304,0
+T4 lysozyme,K16E,localisation,linear,mpnn,0.0,0
+T4 lysozyme,K16E,localisation,linear,raw,0.06311,0
+T4 lysozyme,K16E,localisation,linear,residual,0.07642,0
+T4 lysozyme,K16E,localisation,linear,hybrid,0.07059,0
+T4 lysozyme,K16E,localisation,xgb,esm,0.39916,1
+T4 lysozyme,K16E,localisation,xgb,esm_residual,0.07971,1
+T4 lysozyme,K16E,localisation,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,localisation,xgb,raw,0.23445,0
+T4 lysozyme,K16E,localisation,xgb,residual,0.12175,0
+T4 lysozyme,K16E,localisation,xgb,hybrid,0.29764,1
+T4 lysozyme,K16E,kingdom,linear,esm,0.05259,1
+T4 lysozyme,K16E,kingdom,linear,esm_residual,0.08838,0
+T4 lysozyme,K16E,kingdom,linear,mpnn,0.0,0
+T4 lysozyme,K16E,kingdom,linear,raw,0.12284,0
+T4 lysozyme,K16E,kingdom,linear,residual,0.06046,0
+T4 lysozyme,K16E,kingdom,linear,hybrid,0.06729,0
+T4 lysozyme,K16E,kingdom,xgb,esm,0.1191,1
+T4 lysozyme,K16E,kingdom,xgb,esm_residual,0.03997,1
+T4 lysozyme,K16E,kingdom,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,kingdom,xgb,raw,0.12186,0
+T4 lysozyme,K16E,kingdom,xgb,residual,0.0415,0
+T4 lysozyme,K16E,kingdom,xgb,hybrid,0.09336,1
+T4 lysozyme,K16E,is_transport,linear,esm,0.00015,0
+T4 lysozyme,K16E,is_transport,linear,esm_residual,0.00011,0
+T4 lysozyme,K16E,is_transport,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_transport,linear,raw,0.00017,0
+T4 lysozyme,K16E,is_transport,linear,residual,0.00016,0
+T4 lysozyme,K16E,is_transport,linear,hybrid,0.00011,0
+T4 lysozyme,K16E,is_transport,xgb,esm,3e-05,0
+T4 lysozyme,K16E,is_transport,xgb,esm_residual,0.00149,0
+T4 lysozyme,K16E,is_transport,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_transport,xgb,raw,0.00032,0
+T4 lysozyme,K16E,is_transport,xgb,residual,3e-05,0
+T4 lysozyme,K16E,is_transport,xgb,hybrid,0.0004,0
+T4 lysozyme,K16E,is_dna_binding,linear,esm,0.00223,0
+T4 lysozyme,K16E,is_dna_binding,linear,esm_residual,0.00185,0
+T4 lysozyme,K16E,is_dna_binding,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_dna_binding,linear,raw,0.00226,0
+T4 lysozyme,K16E,is_dna_binding,linear,residual,0.00144,0
+T4 lysozyme,K16E,is_dna_binding,linear,hybrid,0.00146,0
+T4 lysozyme,K16E,is_dna_binding,xgb,esm,0.00195,0
+T4 lysozyme,K16E,is_dna_binding,xgb,esm_residual,0.00034,0
+T4 lysozyme,K16E,is_dna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_dna_binding,xgb,raw,0.00284,0
+T4 lysozyme,K16E,is_dna_binding,xgb,residual,0.01275,0
+T4 lysozyme,K16E,is_dna_binding,xgb,hybrid,0.01512,0
+T4 lysozyme,K16E,is_rna_binding,linear,esm,0.00077,0
+T4 lysozyme,K16E,is_rna_binding,linear,esm_residual,0.00122,0
+T4 lysozyme,K16E,is_rna_binding,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_rna_binding,linear,raw,8e-05,0
+T4 lysozyme,K16E,is_rna_binding,linear,residual,0.0009,0
+T4 lysozyme,K16E,is_rna_binding,linear,hybrid,0.00057,0
+T4 lysozyme,K16E,is_rna_binding,xgb,esm,0.00066,0
+T4 lysozyme,K16E,is_rna_binding,xgb,esm_residual,0.00126,0
+T4 lysozyme,K16E,is_rna_binding,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_rna_binding,xgb,raw,0.00095,0
+T4 lysozyme,K16E,is_rna_binding,xgb,residual,0.0001,0
+T4 lysozyme,K16E,is_rna_binding,xgb,hybrid,0.00061,0
+T4 lysozyme,K16E,is_kinase,linear,esm,0.00077,0
+T4 lysozyme,K16E,is_kinase,linear,esm_residual,0.00082,0
+T4 lysozyme,K16E,is_kinase,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_kinase,linear,raw,0.00058,0
+T4 lysozyme,K16E,is_kinase,linear,residual,2e-05,0
+T4 lysozyme,K16E,is_kinase,linear,hybrid,0.00068,0
+T4 lysozyme,K16E,is_kinase,xgb,esm,1e-05,0
+T4 lysozyme,K16E,is_kinase,xgb,esm_residual,2e-05,0
+T4 lysozyme,K16E,is_kinase,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_kinase,xgb,raw,0.00037,0
+T4 lysozyme,K16E,is_kinase,xgb,residual,6e-05,0
+T4 lysozyme,K16E,is_kinase,xgb,hybrid,2e-05,0
+T4 lysozyme,K16E,is_ribosomal,linear,esm,0.00121,0
+T4 lysozyme,K16E,is_ribosomal,linear,esm_residual,0.01063,0
+T4 lysozyme,K16E,is_ribosomal,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_ribosomal,linear,raw,0.02854,0
+T4 lysozyme,K16E,is_ribosomal,linear,residual,0.01534,0
+T4 lysozyme,K16E,is_ribosomal,linear,hybrid,0.01869,0
+T4 lysozyme,K16E,is_ribosomal,xgb,esm,0.00034,0
+T4 lysozyme,K16E,is_ribosomal,xgb,esm_residual,3e-05,0
+T4 lysozyme,K16E,is_ribosomal,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_ribosomal,xgb,raw,0.00032,0
+T4 lysozyme,K16E,is_ribosomal,xgb,residual,0.0,0
+T4 lysozyme,K16E,is_ribosomal,xgb,hybrid,7e-05,0
+T4 lysozyme,K16E,is_membrane_protein,linear,esm,0.00398,0
+T4 lysozyme,K16E,is_membrane_protein,linear,esm_residual,0.00172,0
+T4 lysozyme,K16E,is_membrane_protein,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_membrane_protein,linear,raw,0.0009,0
+T4 lysozyme,K16E,is_membrane_protein,linear,residual,0.0007,0
+T4 lysozyme,K16E,is_membrane_protein,linear,hybrid,0.00052,0
+T4 lysozyme,K16E,is_membrane_protein,xgb,esm,0.00294,0
+T4 lysozyme,K16E,is_membrane_protein,xgb,esm_residual,2e-05,0
+T4 lysozyme,K16E,is_membrane_protein,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_membrane_protein,xgb,raw,0.00031,0
+T4 lysozyme,K16E,is_membrane_protein,xgb,residual,0.00019,0
+T4 lysozyme,K16E,is_membrane_protein,xgb,hybrid,0.00023,0
+T4 lysozyme,K16E,is_structural,linear,esm,0.00295,0
+T4 lysozyme,K16E,is_structural,linear,esm_residual,0.04078,0
+T4 lysozyme,K16E,is_structural,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_structural,linear,raw,0.00271,0
+T4 lysozyme,K16E,is_structural,linear,residual,0.00528,0
+T4 lysozyme,K16E,is_structural,linear,hybrid,0.0039,0
+T4 lysozyme,K16E,is_structural,xgb,esm,0.00287,0
+T4 lysozyme,K16E,is_structural,xgb,esm_residual,0.00151,0
+T4 lysozyme,K16E,is_structural,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_structural,xgb,raw,0.00212,0
+T4 lysozyme,K16E,is_structural,xgb,residual,0.00018,0
+T4 lysozyme,K16E,is_structural,xgb,hybrid,0.00034,0
+T4 lysozyme,K16E,is_immune,linear,esm,0.00486,0
+T4 lysozyme,K16E,is_immune,linear,esm_residual,0.00532,0
+T4 lysozyme,K16E,is_immune,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_immune,linear,raw,0.00803,0
+T4 lysozyme,K16E,is_immune,linear,residual,0.03456,0
+T4 lysozyme,K16E,is_immune,linear,hybrid,0.00848,0
+T4 lysozyme,K16E,is_immune,xgb,esm,0.00033,0
+T4 lysozyme,K16E,is_immune,xgb,esm_residual,0.00022,0
+T4 lysozyme,K16E,is_immune,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_immune,xgb,raw,0.00025,0
+T4 lysozyme,K16E,is_immune,xgb,residual,0.00257,0
+T4 lysozyme,K16E,is_immune,xgb,hybrid,3e-05,0
+T4 lysozyme,K16E,is_phospho,linear,esm,0.0001,0
+T4 lysozyme,K16E,is_phospho,linear,esm_residual,0.00114,0
+T4 lysozyme,K16E,is_phospho,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_phospho,linear,raw,0.00257,0
+T4 lysozyme,K16E,is_phospho,linear,residual,0.00277,0
+T4 lysozyme,K16E,is_phospho,linear,hybrid,0.00028,0
+T4 lysozyme,K16E,is_phospho,xgb,esm,0.0095,0
+T4 lysozyme,K16E,is_phospho,xgb,esm_residual,0.01456,0
+T4 lysozyme,K16E,is_phospho,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_phospho,xgb,raw,0.00201,0
+T4 lysozyme,K16E,is_phospho,xgb,residual,0.00108,0
+T4 lysozyme,K16E,is_phospho,xgb,hybrid,0.00427,0
+T4 lysozyme,K16E,is_glyco,linear,esm,0.00152,0
+T4 lysozyme,K16E,is_glyco,linear,esm_residual,0.00185,0
+T4 lysozyme,K16E,is_glyco,linear,mpnn,0.0,0
+T4 lysozyme,K16E,is_glyco,linear,raw,0.00103,0
+T4 lysozyme,K16E,is_glyco,linear,residual,0.00115,0
+T4 lysozyme,K16E,is_glyco,linear,hybrid,0.00106,0
+T4 lysozyme,K16E,is_glyco,xgb,esm,0.00075,0
+T4 lysozyme,K16E,is_glyco,xgb,esm_residual,0.00021,0
+T4 lysozyme,K16E,is_glyco,xgb,mpnn,0.0,0
+T4 lysozyme,K16E,is_glyco,xgb,raw,0.00033,0
+T4 lysozyme,K16E,is_glyco,xgb,residual,0.0,0
+T4 lysozyme,K16E,is_glyco,xgb,hybrid,0.0001,0
+ubiquitin,V26A,cath_class,linear,esm,0.00214,0
+ubiquitin,V26A,cath_class,linear,esm_residual,0.0026,0
+ubiquitin,V26A,cath_class,linear,mpnn,0.0,0
+ubiquitin,V26A,cath_class,linear,raw,0.00235,0
+ubiquitin,V26A,cath_class,linear,residual,0.0041,0
+ubiquitin,V26A,cath_class,linear,hybrid,0.00479,0
+ubiquitin,V26A,cath_class,xgb,esm,0.00143,0
+ubiquitin,V26A,cath_class,xgb,esm_residual,0.00822,0
+ubiquitin,V26A,cath_class,xgb,mpnn,0.0,0
+ubiquitin,V26A,cath_class,xgb,raw,0.00026,0
+ubiquitin,V26A,cath_class,xgb,residual,0.00899,0
+ubiquitin,V26A,cath_class,xgb,hybrid,0.00111,0
+ubiquitin,V26A,cath_arch,linear,esm,0.00229,0
+ubiquitin,V26A,cath_arch,linear,esm_residual,0.00502,0
+ubiquitin,V26A,cath_arch,linear,mpnn,0.0,0
+ubiquitin,V26A,cath_arch,linear,raw,0.00204,0
+ubiquitin,V26A,cath_arch,linear,residual,0.00215,0
+ubiquitin,V26A,cath_arch,linear,hybrid,0.00203,0
+ubiquitin,V26A,cath_arch,xgb,esm,0.00321,0
+ubiquitin,V26A,cath_arch,xgb,esm_residual,0.00559,0
+ubiquitin,V26A,cath_arch,xgb,mpnn,0.0,0
+ubiquitin,V26A,cath_arch,xgb,raw,0.00681,0
+ubiquitin,V26A,cath_arch,xgb,residual,0.00879,0
+ubiquitin,V26A,cath_arch,xgb,hybrid,0.00371,0
+ubiquitin,V26A,cath_topol,linear,esm,0.00338,0
+ubiquitin,V26A,cath_topol,linear,esm_residual,0.0035,0
+ubiquitin,V26A,cath_topol,linear,mpnn,0.0,0
+ubiquitin,V26A,cath_topol,linear,raw,0.00326,0
+ubiquitin,V26A,cath_topol,linear,residual,0.00233,0
+ubiquitin,V26A,cath_topol,linear,hybrid,0.00343,0
+ubiquitin,V26A,cath_topol,xgb,esm,0.00334,0
+ubiquitin,V26A,cath_topol,xgb,esm_residual,0.00085,0
+ubiquitin,V26A,cath_topol,xgb,mpnn,0.0,0
+ubiquitin,V26A,cath_topol,xgb,raw,0.00195,0
+ubiquitin,V26A,cath_topol,xgb,residual,0.00261,0
+ubiquitin,V26A,cath_topol,xgb,hybrid,0.00045,0
+ubiquitin,V26A,ec_class,linear,esm,0.03451,0
+ubiquitin,V26A,ec_class,linear,esm_residual,0.02398,0
+ubiquitin,V26A,ec_class,linear,mpnn,0.0,0
+ubiquitin,V26A,ec_class,linear,raw,0.03164,0
+ubiquitin,V26A,ec_class,linear,residual,0.02481,0
+ubiquitin,V26A,ec_class,linear,hybrid,0.02797,0
+ubiquitin,V26A,ec_class,xgb,esm,0.01585,0
+ubiquitin,V26A,ec_class,xgb,esm_residual,0.03772,0
+ubiquitin,V26A,ec_class,xgb,mpnn,0.0,0
+ubiquitin,V26A,ec_class,xgb,raw,0.04207,0
+ubiquitin,V26A,ec_class,xgb,residual,0.00221,0
+ubiquitin,V26A,ec_class,xgb,hybrid,0.01476,0
+ubiquitin,V26A,enzyme,linear,esm,0.00099,0
+ubiquitin,V26A,enzyme,linear,esm_residual,0.00253,0
+ubiquitin,V26A,enzyme,linear,mpnn,0.0,0
+ubiquitin,V26A,enzyme,linear,raw,0.00204,0
+ubiquitin,V26A,enzyme,linear,residual,0.00324,0
+ubiquitin,V26A,enzyme,linear,hybrid,0.00307,0
+ubiquitin,V26A,enzyme,xgb,esm,0.00035,0
+ubiquitin,V26A,enzyme,xgb,esm_residual,0.0117,0
+ubiquitin,V26A,enzyme,xgb,mpnn,0.0,0
+ubiquitin,V26A,enzyme,xgb,raw,0.02337,0
+ubiquitin,V26A,enzyme,xgb,residual,0.0058,0
+ubiquitin,V26A,enzyme,xgb,hybrid,0.00312,0
+ubiquitin,V26A,protein_class,linear,esm,0.01923,0
+ubiquitin,V26A,protein_class,linear,esm_residual,0.01427,0
+ubiquitin,V26A,protein_class,linear,mpnn,0.0,0
+ubiquitin,V26A,protein_class,linear,raw,0.01413,0
+ubiquitin,V26A,protein_class,linear,residual,0.01931,0
+ubiquitin,V26A,protein_class,linear,hybrid,0.0333,0
+ubiquitin,V26A,protein_class,xgb,esm,0.01363,0
+ubiquitin,V26A,protein_class,xgb,esm_residual,0.00694,0
+ubiquitin,V26A,protein_class,xgb,mpnn,0.0,0
+ubiquitin,V26A,protein_class,xgb,raw,0.00686,0
+ubiquitin,V26A,protein_class,xgb,residual,0.00991,0
+ubiquitin,V26A,protein_class,xgb,hybrid,0.00521,0
+ubiquitin,V26A,localisation,linear,esm,0.04752,1
+ubiquitin,V26A,localisation,linear,esm_residual,0.05353,0
+ubiquitin,V26A,localisation,linear,mpnn,0.0,0
+ubiquitin,V26A,localisation,linear,raw,0.04225,0
+ubiquitin,V26A,localisation,linear,residual,0.05394,1
+ubiquitin,V26A,localisation,linear,hybrid,0.05943,1
+ubiquitin,V26A,localisation,xgb,esm,0.04635,0
+ubiquitin,V26A,localisation,xgb,esm_residual,0.03686,0
+ubiquitin,V26A,localisation,xgb,mpnn,0.0,0
+ubiquitin,V26A,localisation,xgb,raw,0.02865,0
+ubiquitin,V26A,localisation,xgb,residual,0.02577,0
+ubiquitin,V26A,localisation,xgb,hybrid,0.00684,0
+ubiquitin,V26A,kingdom,linear,esm,0.00157,0
+ubiquitin,V26A,kingdom,linear,esm_residual,0.00027,0
+ubiquitin,V26A,kingdom,linear,mpnn,0.0,0
+ubiquitin,V26A,kingdom,linear,raw,0.00012,0
+ubiquitin,V26A,kingdom,linear,residual,0.00094,0
+ubiquitin,V26A,kingdom,linear,hybrid,0.00118,0
+ubiquitin,V26A,kingdom,xgb,esm,0.00174,0
+ubiquitin,V26A,kingdom,xgb,esm_residual,0.01128,0
+ubiquitin,V26A,kingdom,xgb,mpnn,0.0,0
+ubiquitin,V26A,kingdom,xgb,raw,0.00047,0
+ubiquitin,V26A,kingdom,xgb,residual,0.00099,0
+ubiquitin,V26A,kingdom,xgb,hybrid,0.00292,0
+ubiquitin,V26A,is_transport,linear,esm,0.00332,0
+ubiquitin,V26A,is_transport,linear,esm_residual,0.00033,0
+ubiquitin,V26A,is_transport,linear,mpnn,0.0,0
+ubiquitin,V26A,is_transport,linear,raw,0.00071,0
+ubiquitin,V26A,is_transport,linear,residual,0.00098,0
+ubiquitin,V26A,is_transport,linear,hybrid,0.00363,0
+ubiquitin,V26A,is_transport,xgb,esm,0.0004,0
+ubiquitin,V26A,is_transport,xgb,esm_residual,0.00038,0
+ubiquitin,V26A,is_transport,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_transport,xgb,raw,0.00128,0
+ubiquitin,V26A,is_transport,xgb,residual,0.0,0
+ubiquitin,V26A,is_transport,xgb,hybrid,0.00548,0
+ubiquitin,V26A,is_dna_binding,linear,esm,0.01163,0
+ubiquitin,V26A,is_dna_binding,linear,esm_residual,0.0029,0
+ubiquitin,V26A,is_dna_binding,linear,mpnn,0.0,0
+ubiquitin,V26A,is_dna_binding,linear,raw,0.00318,0
+ubiquitin,V26A,is_dna_binding,linear,residual,0.0003,0
+ubiquitin,V26A,is_dna_binding,linear,hybrid,0.00017,0
+ubiquitin,V26A,is_dna_binding,xgb,esm,0.0,0
+ubiquitin,V26A,is_dna_binding,xgb,esm_residual,0.00345,0
+ubiquitin,V26A,is_dna_binding,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_dna_binding,xgb,raw,0.00052,0
+ubiquitin,V26A,is_dna_binding,xgb,residual,0.00143,0
+ubiquitin,V26A,is_dna_binding,xgb,hybrid,0.00066,0
+ubiquitin,V26A,is_rna_binding,linear,esm,0.0176,0
+ubiquitin,V26A,is_rna_binding,linear,esm_residual,0.00767,0
+ubiquitin,V26A,is_rna_binding,linear,mpnn,0.0,0
+ubiquitin,V26A,is_rna_binding,linear,raw,0.01281,0
+ubiquitin,V26A,is_rna_binding,linear,residual,0.00544,0
+ubiquitin,V26A,is_rna_binding,linear,hybrid,0.00275,0
+ubiquitin,V26A,is_rna_binding,xgb,esm,0.01522,0
+ubiquitin,V26A,is_rna_binding,xgb,esm_residual,0.00982,0
+ubiquitin,V26A,is_rna_binding,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_rna_binding,xgb,raw,0.01351,0
+ubiquitin,V26A,is_rna_binding,xgb,residual,0.02244,0
+ubiquitin,V26A,is_rna_binding,xgb,hybrid,0.00398,0
+ubiquitin,V26A,is_kinase,linear,esm,0.0144,0
+ubiquitin,V26A,is_kinase,linear,esm_residual,0.01142,0
+ubiquitin,V26A,is_kinase,linear,mpnn,0.0,0
+ubiquitin,V26A,is_kinase,linear,raw,0.00354,0
+ubiquitin,V26A,is_kinase,linear,residual,0.01558,0
+ubiquitin,V26A,is_kinase,linear,hybrid,0.01086,0
+ubiquitin,V26A,is_kinase,xgb,esm,0.00373,0
+ubiquitin,V26A,is_kinase,xgb,esm_residual,0.00079,0
+ubiquitin,V26A,is_kinase,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_kinase,xgb,raw,0.07612,0
+ubiquitin,V26A,is_kinase,xgb,residual,0.00163,0
+ubiquitin,V26A,is_kinase,xgb,hybrid,9e-05,0
+ubiquitin,V26A,is_ribosomal,linear,esm,0.0,0
+ubiquitin,V26A,is_ribosomal,linear,esm_residual,5e-05,0
+ubiquitin,V26A,is_ribosomal,linear,mpnn,0.0,0
+ubiquitin,V26A,is_ribosomal,linear,raw,0.00029,0
+ubiquitin,V26A,is_ribosomal,linear,residual,5e-05,0
+ubiquitin,V26A,is_ribosomal,linear,hybrid,0.00023,0
+ubiquitin,V26A,is_ribosomal,xgb,esm,0.0,0
+ubiquitin,V26A,is_ribosomal,xgb,esm_residual,2e-05,0
+ubiquitin,V26A,is_ribosomal,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_ribosomal,xgb,raw,0.00059,0
+ubiquitin,V26A,is_ribosomal,xgb,residual,0.0,0
+ubiquitin,V26A,is_ribosomal,xgb,hybrid,2e-05,0
+ubiquitin,V26A,is_membrane_protein,linear,esm,8e-05,0
+ubiquitin,V26A,is_membrane_protein,linear,esm_residual,0.00198,0
+ubiquitin,V26A,is_membrane_protein,linear,mpnn,0.0,0
+ubiquitin,V26A,is_membrane_protein,linear,raw,0.00036,0
+ubiquitin,V26A,is_membrane_protein,linear,residual,0.00091,0
+ubiquitin,V26A,is_membrane_protein,linear,hybrid,0.00068,0
+ubiquitin,V26A,is_membrane_protein,xgb,esm,0.00117,0
+ubiquitin,V26A,is_membrane_protein,xgb,esm_residual,0.00236,0
+ubiquitin,V26A,is_membrane_protein,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_membrane_protein,xgb,raw,0.00033,0
+ubiquitin,V26A,is_membrane_protein,xgb,residual,0.00091,0
+ubiquitin,V26A,is_membrane_protein,xgb,hybrid,0.00024,0
+ubiquitin,V26A,is_structural,linear,esm,0.00092,0
+ubiquitin,V26A,is_structural,linear,esm_residual,1e-05,0
+ubiquitin,V26A,is_structural,linear,mpnn,0.0,0
+ubiquitin,V26A,is_structural,linear,raw,0.00247,0
+ubiquitin,V26A,is_structural,linear,residual,0.00121,0
+ubiquitin,V26A,is_structural,linear,hybrid,0.0026,0
+ubiquitin,V26A,is_structural,xgb,esm,4e-05,0
+ubiquitin,V26A,is_structural,xgb,esm_residual,0.0046,0
+ubiquitin,V26A,is_structural,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_structural,xgb,raw,8e-05,0
+ubiquitin,V26A,is_structural,xgb,residual,0.0,0
+ubiquitin,V26A,is_structural,xgb,hybrid,0.00032,0
+ubiquitin,V26A,is_immune,linear,esm,0.00042,0
+ubiquitin,V26A,is_immune,linear,esm_residual,0.00086,0
+ubiquitin,V26A,is_immune,linear,mpnn,0.0,0
+ubiquitin,V26A,is_immune,linear,raw,0.0001,0
+ubiquitin,V26A,is_immune,linear,residual,0.00314,0
+ubiquitin,V26A,is_immune,linear,hybrid,0.0032,0
+ubiquitin,V26A,is_immune,xgb,esm,0.00029,0
+ubiquitin,V26A,is_immune,xgb,esm_residual,0.0,0
+ubiquitin,V26A,is_immune,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_immune,xgb,raw,0.02342,0
+ubiquitin,V26A,is_immune,xgb,residual,0.00194,0
+ubiquitin,V26A,is_immune,xgb,hybrid,0.00252,0
+ubiquitin,V26A,is_phospho,linear,esm,0.06825,0
+ubiquitin,V26A,is_phospho,linear,esm_residual,0.05359,0
+ubiquitin,V26A,is_phospho,linear,mpnn,0.0,0
+ubiquitin,V26A,is_phospho,linear,raw,0.04168,0
+ubiquitin,V26A,is_phospho,linear,residual,0.038,0
+ubiquitin,V26A,is_phospho,linear,hybrid,0.0832,0
+ubiquitin,V26A,is_phospho,xgb,esm,0.12604,1
+ubiquitin,V26A,is_phospho,xgb,esm_residual,0.0097,0
+ubiquitin,V26A,is_phospho,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_phospho,xgb,raw,0.06631,0
+ubiquitin,V26A,is_phospho,xgb,residual,0.04999,0
+ubiquitin,V26A,is_phospho,xgb,hybrid,0.03639,0
+ubiquitin,V26A,is_glyco,linear,esm,1e-05,0
+ubiquitin,V26A,is_glyco,linear,esm_residual,0.0,0
+ubiquitin,V26A,is_glyco,linear,mpnn,0.0,0
+ubiquitin,V26A,is_glyco,linear,raw,1e-05,0
+ubiquitin,V26A,is_glyco,linear,residual,0.0,0
+ubiquitin,V26A,is_glyco,linear,hybrid,0.0,0
+ubiquitin,V26A,is_glyco,xgb,esm,2e-05,0
+ubiquitin,V26A,is_glyco,xgb,esm_residual,0.0,0
+ubiquitin,V26A,is_glyco,xgb,mpnn,0.0,0
+ubiquitin,V26A,is_glyco,xgb,raw,0.00013,0
+ubiquitin,V26A,is_glyco,xgb,residual,2e-05,0
+ubiquitin,V26A,is_glyco,xgb,hybrid,3e-05,0
+ubiquitin,V26I,cath_class,linear,esm,0.00215,0
+ubiquitin,V26I,cath_class,linear,esm_residual,0.00137,0
+ubiquitin,V26I,cath_class,linear,mpnn,0.0,0
+ubiquitin,V26I,cath_class,linear,raw,0.0025,0
+ubiquitin,V26I,cath_class,linear,residual,0.00121,0
+ubiquitin,V26I,cath_class,linear,hybrid,0.00453,0
+ubiquitin,V26I,cath_class,xgb,esm,0.00588,0
+ubiquitin,V26I,cath_class,xgb,esm_residual,0.01086,0
+ubiquitin,V26I,cath_class,xgb,mpnn,0.0,0
+ubiquitin,V26I,cath_class,xgb,raw,0.00066,0
+ubiquitin,V26I,cath_class,xgb,residual,0.00311,0
+ubiquitin,V26I,cath_class,xgb,hybrid,0.00233,0
+ubiquitin,V26I,cath_arch,linear,esm,0.00151,0
+ubiquitin,V26I,cath_arch,linear,esm_residual,0.00467,0
+ubiquitin,V26I,cath_arch,linear,mpnn,0.0,0
+ubiquitin,V26I,cath_arch,linear,raw,0.00118,0
+ubiquitin,V26I,cath_arch,linear,residual,0.00205,0
+ubiquitin,V26I,cath_arch,linear,hybrid,0.00347,0
+ubiquitin,V26I,cath_arch,xgb,esm,0.00086,0
+ubiquitin,V26I,cath_arch,xgb,esm_residual,0.00307,0
+ubiquitin,V26I,cath_arch,xgb,mpnn,0.0,0
+ubiquitin,V26I,cath_arch,xgb,raw,0.00673,0
+ubiquitin,V26I,cath_arch,xgb,residual,0.01699,0
+ubiquitin,V26I,cath_arch,xgb,hybrid,0.00727,0
+ubiquitin,V26I,cath_topol,linear,esm,0.00122,0
+ubiquitin,V26I,cath_topol,linear,esm_residual,0.00277,0
+ubiquitin,V26I,cath_topol,linear,mpnn,0.0,0
+ubiquitin,V26I,cath_topol,linear,raw,0.0009,0
+ubiquitin,V26I,cath_topol,linear,residual,0.00306,0
+ubiquitin,V26I,cath_topol,linear,hybrid,0.00334,0
+ubiquitin,V26I,cath_topol,xgb,esm,0.00399,0
+ubiquitin,V26I,cath_topol,xgb,esm_residual,0.00033,0
+ubiquitin,V26I,cath_topol,xgb,mpnn,0.0,0
+ubiquitin,V26I,cath_topol,xgb,raw,0.00215,0
+ubiquitin,V26I,cath_topol,xgb,residual,0.00145,0
+ubiquitin,V26I,cath_topol,xgb,hybrid,0.00037,0
+ubiquitin,V26I,ec_class,linear,esm,0.02383,0
+ubiquitin,V26I,ec_class,linear,esm_residual,0.00714,0
+ubiquitin,V26I,ec_class,linear,mpnn,0.0,0
+ubiquitin,V26I,ec_class,linear,raw,0.02201,0
+ubiquitin,V26I,ec_class,linear,residual,0.00096,0
+ubiquitin,V26I,ec_class,linear,hybrid,0.00879,0
+ubiquitin,V26I,ec_class,xgb,esm,0.02076,0
+ubiquitin,V26I,ec_class,xgb,esm_residual,0.01109,0
+ubiquitin,V26I,ec_class,xgb,mpnn,0.0,0
+ubiquitin,V26I,ec_class,xgb,raw,0.00608,0
+ubiquitin,V26I,ec_class,xgb,residual,0.0044,0
+ubiquitin,V26I,ec_class,xgb,hybrid,0.00938,0
+ubiquitin,V26I,enzyme,linear,esm,0.00075,0
+ubiquitin,V26I,enzyme,linear,esm_residual,0.00194,0
+ubiquitin,V26I,enzyme,linear,mpnn,0.0,0
+ubiquitin,V26I,enzyme,linear,raw,0.00017,0
+ubiquitin,V26I,enzyme,linear,residual,0.00131,0
+ubiquitin,V26I,enzyme,linear,hybrid,0.00034,0
+ubiquitin,V26I,enzyme,xgb,esm,0.01001,0
+ubiquitin,V26I,enzyme,xgb,esm_residual,0.00246,0
+ubiquitin,V26I,enzyme,xgb,mpnn,0.0,0
+ubiquitin,V26I,enzyme,xgb,raw,0.05514,0
+ubiquitin,V26I,enzyme,xgb,residual,0.0,0
+ubiquitin,V26I,enzyme,xgb,hybrid,0.00439,0
+ubiquitin,V26I,protein_class,linear,esm,0.0405,0
+ubiquitin,V26I,protein_class,linear,esm_residual,0.01267,0
+ubiquitin,V26I,protein_class,linear,mpnn,0.0,0
+ubiquitin,V26I,protein_class,linear,raw,0.02921,0
+ubiquitin,V26I,protein_class,linear,residual,0.00728,0
+ubiquitin,V26I,protein_class,linear,hybrid,0.01394,0
+ubiquitin,V26I,protein_class,xgb,esm,0.00919,0
+ubiquitin,V26I,protein_class,xgb,esm_residual,0.01115,0
+ubiquitin,V26I,protein_class,xgb,mpnn,0.0,0
+ubiquitin,V26I,protein_class,xgb,raw,0.00215,0
+ubiquitin,V26I,protein_class,xgb,residual,0.0168,0
+ubiquitin,V26I,protein_class,xgb,hybrid,0.01493,0
+ubiquitin,V26I,localisation,linear,esm,0.03716,0
+ubiquitin,V26I,localisation,linear,esm_residual,0.04274,0
+ubiquitin,V26I,localisation,linear,mpnn,0.0,0
+ubiquitin,V26I,localisation,linear,raw,0.03098,0
+ubiquitin,V26I,localisation,linear,residual,0.03623,0
+ubiquitin,V26I,localisation,linear,hybrid,0.01935,0
+ubiquitin,V26I,localisation,xgb,esm,0.00027,0
+ubiquitin,V26I,localisation,xgb,esm_residual,0.03963,0
+ubiquitin,V26I,localisation,xgb,mpnn,0.0,0
+ubiquitin,V26I,localisation,xgb,raw,0.03455,0
+ubiquitin,V26I,localisation,xgb,residual,0.02701,0
+ubiquitin,V26I,localisation,xgb,hybrid,0.01402,0
+ubiquitin,V26I,kingdom,linear,esm,0.00154,0
+ubiquitin,V26I,kingdom,linear,esm_residual,0.0007,0
+ubiquitin,V26I,kingdom,linear,mpnn,0.0,0
+ubiquitin,V26I,kingdom,linear,raw,6e-05,0
+ubiquitin,V26I,kingdom,linear,residual,0.00163,0
+ubiquitin,V26I,kingdom,linear,hybrid,0.00038,0
+ubiquitin,V26I,kingdom,xgb,esm,0.00017,0
+ubiquitin,V26I,kingdom,xgb,esm_residual,0.00459,0
+ubiquitin,V26I,kingdom,xgb,mpnn,0.0,0
+ubiquitin,V26I,kingdom,xgb,raw,0.00195,0
+ubiquitin,V26I,kingdom,xgb,residual,0.00082,0
+ubiquitin,V26I,kingdom,xgb,hybrid,0.00167,0
+ubiquitin,V26I,is_transport,linear,esm,0.00635,0
+ubiquitin,V26I,is_transport,linear,esm_residual,9e-05,0
+ubiquitin,V26I,is_transport,linear,mpnn,0.0,0
+ubiquitin,V26I,is_transport,linear,raw,0.00339,0
+ubiquitin,V26I,is_transport,linear,residual,0.00055,0
+ubiquitin,V26I,is_transport,linear,hybrid,0.0024,0
+ubiquitin,V26I,is_transport,xgb,esm,0.0,0
+ubiquitin,V26I,is_transport,xgb,esm_residual,0.00044,0
+ubiquitin,V26I,is_transport,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_transport,xgb,raw,0.0009,0
+ubiquitin,V26I,is_transport,xgb,residual,0.00016,0
+ubiquitin,V26I,is_transport,xgb,hybrid,0.00236,0
+ubiquitin,V26I,is_dna_binding,linear,esm,0.00987,0
+ubiquitin,V26I,is_dna_binding,linear,esm_residual,0.00343,0
+ubiquitin,V26I,is_dna_binding,linear,mpnn,0.0,0
+ubiquitin,V26I,is_dna_binding,linear,raw,0.00333,0
+ubiquitin,V26I,is_dna_binding,linear,residual,0.00109,0
+ubiquitin,V26I,is_dna_binding,linear,hybrid,0.00074,0
+ubiquitin,V26I,is_dna_binding,xgb,esm,0.00019,0
+ubiquitin,V26I,is_dna_binding,xgb,esm_residual,0.00043,0
+ubiquitin,V26I,is_dna_binding,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_dna_binding,xgb,raw,0.00017,0
+ubiquitin,V26I,is_dna_binding,xgb,residual,4e-05,0
+ubiquitin,V26I,is_dna_binding,xgb,hybrid,0.00063,0
+ubiquitin,V26I,is_rna_binding,linear,esm,0.03066,0
+ubiquitin,V26I,is_rna_binding,linear,esm_residual,0.0141,0
+ubiquitin,V26I,is_rna_binding,linear,mpnn,0.0,0
+ubiquitin,V26I,is_rna_binding,linear,raw,0.01766,0
+ubiquitin,V26I,is_rna_binding,linear,residual,0.00753,0
+ubiquitin,V26I,is_rna_binding,linear,hybrid,0.02744,0
+ubiquitin,V26I,is_rna_binding,xgb,esm,0.01925,0
+ubiquitin,V26I,is_rna_binding,xgb,esm_residual,0.0,0
+ubiquitin,V26I,is_rna_binding,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_rna_binding,xgb,raw,0.01335,0
+ubiquitin,V26I,is_rna_binding,xgb,residual,0.05818,0
+ubiquitin,V26I,is_rna_binding,xgb,hybrid,0.0,0
+ubiquitin,V26I,is_kinase,linear,esm,0.00295,0
+ubiquitin,V26I,is_kinase,linear,esm_residual,0.00448,0
+ubiquitin,V26I,is_kinase,linear,mpnn,0.0,0
+ubiquitin,V26I,is_kinase,linear,raw,0.00297,0
+ubiquitin,V26I,is_kinase,linear,residual,0.00484,0
+ubiquitin,V26I,is_kinase,linear,hybrid,0.00303,0
+ubiquitin,V26I,is_kinase,xgb,esm,0.00735,0
+ubiquitin,V26I,is_kinase,xgb,esm_residual,0.00106,0
+ubiquitin,V26I,is_kinase,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_kinase,xgb,raw,0.00467,0
+ubiquitin,V26I,is_kinase,xgb,residual,0.00208,0
+ubiquitin,V26I,is_kinase,xgb,hybrid,0.0,0
+ubiquitin,V26I,is_ribosomal,linear,esm,6e-05,0
+ubiquitin,V26I,is_ribosomal,linear,esm_residual,0.00109,0
+ubiquitin,V26I,is_ribosomal,linear,mpnn,0.0,0
+ubiquitin,V26I,is_ribosomal,linear,raw,0.00099,0
+ubiquitin,V26I,is_ribosomal,linear,residual,0.00065,0
+ubiquitin,V26I,is_ribosomal,linear,hybrid,0.00092,0
+ubiquitin,V26I,is_ribosomal,xgb,esm,0.0,0
+ubiquitin,V26I,is_ribosomal,xgb,esm_residual,3e-05,0
+ubiquitin,V26I,is_ribosomal,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_ribosomal,xgb,raw,0.00027,0
+ubiquitin,V26I,is_ribosomal,xgb,residual,0.0,0
+ubiquitin,V26I,is_ribosomal,xgb,hybrid,0.0,0
+ubiquitin,V26I,is_membrane_protein,linear,esm,0.0004,0
+ubiquitin,V26I,is_membrane_protein,linear,esm_residual,0.00342,0
+ubiquitin,V26I,is_membrane_protein,linear,mpnn,0.0,0
+ubiquitin,V26I,is_membrane_protein,linear,raw,0.00029,0
+ubiquitin,V26I,is_membrane_protein,linear,residual,0.00103,0
+ubiquitin,V26I,is_membrane_protein,linear,hybrid,0.0002,0
+ubiquitin,V26I,is_membrane_protein,xgb,esm,0.00014,0
+ubiquitin,V26I,is_membrane_protein,xgb,esm_residual,0.0,0
+ubiquitin,V26I,is_membrane_protein,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_membrane_protein,xgb,raw,0.00022,0
+ubiquitin,V26I,is_membrane_protein,xgb,residual,0.0,0
+ubiquitin,V26I,is_membrane_protein,xgb,hybrid,0.00017,0
+ubiquitin,V26I,is_structural,linear,esm,0.0006,0
+ubiquitin,V26I,is_structural,linear,esm_residual,1e-05,0
+ubiquitin,V26I,is_structural,linear,mpnn,0.0,0
+ubiquitin,V26I,is_structural,linear,raw,0.00175,0
+ubiquitin,V26I,is_structural,linear,residual,0.00199,0
+ubiquitin,V26I,is_structural,linear,hybrid,0.00212,0
+ubiquitin,V26I,is_structural,xgb,esm,2e-05,0
+ubiquitin,V26I,is_structural,xgb,esm_residual,0.0087,0
+ubiquitin,V26I,is_structural,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_structural,xgb,raw,0.0,0
+ubiquitin,V26I,is_structural,xgb,residual,0.00011,0
+ubiquitin,V26I,is_structural,xgb,hybrid,0.00033,0
+ubiquitin,V26I,is_immune,linear,esm,0.00564,0
+ubiquitin,V26I,is_immune,linear,esm_residual,0.00298,0
+ubiquitin,V26I,is_immune,linear,mpnn,0.0,0
+ubiquitin,V26I,is_immune,linear,raw,0.00542,0
+ubiquitin,V26I,is_immune,linear,residual,0.00075,0
+ubiquitin,V26I,is_immune,linear,hybrid,0.00087,0
+ubiquitin,V26I,is_immune,xgb,esm,0.00753,0
+ubiquitin,V26I,is_immune,xgb,esm_residual,0.01425,0
+ubiquitin,V26I,is_immune,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_immune,xgb,raw,0.02056,0
+ubiquitin,V26I,is_immune,xgb,residual,0.00128,0
+ubiquitin,V26I,is_immune,xgb,hybrid,0.00013,0
+ubiquitin,V26I,is_phospho,linear,esm,0.00242,0
+ubiquitin,V26I,is_phospho,linear,esm_residual,0.01055,0
+ubiquitin,V26I,is_phospho,linear,mpnn,0.0,0
+ubiquitin,V26I,is_phospho,linear,raw,0.00836,0
+ubiquitin,V26I,is_phospho,linear,residual,0.01036,0
+ubiquitin,V26I,is_phospho,linear,hybrid,0.02438,0
+ubiquitin,V26I,is_phospho,xgb,esm,0.02355,0
+ubiquitin,V26I,is_phospho,xgb,esm_residual,0.10559,1
+ubiquitin,V26I,is_phospho,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_phospho,xgb,raw,0.05739,0
+ubiquitin,V26I,is_phospho,xgb,residual,0.09746,0
+ubiquitin,V26I,is_phospho,xgb,hybrid,0.03503,0
+ubiquitin,V26I,is_glyco,linear,esm,4e-05,0
+ubiquitin,V26I,is_glyco,linear,esm_residual,7e-05,0
+ubiquitin,V26I,is_glyco,linear,mpnn,0.0,0
+ubiquitin,V26I,is_glyco,linear,raw,2e-05,0
+ubiquitin,V26I,is_glyco,linear,residual,4e-05,0
+ubiquitin,V26I,is_glyco,linear,hybrid,5e-05,0
+ubiquitin,V26I,is_glyco,xgb,esm,0.0,0
+ubiquitin,V26I,is_glyco,xgb,esm_residual,0.0,0
+ubiquitin,V26I,is_glyco,xgb,mpnn,0.0,0
+ubiquitin,V26I,is_glyco,xgb,raw,0.0,0
+ubiquitin,V26I,is_glyco,xgb,residual,4e-05,0
+ubiquitin,V26I,is_glyco,xgb,hybrid,3e-05,0
+ubiquitin,K48R,cath_class,linear,esm,0.00243,0
+ubiquitin,K48R,cath_class,linear,esm_residual,0.00101,0
+ubiquitin,K48R,cath_class,linear,mpnn,0.0,0
+ubiquitin,K48R,cath_class,linear,raw,0.00176,0
+ubiquitin,K48R,cath_class,linear,residual,0.00106,0
+ubiquitin,K48R,cath_class,linear,hybrid,0.00183,0
+ubiquitin,K48R,cath_class,xgb,esm,0.00133,0
+ubiquitin,K48R,cath_class,xgb,esm_residual,0.00128,0
+ubiquitin,K48R,cath_class,xgb,mpnn,0.0,0
+ubiquitin,K48R,cath_class,xgb,raw,0.00057,0
+ubiquitin,K48R,cath_class,xgb,residual,0.00068,0
+ubiquitin,K48R,cath_class,xgb,hybrid,0.00053,0
+ubiquitin,K48R,cath_arch,linear,esm,0.00612,0
+ubiquitin,K48R,cath_arch,linear,esm_residual,0.00467,0
+ubiquitin,K48R,cath_arch,linear,mpnn,0.0,0
+ubiquitin,K48R,cath_arch,linear,raw,0.00456,0
+ubiquitin,K48R,cath_arch,linear,residual,0.00338,0
+ubiquitin,K48R,cath_arch,linear,hybrid,0.00381,0
+ubiquitin,K48R,cath_arch,xgb,esm,0.00226,0
+ubiquitin,K48R,cath_arch,xgb,esm_residual,0.0038,0
+ubiquitin,K48R,cath_arch,xgb,mpnn,0.0,0
+ubiquitin,K48R,cath_arch,xgb,raw,0.01266,0
+ubiquitin,K48R,cath_arch,xgb,residual,0.00543,0
+ubiquitin,K48R,cath_arch,xgb,hybrid,0.0067,0
+ubiquitin,K48R,cath_topol,linear,esm,0.00568,0
+ubiquitin,K48R,cath_topol,linear,esm_residual,0.00268,0
+ubiquitin,K48R,cath_topol,linear,mpnn,0.0,0
+ubiquitin,K48R,cath_topol,linear,raw,0.00661,0
+ubiquitin,K48R,cath_topol,linear,residual,0.00272,0
+ubiquitin,K48R,cath_topol,linear,hybrid,0.00414,0
+ubiquitin,K48R,cath_topol,xgb,esm,0.0071,0
+ubiquitin,K48R,cath_topol,xgb,esm_residual,0.00014,0
+ubiquitin,K48R,cath_topol,xgb,mpnn,0.0,0
+ubiquitin,K48R,cath_topol,xgb,raw,0.00118,0
+ubiquitin,K48R,cath_topol,xgb,residual,0.00104,0
+ubiquitin,K48R,cath_topol,xgb,hybrid,0.00071,0
+ubiquitin,K48R,ec_class,linear,esm,0.0404,0
+ubiquitin,K48R,ec_class,linear,esm_residual,0.0257,0
+ubiquitin,K48R,ec_class,linear,mpnn,0.0,0
+ubiquitin,K48R,ec_class,linear,raw,0.02482,0
+ubiquitin,K48R,ec_class,linear,residual,0.01385,0
+ubiquitin,K48R,ec_class,linear,hybrid,0.0201,0
+ubiquitin,K48R,ec_class,xgb,esm,0.00692,0
+ubiquitin,K48R,ec_class,xgb,esm_residual,0.00757,0
+ubiquitin,K48R,ec_class,xgb,mpnn,0.0,0
+ubiquitin,K48R,ec_class,xgb,raw,0.03176,0
+ubiquitin,K48R,ec_class,xgb,residual,0.01662,0
+ubiquitin,K48R,ec_class,xgb,hybrid,0.0085,0
+ubiquitin,K48R,enzyme,linear,esm,0.00405,0
+ubiquitin,K48R,enzyme,linear,esm_residual,0.00293,0
+ubiquitin,K48R,enzyme,linear,mpnn,0.0,0
+ubiquitin,K48R,enzyme,linear,raw,0.00305,0
+ubiquitin,K48R,enzyme,linear,residual,0.00212,0
+ubiquitin,K48R,enzyme,linear,hybrid,0.00298,0
+ubiquitin,K48R,enzyme,xgb,esm,0.07353,0
+ubiquitin,K48R,enzyme,xgb,esm_residual,0.03053,0
+ubiquitin,K48R,enzyme,xgb,mpnn,0.0,0
+ubiquitin,K48R,enzyme,xgb,raw,0.02131,0
+ubiquitin,K48R,enzyme,xgb,residual,0.0,0
+ubiquitin,K48R,enzyme,xgb,hybrid,0.00248,0
+ubiquitin,K48R,protein_class,linear,esm,0.02257,0
+ubiquitin,K48R,protein_class,linear,esm_residual,0.01268,0
+ubiquitin,K48R,protein_class,linear,mpnn,0.0,0
+ubiquitin,K48R,protein_class,linear,raw,0.02639,0
+ubiquitin,K48R,protein_class,linear,residual,0.00924,0
+ubiquitin,K48R,protein_class,linear,hybrid,0.01982,0
+ubiquitin,K48R,protein_class,xgb,esm,0.0042,0
+ubiquitin,K48R,protein_class,xgb,esm_residual,0.00395,0
+ubiquitin,K48R,protein_class,xgb,mpnn,0.0,0
+ubiquitin,K48R,protein_class,xgb,raw,0.00366,0
+ubiquitin,K48R,protein_class,xgb,residual,0.00252,0
+ubiquitin,K48R,protein_class,xgb,hybrid,0.01608,0
+ubiquitin,K48R,localisation,linear,esm,0.02015,0
+ubiquitin,K48R,localisation,linear,esm_residual,0.0189,0
+ubiquitin,K48R,localisation,linear,mpnn,0.0,0
+ubiquitin,K48R,localisation,linear,raw,0.01155,0
+ubiquitin,K48R,localisation,linear,residual,0.01441,0
+ubiquitin,K48R,localisation,linear,hybrid,0.01326,0
+ubiquitin,K48R,localisation,xgb,esm,0.00073,0
+ubiquitin,K48R,localisation,xgb,esm_residual,0.01914,0
+ubiquitin,K48R,localisation,xgb,mpnn,0.0,0
+ubiquitin,K48R,localisation,xgb,raw,0.06881,0
+ubiquitin,K48R,localisation,xgb,residual,0.01131,0
+ubiquitin,K48R,localisation,xgb,hybrid,0.00475,0
+ubiquitin,K48R,kingdom,linear,esm,0.00035,0
+ubiquitin,K48R,kingdom,linear,esm_residual,0.00043,0
+ubiquitin,K48R,kingdom,linear,mpnn,0.0,0
+ubiquitin,K48R,kingdom,linear,raw,5e-05,0
+ubiquitin,K48R,kingdom,linear,residual,0.00087,0
+ubiquitin,K48R,kingdom,linear,hybrid,0.00057,0
+ubiquitin,K48R,kingdom,xgb,esm,0.00169,0
+ubiquitin,K48R,kingdom,xgb,esm_residual,0.00392,0
+ubiquitin,K48R,kingdom,xgb,mpnn,0.0,0
+ubiquitin,K48R,kingdom,xgb,raw,0.00529,0
+ubiquitin,K48R,kingdom,xgb,residual,0.00068,0
+ubiquitin,K48R,kingdom,xgb,hybrid,0.00533,0
+ubiquitin,K48R,is_transport,linear,esm,0.0014,0
+ubiquitin,K48R,is_transport,linear,esm_residual,7e-05,0
+ubiquitin,K48R,is_transport,linear,mpnn,0.0,0
+ubiquitin,K48R,is_transport,linear,raw,0.00173,0
+ubiquitin,K48R,is_transport,linear,residual,0.0,0
+ubiquitin,K48R,is_transport,linear,hybrid,0.002,0
+ubiquitin,K48R,is_transport,xgb,esm,0.00041,0
+ubiquitin,K48R,is_transport,xgb,esm_residual,0.0001,0
+ubiquitin,K48R,is_transport,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_transport,xgb,raw,0.0,0
+ubiquitin,K48R,is_transport,xgb,residual,0.00019,0
+ubiquitin,K48R,is_transport,xgb,hybrid,0.00645,0
+ubiquitin,K48R,is_dna_binding,linear,esm,0.00059,0
+ubiquitin,K48R,is_dna_binding,linear,esm_residual,0.00771,0
+ubiquitin,K48R,is_dna_binding,linear,mpnn,0.0,0
+ubiquitin,K48R,is_dna_binding,linear,raw,0.00044,0
+ubiquitin,K48R,is_dna_binding,linear,residual,0.00251,0
+ubiquitin,K48R,is_dna_binding,linear,hybrid,0.00012,0
+ubiquitin,K48R,is_dna_binding,xgb,esm,0.00018,0
+ubiquitin,K48R,is_dna_binding,xgb,esm_residual,0.00012,0
+ubiquitin,K48R,is_dna_binding,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_dna_binding,xgb,raw,0.00287,0
+ubiquitin,K48R,is_dna_binding,xgb,residual,0.00018,0
+ubiquitin,K48R,is_dna_binding,xgb,hybrid,0.00173,0
+ubiquitin,K48R,is_rna_binding,linear,esm,0.02039,0
+ubiquitin,K48R,is_rna_binding,linear,esm_residual,0.01095,0
+ubiquitin,K48R,is_rna_binding,linear,mpnn,0.0,0
+ubiquitin,K48R,is_rna_binding,linear,raw,0.01824,0
+ubiquitin,K48R,is_rna_binding,linear,residual,0.00771,0
+ubiquitin,K48R,is_rna_binding,linear,hybrid,0.01767,0
+ubiquitin,K48R,is_rna_binding,xgb,esm,0.02352,0
+ubiquitin,K48R,is_rna_binding,xgb,esm_residual,0.0,0
+ubiquitin,K48R,is_rna_binding,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_rna_binding,xgb,raw,0.0,0
+ubiquitin,K48R,is_rna_binding,xgb,residual,0.0,0
+ubiquitin,K48R,is_rna_binding,xgb,hybrid,0.0,0
+ubiquitin,K48R,is_kinase,linear,esm,0.01406,0
+ubiquitin,K48R,is_kinase,linear,esm_residual,0.00686,0
+ubiquitin,K48R,is_kinase,linear,mpnn,0.0,0
+ubiquitin,K48R,is_kinase,linear,raw,0.00671,0
+ubiquitin,K48R,is_kinase,linear,residual,0.00109,0
+ubiquitin,K48R,is_kinase,linear,hybrid,0.00514,0
+ubiquitin,K48R,is_kinase,xgb,esm,0.00296,0
+ubiquitin,K48R,is_kinase,xgb,esm_residual,0.00031,0
+ubiquitin,K48R,is_kinase,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_kinase,xgb,raw,0.01356,0
+ubiquitin,K48R,is_kinase,xgb,residual,0.00204,0
+ubiquitin,K48R,is_kinase,xgb,hybrid,0.0,0
+ubiquitin,K48R,is_ribosomal,linear,esm,3e-05,0
+ubiquitin,K48R,is_ribosomal,linear,esm_residual,0.0017,0
+ubiquitin,K48R,is_ribosomal,linear,mpnn,0.0,0
+ubiquitin,K48R,is_ribosomal,linear,raw,0.00068,0
+ubiquitin,K48R,is_ribosomal,linear,residual,0.0008,0
+ubiquitin,K48R,is_ribosomal,linear,hybrid,0.00061,0
+ubiquitin,K48R,is_ribosomal,xgb,esm,3e-05,0
+ubiquitin,K48R,is_ribosomal,xgb,esm_residual,0.0,0
+ubiquitin,K48R,is_ribosomal,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_ribosomal,xgb,raw,0.00057,0
+ubiquitin,K48R,is_ribosomal,xgb,residual,0.0,0
+ubiquitin,K48R,is_ribosomal,xgb,hybrid,0.0001,0
+ubiquitin,K48R,is_membrane_protein,linear,esm,0.00096,0
+ubiquitin,K48R,is_membrane_protein,linear,esm_residual,0.00359,0
+ubiquitin,K48R,is_membrane_protein,linear,mpnn,0.0,0
+ubiquitin,K48R,is_membrane_protein,linear,raw,0.00071,0
+ubiquitin,K48R,is_membrane_protein,linear,residual,0.00106,0
+ubiquitin,K48R,is_membrane_protein,linear,hybrid,0.00068,0
+ubiquitin,K48R,is_membrane_protein,xgb,esm,6e-05,0
+ubiquitin,K48R,is_membrane_protein,xgb,esm_residual,0.00141,0
+ubiquitin,K48R,is_membrane_protein,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_membrane_protein,xgb,raw,0.0003,0
+ubiquitin,K48R,is_membrane_protein,xgb,residual,0.0,0
+ubiquitin,K48R,is_membrane_protein,xgb,hybrid,0.0006,0
+ubiquitin,K48R,is_structural,linear,esm,1e-05,0
+ubiquitin,K48R,is_structural,linear,esm_residual,0.0,0
+ubiquitin,K48R,is_structural,linear,mpnn,0.0,0
+ubiquitin,K48R,is_structural,linear,raw,0.00102,0
+ubiquitin,K48R,is_structural,linear,residual,0.00116,0
+ubiquitin,K48R,is_structural,linear,hybrid,0.00191,0
+ubiquitin,K48R,is_structural,xgb,esm,0.0,0
+ubiquitin,K48R,is_structural,xgb,esm_residual,0.0,0
+ubiquitin,K48R,is_structural,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_structural,xgb,raw,0.00013,0
+ubiquitin,K48R,is_structural,xgb,residual,0.0008,0
+ubiquitin,K48R,is_structural,xgb,hybrid,0.00022,0
+ubiquitin,K48R,is_immune,linear,esm,0.00236,0
+ubiquitin,K48R,is_immune,linear,esm_residual,0.00104,0
+ubiquitin,K48R,is_immune,linear,mpnn,0.0,0
+ubiquitin,K48R,is_immune,linear,raw,0.00242,0
+ubiquitin,K48R,is_immune,linear,residual,0.0009,0
+ubiquitin,K48R,is_immune,linear,hybrid,0.00189,0
+ubiquitin,K48R,is_immune,xgb,esm,0.00582,0
+ubiquitin,K48R,is_immune,xgb,esm_residual,0.01193,0
+ubiquitin,K48R,is_immune,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_immune,xgb,raw,0.00398,0
+ubiquitin,K48R,is_immune,xgb,residual,0.0,0
+ubiquitin,K48R,is_immune,xgb,hybrid,0.00012,0
+ubiquitin,K48R,is_phospho,linear,esm,0.03496,0
+ubiquitin,K48R,is_phospho,linear,esm_residual,0.04638,0
+ubiquitin,K48R,is_phospho,linear,mpnn,0.0,0
+ubiquitin,K48R,is_phospho,linear,raw,0.01431,0
+ubiquitin,K48R,is_phospho,linear,residual,0.02001,0
+ubiquitin,K48R,is_phospho,linear,hybrid,0.03372,0
+ubiquitin,K48R,is_phospho,xgb,esm,0.10282,0
+ubiquitin,K48R,is_phospho,xgb,esm_residual,0.05914,0
+ubiquitin,K48R,is_phospho,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_phospho,xgb,raw,0.00572,0
+ubiquitin,K48R,is_phospho,xgb,residual,0.03031,0
+ubiquitin,K48R,is_phospho,xgb,hybrid,0.07445,0
+ubiquitin,K48R,is_glyco,linear,esm,4e-05,0
+ubiquitin,K48R,is_glyco,linear,esm_residual,3e-05,0
+ubiquitin,K48R,is_glyco,linear,mpnn,0.0,0
+ubiquitin,K48R,is_glyco,linear,raw,2e-05,0
+ubiquitin,K48R,is_glyco,linear,residual,2e-05,0
+ubiquitin,K48R,is_glyco,linear,hybrid,3e-05,0
+ubiquitin,K48R,is_glyco,xgb,esm,2e-05,0
+ubiquitin,K48R,is_glyco,xgb,esm_residual,2e-05,0
+ubiquitin,K48R,is_glyco,xgb,mpnn,0.0,0
+ubiquitin,K48R,is_glyco,xgb,raw,9e-05,0
+ubiquitin,K48R,is_glyco,xgb,residual,0.0,0
+ubiquitin,K48R,is_glyco,xgb,hybrid,3e-05,0
+ubiquitin,K48E,cath_class,linear,esm,0.00582,0
+ubiquitin,K48E,cath_class,linear,esm_residual,0.00823,0
+ubiquitin,K48E,cath_class,linear,mpnn,0.0,0
+ubiquitin,K48E,cath_class,linear,raw,0.00247,0
+ubiquitin,K48E,cath_class,linear,residual,0.00393,0
+ubiquitin,K48E,cath_class,linear,hybrid,0.00317,0
+ubiquitin,K48E,cath_class,xgb,esm,0.00143,0
+ubiquitin,K48E,cath_class,xgb,esm_residual,0.00218,0
+ubiquitin,K48E,cath_class,xgb,mpnn,0.0,0
+ubiquitin,K48E,cath_class,xgb,raw,0.00134,0
+ubiquitin,K48E,cath_class,xgb,residual,0.00395,0
+ubiquitin,K48E,cath_class,xgb,hybrid,0.00588,0
+ubiquitin,K48E,cath_arch,linear,esm,0.01011,0
+ubiquitin,K48E,cath_arch,linear,esm_residual,0.01137,0
+ubiquitin,K48E,cath_arch,linear,mpnn,0.0,0
+ubiquitin,K48E,cath_arch,linear,raw,0.00565,0
+ubiquitin,K48E,cath_arch,linear,residual,0.00623,0
+ubiquitin,K48E,cath_arch,linear,hybrid,0.00754,0
+ubiquitin,K48E,cath_arch,xgb,esm,0.00405,0
+ubiquitin,K48E,cath_arch,xgb,esm_residual,0.00332,0
+ubiquitin,K48E,cath_arch,xgb,mpnn,0.0,0
+ubiquitin,K48E,cath_arch,xgb,raw,0.00659,0
+ubiquitin,K48E,cath_arch,xgb,residual,0.01542,0
+ubiquitin,K48E,cath_arch,xgb,hybrid,0.00676,0
+ubiquitin,K48E,cath_topol,linear,esm,0.00426,0
+ubiquitin,K48E,cath_topol,linear,esm_residual,0.00387,0
+ubiquitin,K48E,cath_topol,linear,mpnn,0.0,0
+ubiquitin,K48E,cath_topol,linear,raw,0.00434,0
+ubiquitin,K48E,cath_topol,linear,residual,0.00349,0
+ubiquitin,K48E,cath_topol,linear,hybrid,0.00445,0
+ubiquitin,K48E,cath_topol,xgb,esm,0.00177,0
+ubiquitin,K48E,cath_topol,xgb,esm_residual,0.00054,0
+ubiquitin,K48E,cath_topol,xgb,mpnn,0.0,0
+ubiquitin,K48E,cath_topol,xgb,raw,0.00336,0
+ubiquitin,K48E,cath_topol,xgb,residual,0.00055,0
+ubiquitin,K48E,cath_topol,xgb,hybrid,0.00037,0
+ubiquitin,K48E,ec_class,linear,esm,0.0382,0
+ubiquitin,K48E,ec_class,linear,esm_residual,0.05096,0
+ubiquitin,K48E,ec_class,linear,mpnn,0.0,0
+ubiquitin,K48E,ec_class,linear,raw,0.02402,0
+ubiquitin,K48E,ec_class,linear,residual,0.02947,0
+ubiquitin,K48E,ec_class,linear,hybrid,0.02381,0
+ubiquitin,K48E,ec_class,xgb,esm,0.03003,0
+ubiquitin,K48E,ec_class,xgb,esm_residual,0.00318,0
+ubiquitin,K48E,ec_class,xgb,mpnn,0.0,0
+ubiquitin,K48E,ec_class,xgb,raw,0.00998,0
+ubiquitin,K48E,ec_class,xgb,residual,0.00952,0
+ubiquitin,K48E,ec_class,xgb,hybrid,0.01661,0
+ubiquitin,K48E,enzyme,linear,esm,0.0029,0
+ubiquitin,K48E,enzyme,linear,esm_residual,0.00354,0
+ubiquitin,K48E,enzyme,linear,mpnn,0.0,0
+ubiquitin,K48E,enzyme,linear,raw,0.0029,0
+ubiquitin,K48E,enzyme,linear,residual,0.00341,0
+ubiquitin,K48E,enzyme,linear,hybrid,0.00307,0
+ubiquitin,K48E,enzyme,xgb,esm,0.00338,0
+ubiquitin,K48E,enzyme,xgb,esm_residual,0.00246,0
+ubiquitin,K48E,enzyme,xgb,mpnn,0.0,0
+ubiquitin,K48E,enzyme,xgb,raw,0.02337,0
+ubiquitin,K48E,enzyme,xgb,residual,0.00826,0
+ubiquitin,K48E,enzyme,xgb,hybrid,0.00137,0
+ubiquitin,K48E,protein_class,linear,esm,0.04009,0
+ubiquitin,K48E,protein_class,linear,esm_residual,0.03493,0
+ubiquitin,K48E,protein_class,linear,mpnn,0.0,0
+ubiquitin,K48E,protein_class,linear,raw,0.04607,0
+ubiquitin,K48E,protein_class,linear,residual,0.03737,0
+ubiquitin,K48E,protein_class,linear,hybrid,0.04296,0
+ubiquitin,K48E,protein_class,xgb,esm,0.00905,0
+ubiquitin,K48E,protein_class,xgb,esm_residual,0.00629,0
+ubiquitin,K48E,protein_class,xgb,mpnn,0.0,0
+ubiquitin,K48E,protein_class,xgb,raw,0.00486,0
+ubiquitin,K48E,protein_class,xgb,residual,0.02757,0
+ubiquitin,K48E,protein_class,xgb,hybrid,0.02328,0
+ubiquitin,K48E,localisation,linear,esm,0.10052,1
+ubiquitin,K48E,localisation,linear,esm_residual,0.09263,1
+ubiquitin,K48E,localisation,linear,mpnn,0.0,0
+ubiquitin,K48E,localisation,linear,raw,0.09681,0
+ubiquitin,K48E,localisation,linear,residual,0.08423,1
+ubiquitin,K48E,localisation,linear,hybrid,0.10533,1
+ubiquitin,K48E,localisation,xgb,esm,0.02053,0
+ubiquitin,K48E,localisation,xgb,esm_residual,0.05879,0
+ubiquitin,K48E,localisation,xgb,mpnn,0.0,0
+ubiquitin,K48E,localisation,xgb,raw,0.00766,0
+ubiquitin,K48E,localisation,xgb,residual,0.06842,0
+ubiquitin,K48E,localisation,xgb,hybrid,0.01258,0
+ubiquitin,K48E,kingdom,linear,esm,0.00787,0
+ubiquitin,K48E,kingdom,linear,esm_residual,0.00148,0
+ubiquitin,K48E,kingdom,linear,mpnn,0.0,0
+ubiquitin,K48E,kingdom,linear,raw,0.0009,0
+ubiquitin,K48E,kingdom,linear,residual,0.00387,0
+ubiquitin,K48E,kingdom,linear,hybrid,0.0036,0
+ubiquitin,K48E,kingdom,xgb,esm,0.00161,0
+ubiquitin,K48E,kingdom,xgb,esm_residual,0.00542,0
+ubiquitin,K48E,kingdom,xgb,mpnn,0.0,0
+ubiquitin,K48E,kingdom,xgb,raw,0.00515,0
+ubiquitin,K48E,kingdom,xgb,residual,0.00103,0
+ubiquitin,K48E,kingdom,xgb,hybrid,0.00277,0
+ubiquitin,K48E,is_transport,linear,esm,0.00517,0
+ubiquitin,K48E,is_transport,linear,esm_residual,0.00048,0
+ubiquitin,K48E,is_transport,linear,mpnn,0.0,0
+ubiquitin,K48E,is_transport,linear,raw,0.00128,0
+ubiquitin,K48E,is_transport,linear,residual,0.00082,0
+ubiquitin,K48E,is_transport,linear,hybrid,0.00042,0
+ubiquitin,K48E,is_transport,xgb,esm,0.00617,0
+ubiquitin,K48E,is_transport,xgb,esm_residual,0.00012,0
+ubiquitin,K48E,is_transport,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_transport,xgb,raw,0.00094,0
+ubiquitin,K48E,is_transport,xgb,residual,0.00045,0
+ubiquitin,K48E,is_transport,xgb,hybrid,0.0027,0
+ubiquitin,K48E,is_dna_binding,linear,esm,0.01188,0
+ubiquitin,K48E,is_dna_binding,linear,esm_residual,0.00252,0
+ubiquitin,K48E,is_dna_binding,linear,mpnn,0.0,0
+ubiquitin,K48E,is_dna_binding,linear,raw,0.00458,0
+ubiquitin,K48E,is_dna_binding,linear,residual,0.00079,0
+ubiquitin,K48E,is_dna_binding,linear,hybrid,0.00268,0
+ubiquitin,K48E,is_dna_binding,xgb,esm,0.00033,0
+ubiquitin,K48E,is_dna_binding,xgb,esm_residual,0.00292,0
+ubiquitin,K48E,is_dna_binding,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_dna_binding,xgb,raw,0.00086,0
+ubiquitin,K48E,is_dna_binding,xgb,residual,8e-05,0
+ubiquitin,K48E,is_dna_binding,xgb,hybrid,0.00055,0
+ubiquitin,K48E,is_rna_binding,linear,esm,0.00678,0
+ubiquitin,K48E,is_rna_binding,linear,esm_residual,0.00471,0
+ubiquitin,K48E,is_rna_binding,linear,mpnn,0.0,0
+ubiquitin,K48E,is_rna_binding,linear,raw,0.00194,0
+ubiquitin,K48E,is_rna_binding,linear,residual,0.0002,0
+ubiquitin,K48E,is_rna_binding,linear,hybrid,0.00022,0
+ubiquitin,K48E,is_rna_binding,xgb,esm,0.06451,0
+ubiquitin,K48E,is_rna_binding,xgb,esm_residual,0.00329,0
+ubiquitin,K48E,is_rna_binding,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_rna_binding,xgb,raw,0.04264,0
+ubiquitin,K48E,is_rna_binding,xgb,residual,0.01596,0
+ubiquitin,K48E,is_rna_binding,xgb,hybrid,0.03642,0
+ubiquitin,K48E,is_kinase,linear,esm,0.02226,0
+ubiquitin,K48E,is_kinase,linear,esm_residual,0.02475,0
+ubiquitin,K48E,is_kinase,linear,mpnn,0.0,0
+ubiquitin,K48E,is_kinase,linear,raw,0.013,0
+ubiquitin,K48E,is_kinase,linear,residual,0.01955,0
+ubiquitin,K48E,is_kinase,linear,hybrid,0.00887,0
+ubiquitin,K48E,is_kinase,xgb,esm,0.00895,0
+ubiquitin,K48E,is_kinase,xgb,esm_residual,0.00119,0
+ubiquitin,K48E,is_kinase,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_kinase,xgb,raw,0.1053,0
+ubiquitin,K48E,is_kinase,xgb,residual,0.00055,0
+ubiquitin,K48E,is_kinase,xgb,hybrid,0.00051,0
+ubiquitin,K48E,is_ribosomal,linear,esm,6e-05,0
+ubiquitin,K48E,is_ribosomal,linear,esm_residual,0.00246,0
+ubiquitin,K48E,is_ribosomal,linear,mpnn,0.0,0
+ubiquitin,K48E,is_ribosomal,linear,raw,0.00206,0
+ubiquitin,K48E,is_ribosomal,linear,residual,0.00127,0
+ubiquitin,K48E,is_ribosomal,linear,hybrid,0.0022,0
+ubiquitin,K48E,is_ribosomal,xgb,esm,0.0,0
+ubiquitin,K48E,is_ribosomal,xgb,esm_residual,0.0,0
+ubiquitin,K48E,is_ribosomal,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_ribosomal,xgb,raw,0.00057,0
+ubiquitin,K48E,is_ribosomal,xgb,residual,0.0,0
+ubiquitin,K48E,is_ribosomal,xgb,hybrid,0.0,0
+ubiquitin,K48E,is_membrane_protein,linear,esm,0.00011,0
+ubiquitin,K48E,is_membrane_protein,linear,esm_residual,0.00404,0
+ubiquitin,K48E,is_membrane_protein,linear,mpnn,0.0,0
+ubiquitin,K48E,is_membrane_protein,linear,raw,0.00042,0
+ubiquitin,K48E,is_membrane_protein,linear,residual,0.00098,0
+ubiquitin,K48E,is_membrane_protein,linear,hybrid,0.00033,0
+ubiquitin,K48E,is_membrane_protein,xgb,esm,0.00014,0
+ubiquitin,K48E,is_membrane_protein,xgb,esm_residual,0.00532,0
+ubiquitin,K48E,is_membrane_protein,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_membrane_protein,xgb,raw,0.00038,0
+ubiquitin,K48E,is_membrane_protein,xgb,residual,0.0,0
+ubiquitin,K48E,is_membrane_protein,xgb,hybrid,0.00028,0
+ubiquitin,K48E,is_structural,linear,esm,0.00108,0
+ubiquitin,K48E,is_structural,linear,esm_residual,1e-05,0
+ubiquitin,K48E,is_structural,linear,mpnn,0.0,0
+ubiquitin,K48E,is_structural,linear,raw,0.00755,0
+ubiquitin,K48E,is_structural,linear,residual,0.00819,0
+ubiquitin,K48E,is_structural,linear,hybrid,0.00494,0
+ubiquitin,K48E,is_structural,xgb,esm,0.0001,0
+ubiquitin,K48E,is_structural,xgb,esm_residual,0.00078,0
+ubiquitin,K48E,is_structural,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_structural,xgb,raw,0.00066,0
+ubiquitin,K48E,is_structural,xgb,residual,0.00065,0
+ubiquitin,K48E,is_structural,xgb,hybrid,1e-05,0
+ubiquitin,K48E,is_immune,linear,esm,0.00476,0
+ubiquitin,K48E,is_immune,linear,esm_residual,0.00242,0
+ubiquitin,K48E,is_immune,linear,mpnn,0.0,0
+ubiquitin,K48E,is_immune,linear,raw,0.00444,0
+ubiquitin,K48E,is_immune,linear,residual,0.00258,0
+ubiquitin,K48E,is_immune,linear,hybrid,0.0041,0
+ubiquitin,K48E,is_immune,xgb,esm,0.00576,0
+ubiquitin,K48E,is_immune,xgb,esm_residual,0.01193,0
+ubiquitin,K48E,is_immune,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_immune,xgb,raw,0.00221,0
+ubiquitin,K48E,is_immune,xgb,residual,0.0,0
+ubiquitin,K48E,is_immune,xgb,hybrid,0.0,0
+ubiquitin,K48E,is_phospho,linear,esm,0.02115,0
+ubiquitin,K48E,is_phospho,linear,esm_residual,0.0166,0
+ubiquitin,K48E,is_phospho,linear,mpnn,0.0,0
+ubiquitin,K48E,is_phospho,linear,raw,0.02363,0
+ubiquitin,K48E,is_phospho,linear,residual,0.02042,0
+ubiquitin,K48E,is_phospho,linear,hybrid,0.01971,0
+ubiquitin,K48E,is_phospho,xgb,esm,0.0385,0
+ubiquitin,K48E,is_phospho,xgb,esm_residual,0.02776,0
+ubiquitin,K48E,is_phospho,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_phospho,xgb,raw,0.06581,0
+ubiquitin,K48E,is_phospho,xgb,residual,0.1007,0
+ubiquitin,K48E,is_phospho,xgb,hybrid,0.05207,0
+ubiquitin,K48E,is_glyco,linear,esm,4e-05,0
+ubiquitin,K48E,is_glyco,linear,esm_residual,0.0,0
+ubiquitin,K48E,is_glyco,linear,mpnn,0.0,0
+ubiquitin,K48E,is_glyco,linear,raw,2e-05,0
+ubiquitin,K48E,is_glyco,linear,residual,0.0,0
+ubiquitin,K48E,is_glyco,linear,hybrid,2e-05,0
+ubiquitin,K48E,is_glyco,xgb,esm,2e-05,0
+ubiquitin,K48E,is_glyco,xgb,esm_residual,3e-05,0
+ubiquitin,K48E,is_glyco,xgb,mpnn,0.0,0
+ubiquitin,K48E,is_glyco,xgb,raw,9e-05,0
+ubiquitin,K48E,is_glyco,xgb,residual,1e-05,0
+ubiquitin,K48E,is_glyco,xgb,hybrid,2e-05,0
+ubiquitin,I44A,cath_class,linear,esm,0.00371,0
+ubiquitin,I44A,cath_class,linear,esm_residual,0.00449,0
+ubiquitin,I44A,cath_class,linear,mpnn,0.0,0
+ubiquitin,I44A,cath_class,linear,raw,0.00306,0
+ubiquitin,I44A,cath_class,linear,residual,0.00457,0
+ubiquitin,I44A,cath_class,linear,hybrid,0.00479,0
+ubiquitin,I44A,cath_class,xgb,esm,0.0014,0
+ubiquitin,I44A,cath_class,xgb,esm_residual,0.00522,0
+ubiquitin,I44A,cath_class,xgb,mpnn,0.0,0
+ubiquitin,I44A,cath_class,xgb,raw,0.00064,0
+ubiquitin,I44A,cath_class,xgb,residual,0.00123,0
+ubiquitin,I44A,cath_class,xgb,hybrid,0.00235,0
+ubiquitin,I44A,cath_arch,linear,esm,0.00447,0
+ubiquitin,I44A,cath_arch,linear,esm_residual,0.0044,0
+ubiquitin,I44A,cath_arch,linear,mpnn,0.0,0
+ubiquitin,I44A,cath_arch,linear,raw,0.00385,0
+ubiquitin,I44A,cath_arch,linear,residual,0.00361,0
+ubiquitin,I44A,cath_arch,linear,hybrid,0.00289,0
+ubiquitin,I44A,cath_arch,xgb,esm,0.00146,0
+ubiquitin,I44A,cath_arch,xgb,esm_residual,0.00164,0
+ubiquitin,I44A,cath_arch,xgb,mpnn,0.0,0
+ubiquitin,I44A,cath_arch,xgb,raw,0.01179,0
+ubiquitin,I44A,cath_arch,xgb,residual,0.008,0
+ubiquitin,I44A,cath_arch,xgb,hybrid,0.00848,0
+ubiquitin,I44A,cath_topol,linear,esm,0.02161,0
+ubiquitin,I44A,cath_topol,linear,esm_residual,0.02239,0
+ubiquitin,I44A,cath_topol,linear,mpnn,0.0,0
+ubiquitin,I44A,cath_topol,linear,raw,0.02089,0
+ubiquitin,I44A,cath_topol,linear,residual,0.02099,0
+ubiquitin,I44A,cath_topol,linear,hybrid,0.0193,0
+ubiquitin,I44A,cath_topol,xgb,esm,0.00728,0
+ubiquitin,I44A,cath_topol,xgb,esm_residual,0.00135,0
+ubiquitin,I44A,cath_topol,xgb,mpnn,0.0,0
+ubiquitin,I44A,cath_topol,xgb,raw,0.00131,0
+ubiquitin,I44A,cath_topol,xgb,residual,0.0017,0
+ubiquitin,I44A,cath_topol,xgb,hybrid,0.00048,0
+ubiquitin,I44A,ec_class,linear,esm,0.15158,0
+ubiquitin,I44A,ec_class,linear,esm_residual,0.17608,0
+ubiquitin,I44A,ec_class,linear,mpnn,0.0,0
+ubiquitin,I44A,ec_class,linear,raw,0.09701,0
+ubiquitin,I44A,ec_class,linear,residual,0.08632,0
+ubiquitin,I44A,ec_class,linear,hybrid,0.09149,0
+ubiquitin,I44A,ec_class,xgb,esm,0.00843,0
+ubiquitin,I44A,ec_class,xgb,esm_residual,0.01371,0
+ubiquitin,I44A,ec_class,xgb,mpnn,0.0,0
+ubiquitin,I44A,ec_class,xgb,raw,0.07407,0
+ubiquitin,I44A,ec_class,xgb,residual,0.01658,0
+ubiquitin,I44A,ec_class,xgb,hybrid,0.01106,0
+ubiquitin,I44A,enzyme,linear,esm,0.00014,0
+ubiquitin,I44A,enzyme,linear,esm_residual,0.00025,0
+ubiquitin,I44A,enzyme,linear,mpnn,0.0,0
+ubiquitin,I44A,enzyme,linear,raw,0.00048,0
+ubiquitin,I44A,enzyme,linear,residual,0.0002,0
+ubiquitin,I44A,enzyme,linear,hybrid,0.00132,0
+ubiquitin,I44A,enzyme,xgb,esm,0.01796,0
+ubiquitin,I44A,enzyme,xgb,esm_residual,0.0,0
+ubiquitin,I44A,enzyme,xgb,mpnn,0.0,0
+ubiquitin,I44A,enzyme,xgb,raw,0.05993,0
+ubiquitin,I44A,enzyme,xgb,residual,0.00267,0
+ubiquitin,I44A,enzyme,xgb,hybrid,0.00503,0
+ubiquitin,I44A,protein_class,linear,esm,0.04949,0
+ubiquitin,I44A,protein_class,linear,esm_residual,0.04277,0
+ubiquitin,I44A,protein_class,linear,mpnn,0.0,0
+ubiquitin,I44A,protein_class,linear,raw,0.05029,0
+ubiquitin,I44A,protein_class,linear,residual,0.0329,0
+ubiquitin,I44A,protein_class,linear,hybrid,0.0326,0
+ubiquitin,I44A,protein_class,xgb,esm,0.01733,0
+ubiquitin,I44A,protein_class,xgb,esm_residual,0.00867,0
+ubiquitin,I44A,protein_class,xgb,mpnn,0.0,0
+ubiquitin,I44A,protein_class,xgb,raw,0.00445,0
+ubiquitin,I44A,protein_class,xgb,residual,0.00832,0
+ubiquitin,I44A,protein_class,xgb,hybrid,0.01654,0
+ubiquitin,I44A,localisation,linear,esm,0.08723,0
+ubiquitin,I44A,localisation,linear,esm_residual,0.07152,0
+ubiquitin,I44A,localisation,linear,mpnn,0.0,0
+ubiquitin,I44A,localisation,linear,raw,0.08972,1
+ubiquitin,I44A,localisation,linear,residual,0.06832,0
+ubiquitin,I44A,localisation,linear,hybrid,0.07086,0
+ubiquitin,I44A,localisation,xgb,esm,0.01273,0
+ubiquitin,I44A,localisation,xgb,esm_residual,0.01355,0
+ubiquitin,I44A,localisation,xgb,mpnn,0.0,0
+ubiquitin,I44A,localisation,xgb,raw,0.03791,0
+ubiquitin,I44A,localisation,xgb,residual,0.02877,0
+ubiquitin,I44A,localisation,xgb,hybrid,0.00582,0
+ubiquitin,I44A,kingdom,linear,esm,0.00368,0
+ubiquitin,I44A,kingdom,linear,esm_residual,0.00067,0
+ubiquitin,I44A,kingdom,linear,mpnn,0.0,0
+ubiquitin,I44A,kingdom,linear,raw,0.00035,0
+ubiquitin,I44A,kingdom,linear,residual,0.00318,0
+ubiquitin,I44A,kingdom,linear,hybrid,0.00186,0
+ubiquitin,I44A,kingdom,xgb,esm,0.00035,0
+ubiquitin,I44A,kingdom,xgb,esm_residual,0.00985,0
+ubiquitin,I44A,kingdom,xgb,mpnn,0.0,0
+ubiquitin,I44A,kingdom,xgb,raw,0.00128,0
+ubiquitin,I44A,kingdom,xgb,residual,0.00127,0
+ubiquitin,I44A,kingdom,xgb,hybrid,0.00719,0
+ubiquitin,I44A,is_transport,linear,esm,0.0045,0
+ubiquitin,I44A,is_transport,linear,esm_residual,0.00027,0
+ubiquitin,I44A,is_transport,linear,mpnn,0.0,0
+ubiquitin,I44A,is_transport,linear,raw,0.00269,0
+ubiquitin,I44A,is_transport,linear,residual,0.00082,0
+ubiquitin,I44A,is_transport,linear,hybrid,0.00493,0
+ubiquitin,I44A,is_transport,xgb,esm,0.00225,0
+ubiquitin,I44A,is_transport,xgb,esm_residual,0.00021,0
+ubiquitin,I44A,is_transport,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_transport,xgb,raw,0.00415,0
+ubiquitin,I44A,is_transport,xgb,residual,0.0002,0
+ubiquitin,I44A,is_transport,xgb,hybrid,0.00757,0
+ubiquitin,I44A,is_dna_binding,linear,esm,0.00568,0
+ubiquitin,I44A,is_dna_binding,linear,esm_residual,0.00392,0
+ubiquitin,I44A,is_dna_binding,linear,mpnn,0.0,0
+ubiquitin,I44A,is_dna_binding,linear,raw,0.00215,0
+ubiquitin,I44A,is_dna_binding,linear,residual,0.0012,0
+ubiquitin,I44A,is_dna_binding,linear,hybrid,0.00286,0
+ubiquitin,I44A,is_dna_binding,xgb,esm,0.00093,0
+ubiquitin,I44A,is_dna_binding,xgb,esm_residual,0.00106,0
+ubiquitin,I44A,is_dna_binding,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_dna_binding,xgb,raw,0.00239,0
+ubiquitin,I44A,is_dna_binding,xgb,residual,0.00148,0
+ubiquitin,I44A,is_dna_binding,xgb,hybrid,0.00113,0
+ubiquitin,I44A,is_rna_binding,linear,esm,0.01569,0
+ubiquitin,I44A,is_rna_binding,linear,esm_residual,0.03292,0
+ubiquitin,I44A,is_rna_binding,linear,mpnn,0.0,0
+ubiquitin,I44A,is_rna_binding,linear,raw,0.01625,0
+ubiquitin,I44A,is_rna_binding,linear,residual,0.02713,0
+ubiquitin,I44A,is_rna_binding,linear,hybrid,0.0198,0
+ubiquitin,I44A,is_rna_binding,xgb,esm,0.02432,0
+ubiquitin,I44A,is_rna_binding,xgb,esm_residual,0.00403,0
+ubiquitin,I44A,is_rna_binding,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_rna_binding,xgb,raw,0.04393,0
+ubiquitin,I44A,is_rna_binding,xgb,residual,0.0106,0
+ubiquitin,I44A,is_rna_binding,xgb,hybrid,0.03215,0
+ubiquitin,I44A,is_kinase,linear,esm,0.03494,0
+ubiquitin,I44A,is_kinase,linear,esm_residual,0.00977,0
+ubiquitin,I44A,is_kinase,linear,mpnn,0.0,0
+ubiquitin,I44A,is_kinase,linear,raw,0.00591,0
+ubiquitin,I44A,is_kinase,linear,residual,0.00112,0
+ubiquitin,I44A,is_kinase,linear,hybrid,0.0001,0
+ubiquitin,I44A,is_kinase,xgb,esm,0.0055,0
+ubiquitin,I44A,is_kinase,xgb,esm_residual,0.00297,0
+ubiquitin,I44A,is_kinase,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_kinase,xgb,raw,0.0015,0
+ubiquitin,I44A,is_kinase,xgb,residual,0.00162,0
+ubiquitin,I44A,is_kinase,xgb,hybrid,0.00054,0
+ubiquitin,I44A,is_ribosomal,linear,esm,0.0001,0
+ubiquitin,I44A,is_ribosomal,linear,esm_residual,0.00712,0
+ubiquitin,I44A,is_ribosomal,linear,mpnn,0.0,0
+ubiquitin,I44A,is_ribosomal,linear,raw,0.00278,0
+ubiquitin,I44A,is_ribosomal,linear,residual,0.00347,0
+ubiquitin,I44A,is_ribosomal,linear,hybrid,0.00324,0
+ubiquitin,I44A,is_ribosomal,xgb,esm,3e-05,0
+ubiquitin,I44A,is_ribosomal,xgb,esm_residual,1e-05,0
+ubiquitin,I44A,is_ribosomal,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_ribosomal,xgb,raw,0.00024,0
+ubiquitin,I44A,is_ribosomal,xgb,residual,2e-05,0
+ubiquitin,I44A,is_ribosomal,xgb,hybrid,3e-05,0
+ubiquitin,I44A,is_membrane_protein,linear,esm,0.0005,0
+ubiquitin,I44A,is_membrane_protein,linear,esm_residual,0.00377,0
+ubiquitin,I44A,is_membrane_protein,linear,mpnn,0.0,0
+ubiquitin,I44A,is_membrane_protein,linear,raw,0.00067,0
+ubiquitin,I44A,is_membrane_protein,linear,residual,0.00052,0
+ubiquitin,I44A,is_membrane_protein,linear,hybrid,0.00013,0
+ubiquitin,I44A,is_membrane_protein,xgb,esm,0.00173,0
+ubiquitin,I44A,is_membrane_protein,xgb,esm_residual,0.00516,0
+ubiquitin,I44A,is_membrane_protein,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_membrane_protein,xgb,raw,0.00123,0
+ubiquitin,I44A,is_membrane_protein,xgb,residual,0.00091,0
+ubiquitin,I44A,is_membrane_protein,xgb,hybrid,0.00028,0
+ubiquitin,I44A,is_structural,linear,esm,0.00328,0
+ubiquitin,I44A,is_structural,linear,esm_residual,2e-05,0
+ubiquitin,I44A,is_structural,linear,mpnn,0.0,0
+ubiquitin,I44A,is_structural,linear,raw,0.01009,0
+ubiquitin,I44A,is_structural,linear,residual,0.00914,0
+ubiquitin,I44A,is_structural,linear,hybrid,0.00757,0
+ubiquitin,I44A,is_structural,xgb,esm,4e-05,0
+ubiquitin,I44A,is_structural,xgb,esm_residual,0.00038,0
+ubiquitin,I44A,is_structural,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_structural,xgb,raw,0.00046,0
+ubiquitin,I44A,is_structural,xgb,residual,0.00034,0
+ubiquitin,I44A,is_structural,xgb,hybrid,0.00107,0
+ubiquitin,I44A,is_immune,linear,esm,0.00148,0
+ubiquitin,I44A,is_immune,linear,esm_residual,0.00227,0
+ubiquitin,I44A,is_immune,linear,mpnn,0.0,0
+ubiquitin,I44A,is_immune,linear,raw,0.00077,0
+ubiquitin,I44A,is_immune,linear,residual,0.00759,0
+ubiquitin,I44A,is_immune,linear,hybrid,0.00063,0
+ubiquitin,I44A,is_immune,xgb,esm,0.00256,0
+ubiquitin,I44A,is_immune,xgb,esm_residual,0.00704,0
+ubiquitin,I44A,is_immune,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_immune,xgb,raw,0.00632,0
+ubiquitin,I44A,is_immune,xgb,residual,0.00291,0
+ubiquitin,I44A,is_immune,xgb,hybrid,0.00139,0
+ubiquitin,I44A,is_phospho,linear,esm,0.05746,0
+ubiquitin,I44A,is_phospho,linear,esm_residual,0.0472,0
+ubiquitin,I44A,is_phospho,linear,mpnn,0.0,0
+ubiquitin,I44A,is_phospho,linear,raw,0.03089,0
+ubiquitin,I44A,is_phospho,linear,residual,0.03478,0
+ubiquitin,I44A,is_phospho,linear,hybrid,0.04812,0
+ubiquitin,I44A,is_phospho,xgb,esm,0.07362,0
+ubiquitin,I44A,is_phospho,xgb,esm_residual,0.14101,1
+ubiquitin,I44A,is_phospho,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_phospho,xgb,raw,0.0328,0
+ubiquitin,I44A,is_phospho,xgb,residual,0.01335,0
+ubiquitin,I44A,is_phospho,xgb,hybrid,0.10299,0
+ubiquitin,I44A,is_glyco,linear,esm,1e-05,0
+ubiquitin,I44A,is_glyco,linear,esm_residual,2e-05,0
+ubiquitin,I44A,is_glyco,linear,mpnn,0.0,0
+ubiquitin,I44A,is_glyco,linear,raw,1e-05,0
+ubiquitin,I44A,is_glyco,linear,residual,1e-05,0
+ubiquitin,I44A,is_glyco,linear,hybrid,2e-05,0
+ubiquitin,I44A,is_glyco,xgb,esm,2e-05,0
+ubiquitin,I44A,is_glyco,xgb,esm_residual,4e-05,0
+ubiquitin,I44A,is_glyco,xgb,mpnn,0.0,0
+ubiquitin,I44A,is_glyco,xgb,raw,5e-05,0
+ubiquitin,I44A,is_glyco,xgb,residual,0.0001,0
+ubiquitin,I44A,is_glyco,xgb,hybrid,1e-05,0

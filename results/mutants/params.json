@@ -1,0 +1,42 @@
+{
+  "script": "09_mutants.py",
+  "timestamp_utc": "2026-11-03T17:54:12+00:00",
+  "command": "scripts/09_mutants.py --structures-dir /ssc/structures --results-root /ssc/results --out-dir results/mutants --raw-dir /scratch/claude-tests/mutants-raw",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "out_dir": "results/mutants",
+    "raw_dir": "/scratch/claude-tests/mutants-raw",
+    "reference_chains": 500,
+    "mpnn_weights": null
+  },
+  "git_commit": "b315236e530cf9589adec339b455de3fa42ab1b7",
+  "git_dirty": true,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "proteins": {
+      "2LZM": [
+        "L99A",
+        "L99I",
+        "K16R",
+        "K16E"
+      ],
+      "1UBQ": [
+        "V26A",
+        "V26I",
+        "K48R",
+        "K48E",
+        "I44A"
+      ]
+    }
+  }
+}

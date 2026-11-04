@@ -1,0 +1,35 @@
+{
+ "reference_chains": 500,
+ "reference_residues": 139963,
+ "bands_angstrom": [
+  8.0,
+  16.0
+ ],
+ "embedding_layer": "left out: a lookup with zero within-amino-acid spread, so no unit",
+ "spread_by_layer": [
+  2e-06,
+  3.880029,
+  7.747523,
+  10.68421,
+  10.82851,
+  12.59748,
+  17.807797,
+  27.286973,
+  37.484786,
+  49.03925,
+  55.531239,
+  68.448476,
+  5.4231
+ ],
+ "proteinmpnn_encoder_max_abs_change": {
+  "2LZM:L99A": 0.0,
+  "2LZM:L99I": 0.0,
+  "2LZM:K16R": 0.0,
+  "2LZM:K16E": 0.0,
+  "1UBQ:V26A": 0.0,
+  "1UBQ:V26I": 0.0,
+  "1UBQ:K48R": 0.0,
+  "1UBQ:K48E": 0.0,
+  "1UBQ:I44A": 0.0
+ }
+}

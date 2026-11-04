@@ -62,6 +62,14 @@ directly comparable.
 | `probes_comp_rerun/` | Baseline from amino-acid composition alone | supporting |
 | `probes/`, `probes650/` | Single-refit probes for ESM-2 35M, ProteinMPNN and ESM-2 650M | superseded by `probes_ci/` |
 
+## Combining the two models (`scripts/08_fusion.py`) and point mutants (`scripts/09_mutants.py`)
+
+| Folder | What it holds | Status |
+|---|---|---|
+| `fusion/` | `scores.csv`: every fit (5 refits × 3 training sizes × 7 targets × 3 predictors × 9 arms); `gains.csv`: paired gains of each fused arm over ESM-2 alone, ProteinMPNN alone and raw fusion plus one-hot; `summary.json`: the decision rule, variance partitioning, mean scores | supporting |
+| `fusion_protein/` | The same for whole proteins: 18 protein-level targets, macro-F1, amino-acid composition as the identity arm | supporting |
+| `mutants/` | `shifts.csv`: per mutant and ESM-2 block, the change at the mutated residue (as is and after the subtraction) and at residues under 8, 8–16 and over 16 Å away, in units of within-amino-acid spread; `summary.json`: ProteinMPNN encoder check (zero change); `predictions.csv` and `predictions_protein.csv`: how much each trained predictor's output changes from wild type to mutant, per arm; `l99a_ground_truth.json`: predicted against measured change in solvent accessibility for T4 lysozyme L99A | supporting |
+
 ## Stitching (`scripts/06_stitching.py`)
 
 | Folder | What it holds | Status |

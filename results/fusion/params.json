@@ -1,0 +1,47 @@
+{
+  "script": "08_fusion.py",
+  "timestamp_utc": "2026-10-16T11:31:12+00:00",
+  "command": "scripts/08_fusion.py --structures-dir /ssc/structures --results-root /ssc/results --out-dir /ssc/results/fusion --workers 2",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "out_dir": "/ssc/results/fusion",
+    "max_chains": null,
+    "workers": 2
+  },
+  "git_commit": "f73db65ce3bc3279d1631992926dd5951030903b",
+  "git_dirty": false,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "layers": {
+      "esm": 11,
+      "proteinmpnn": 2,
+      "rand_mpnn": 2,
+      "esm650": 32
+    },
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "sizes": [
+      0.01,
+      0.1,
+      1.0
+    ],
+    "chains": 4894,
+    "rows": 2835,
+    "minutes": 106.5
+  }
+}

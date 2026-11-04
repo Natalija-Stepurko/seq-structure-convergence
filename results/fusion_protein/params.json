@@ -1,0 +1,67 @@
+{
+  "script": "08_fusion.py",
+  "timestamp_utc": "2026-11-04T16:28:56+00:00",
+  "command": "scripts/08_fusion.py --structures-dir /ssc/structures --results-root /ssc/results --out-dir /ssc/results/fusion_protein --workers 2",
+  "args": {
+    "structures_dir": "/ssc/structures",
+    "results_root": "/ssc/results",
+    "out_dir": "/ssc/results/fusion_protein",
+    "max_chains": null,
+    "workers": 2
+  },
+  "git_commit": "a7a9aed7a0263a67ce4a8db001e0179c3194e84b",
+  "git_dirty": false,
+  "versions": {
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "sklearn": "1.9.0",
+    "torch": "2.12.1+cu130",
+    "xgboost": "3.3.0",
+    "umap": "0.5.12",
+    "biotite": "1.7.1"
+  },
+  "extra": {
+    "layers": {
+      "esm": 11,
+      "proteinmpnn": 2,
+      "rand_mpnn": 2,
+      "esm650": 32
+    },
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "sizes": [
+      0.01,
+      0.1,
+      1.0
+    ],
+    "proteins": 4894,
+    "targets": [
+      "cath_class",
+      "cath_arch",
+      "cath_topol",
+      "ec_class",
+      "enzyme",
+      "protein_class",
+      "localisation",
+      "kingdom",
+      "is_transport",
+      "is_dna_binding",
+      "is_rna_binding",
+      "is_kinase",
+      "is_ribosomal",
+      "is_membrane_protein",
+      "is_structural",
+      "is_immune",
+      "is_phospho",
+      "is_glyco"
+    ],
+    "rows": 7290,
+    "minutes": 307.4
+  }
+}
