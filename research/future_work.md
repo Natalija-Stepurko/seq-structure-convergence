@@ -221,6 +221,21 @@ background whose structure is 1L63, so the measured per-residue change in solven
 secondary structure is compared with the predicted change (Pearson r over residues; agreement of
 secondary-structure changes), as is and after the subtraction.
 
+**Result, per-protein fusion (`08_fusion.py run-protein`, `results/fusion_protein/`).** Whole
+proteins tell a different story from residues:
+
+- *Combining adds nothing over ESM-2 alone.* Raw fusion is significantly better than ESM-2 alone on
+  1 of the 18 protein-level targets with the linear predictor and 0 of 18 with boosted trees (and
+  significantly worse on one, transporters), against all 18 over ProteinMPNN alone. Even fold class,
+  a structural label, gains only +0.027 (interval spanning zero). Averaged over residues, what
+  ProteinMPNN knows about each protein is already in ESM-2's average.
+- *The bigger sequence model is the better addition.* ESM-2 650M alone scores highest on most
+  targets (kingdom 0.807 against 0.654 for raw fusion, linear).
+- *The subtraction is neutral here.* By the rule fixed in advance (6 of 18 targets) neither residual
+  nor hybrid fusion beats raw fusion plus composition for any predictor or size; residual fusion is
+  above it on at most 3 targets and below on at most 2. At 1% of training proteins most targets are
+  skipped (a class with fewer than 2 training proteins).
+
 **Result, predictions on the point mutants (`09_mutants.py predict`).** Predictors trained on the
 dataset and applied to wild type and the nine mutants, as the design above fixed:
 
